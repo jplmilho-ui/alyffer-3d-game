@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Alyffer Santos M. 3D — Jornada #Blessed (@santos.by1)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="game-bg-photo" aria-hidden="true"></div>
+  <div id="gameContainer"></div>
+
+  <!-- HUD -->
+  <div id="hud" class="hud hidden" aria-live="polite">
+    <div class="hud-top">
+      <div class="hud-group">
+        <div class="hud-pill profile-tag">
+          <span class="hud-label">PERFIL</span>
+          <strong>@santos.by1</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">SEGUIDORES</span>
+          <strong id="scoreVal">148</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">COMBO</span>
+          <strong id="comboVal">x1</strong>
+        </div>
+        <div class="hud-pill">
+          <span class="hud-label">FASE</span>
+          <strong id="levelVal">1</strong>
+        </div>
+      </div>
+
+      <div class="hud-group center-pill">
+        <div class="hud-pill accent">
+          <span class="hud-label">POSTS DO FEED</span>
+          <strong id="orbsVal">0 / 0</strong>
+        </div>
+      </div>
+
+      <div class="hud-group">
+        <div class="hud-pill">
+          <span class="hud-label">FÉ / VIDAS</span>
+          <strong id="livesVal">✝️✝️✝️</strong>
+        </div>
+        <button id="bgBtn" class="hud-btn" type="button" title="Trocar fundo (B)" aria-label="Trocar foto de fundo">🖼️</button>
+        <button id="muteBtn" class="hud-btn" type="button" title="Som (M)" aria-label="Alternar som">🔊</button>
+        <button id="pauseBtn" class="hud-btn" type="button" title="Pausar (P)" aria-label="Pausar jogo">⏸</button>
+      </div>
+    </div>
+
+    <div id="postToast" class="post-toast hidden">
+      <img id="postToastImg" src="assets/caipira1.jpg" alt="Foto caipira desbloqueada" />
+      <div>
+        <span class="hud-label">POST DO FEED</span>
+        <strong id="postToastLabel">Macho Caipira #1</strong>
+      </div>
+    </div>
+
+    <div class="hud-bottom">
+      <div class="dash-meter">
+        <span>FLASH DASH (Shift)</span>
+        <div class="dash-bar-bg">
+          <div id="dashBar" class="dash-bar-fill"></div>
+        </div>
+      </div>
+
+      <div class="bg-gallery-bar" aria-label="Galeria de fundos">
+        <button class="gallery-thumb active" data-bg="assets/profile.jpg" title="Perfil @santos.by1" type="button">
+          <img src="assets/profile.jpg" alt="Perfil Alyffer" />
+        </button>
+        <button class="gallery-thumb" data-bg="assets/caipira1.jpg" title="Caipira no Curral" type="button">
+          <img src="assets/caipira1.jpg" alt="Caipira no Curral" />
+        </button>
+        <button class="gallery-thumb" data-bg="assets/caipira2.jpg" title="Caipira na Estrada" type="button">
+          <img src="assets/caipira2.jpg" alt="Caipira na Estrada" />
+        </button>
+        <button class="gallery-thumb" data-bg="assets/caipira3.jpg" title="Violeiro na Varanda" type="button">
+          <img src="assets/caipira3.jpg" alt="Violeiro na Varanda" />
+        </button>
+      </div>
+
+      <div id="powerupBadge" class="powerup-badge hidden">✝️ #BLESSED ATIVO</div>
+      <div class="hud-hint">WASD / Setas: Mover • Espaço: Pular (2x) • Clique nas fotos ou B: Fundo</div>
+    </div>
+
+    <!-- Controles touch para mobile -->
+    <div id="touchControls" class="touch-controls">
+      <div class="dpad">
+        <button data-key="KeyW" class="t-btn up" type="button">▲</button>
+        <button data-key="KeyA" class="t-btn left" type="button">◀</button>
+        <button data-key="KeyS" class="t-btn down" type="button">▼</button>
+        <button data-key="KeyD" class="t-btn right" type="button">▶</button>
+      </div>
+      <div class="action-pads">
+        <button id="touchDash" class="t-btn action" type="button">FLASH</button>
+        <button id="touchJump" class="t-btn action primary" type="button">PULAR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela Inicial -->
+  <div id="startScreen" class="overlay">
+    <div class="panel">
+      <div class="ig-header-card">
+        <div class="ig-avatar-ring">
+          <div class="ig-avatar-inner">
+            <img src="assets/profile.jpg" alt="Foto de perfil de @santos.by1" class="ig-avatar-img" />
+          </div>
+        </div>
+        <div class="ig-meta">
+          <div class="ig-handle">@santos.by1</div>
+          <div class="ig-name">Alyffer Santos M.</div>
+          <div class="ig-bio">✝️ • #blessed • 148 seguidores • 0 posts</div>
+        </div>
+      </div>
+
+      <h1>JORNADA <span class="gradient-text">#BLESSED</span></h1>
+      <p class="subtitle">O Jogo 3D oficial baseado no Instagram do Alyffer</p>
+      <p class="desc">
+        O feed do <strong>@santos.by1</strong> está zerado! Controle o <strong>Alyffer</strong> (visual all-black &amp; celular na mão),
+        colete os <strong>Posts Perdidos</strong>, salte nos <strong>Anéis de Story</strong>, pegue a bênção
+        <strong>✝️ #Blessed</strong> e desvie dos bots na arena noturna.
+      </p>
+
+      <div class="controls-grid">
+        <div><kbd>W A S D</kbd> ou <kbd>Setas</kbd><span>Mover Alyffer</span></div>
+        <div><kbd>Espaço</kbd><span>Pulo &amp; Pulo Duplo</span></div>
+        <div><kbd>Shift</kbd><span>Flash Dash (Selfie)</span></div>
+        <div><kbd>Mouse</kbd> ou <kbd>Q / E</kbd><span>Girar Câmera</span></div>
+      </div>
+
+      <div class="caipira-showcase">
+        <span class="showcase-label">FOTOS DA GALERIA CAIPIRA (clique para escolher o fundo):</span>
+        <div class="showcase-grid">
+          <button class="gallery-thumb active" data-bg="assets/profile.jpg" type="button" title="Perfil @santos.by1">
+            <img src="assets/profile.jpg" alt="Perfil Alyffer" />
+          </button>
+          <button class="gallery-thumb" data-bg="assets/caipira1.jpg" type="button" title="Caipira no Curral">
+            <img src="assets/caipira1.jpg" alt="Macho Caipira no Curral" />
+          </button>
+          <button class="gallery-thumb" data-bg="assets/caipira2.jpg" type="button" title="Caipira na Estrada">
+            <img src="assets/caipira2.jpg" alt="Macho Caipira na Estrada" />
+          </button>
+          <button class="gallery-thumb" data-bg="assets/caipira3.jpg" type="button" title="Violeiro Caipira">
+            <img src="assets/caipira3.jpg" alt="Violeiro Caipira" />
+          </button>
+        </div>
+      </div>
+
+      <div class="record-line">
+        Recorde de Seguidores: <strong id="bestScoreStart">148</strong> •
+        <a href="https://www.instagram.com/santos.by1/" target="_blank" rel="noopener noreferrer" class="ig-link">Abrir @santos.by1</a>
+      </div>
+
+      <button id="startBtn" class="btn-primary" type="button">Entrar na Arena 3D</button>
+    </div>
+  </div>
+
+  <!-- Tela de Pausa -->
+  <div id="pauseScreen" class="overlay hidden">
+    <div class="panel small">
+      <h2>Modo Low-Profile (Pausa)</h2>
+      <p class="desc">Respira fundo, confere o espelho e volta pro jogo!</p>
+      <div class="btn-stack">
+        <button id="resumeBtn" class="btn-primary" type="button">Continuar</button>
+        <button id="restartPauseBtn" class="btn-secondary" type="button">Reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela de Transição de Nível -->
+  <div id="levelBanner" class="level-banner hidden">
+    <span id="levelBannerText">FEED COMPLETO • FASE 2!</span>
+  </div>
+
+  <!-- Tela de Game Over -->
+  <div id="gameOverScreen" class="overlay hidden">
+    <div class="panel">
+      <div class="badge danger">FIM DA JORNADA</div>
+      <h2>Seguimos <span class="gradient-text">#blessed</span>, Alyffer!</h2>
+      <div class="stats-summary">
+        <div class="stat-box">
+          <span>Seguidores</span>
+          <strong id="finalScore">148</strong>
+        </div>
+        <div class="stat-box">
+          <span>Fase Alcançada</span>
+          <strong id="finalLevel">1</strong>
+        </div>
+        <div class="stat-box">
+          <span>Recorde</span>
+          <strong id="finalBest">148</strong>
+        </div>
+      </div>
+      <p class="record-line">
+        Perfil real no Instagram:
+        <a href="https://www.instagram.com/santos.by1/" target="_blank" rel="noopener noreferrer" class="ig-link">@santos.by1</a>
+      </p>
+      <button id="restartBtn" class="btn-primary" type="button">Jogar Novamente</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="game.js"></script>
+</body>
+</html>
