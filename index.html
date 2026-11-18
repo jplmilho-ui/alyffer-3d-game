@@ -2,103 +2,170 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>Alyffer Santos M. 3D — Jornada #Blessed (@santos.by1)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Simulador do Macho 3D — Horta no Quintal do Alyffer</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="game-bg-photo" aria-hidden="true"></div>
   <div id="gameContainer"></div>
 
-  <!-- HUD -->
+  <!-- HUD Principal -->
   <div id="hud" class="hud hidden" aria-live="polite">
     <div class="hud-top">
       <div class="hud-group">
-        <div class="hud-pill profile-tag">
-          <span class="hud-label">PERFIL</span>
-          <strong>@santos.by1</strong>
+        <div id="farmerTagPill" class="hud-pill farmer-tag clickable" title="Clique para alternar seu Título desbloqueado">
+          <div class="farmer-hud-row">
+            <img class="hud-avatar" src="assets/profile.jpg" alt="Alyffer Macho" />
+            <div>
+              <span class="hud-label">ALYFFER "MACHO"</span>
+              <strong id="titleBadge">Estudante ETEC</strong>
+            </div>
+          </div>
+        </div>
+        <div class="hud-pill money-pill">
+          <span class="hud-label">CAIXA</span>
+          <strong id="moneyVal">R$ 30,00</strong>
         </div>
         <div class="hud-pill">
-          <span class="hud-label">SEGUIDORES</span>
-          <strong id="scoreVal">148</strong>
+          <span class="hud-label">DIA / CLIMA</span>
+          <strong id="dayTimeVal">Dia 1 • 07:00 ☀️</strong>
         </div>
         <div class="hud-pill">
-          <span class="hud-label">COMBO</span>
-          <strong id="comboVal">x1</strong>
-        </div>
-        <div class="hud-pill">
-          <span class="hud-label">FASE</span>
-          <strong id="levelVal">1</strong>
+          <span class="hud-label">LOCAL</span>
+          <strong id="locationVal">Pau Arcado</strong>
         </div>
       </div>
 
       <div class="hud-group center-pill">
         <div class="hud-pill accent">
-          <span class="hud-label">POSTS DO FEED</span>
-          <strong id="orbsVal">0 / 0</strong>
+          <span class="hud-label">CESTA</span>
+          <strong id="basketVal">🥬 0 itens</strong>
+        </div>
+        <div class="hud-pill water-pill">
+          <span class="hud-label">REGADOR</span>
+          <div class="water-mini-row">
+            <div class="water-bar-bg">
+              <div id="waterBar" class="water-bar-fill"></div>
+            </div>
+            <strong id="waterText">8/8</strong>
+          </div>
+        </div>
+        <div id="insanityPill" class="hud-pill insanity-pill" title="Aos 100% você começa a Coringar! Fique 1 dia sem ir na ETEC para reduzir 25%.">
+          <span id="insanityLabel" class="hud-label">SANIDADE / CORINGA</span>
+          <div class="water-mini-row">
+            <div class="water-bar-bg">
+              <div id="insanityBar" class="insanity-bar-fill"></div>
+            </div>
+            <strong id="insanityText">0%</strong>
+          </div>
+        </div>
+        <div id="buffBadge" class="hud-pill buff-pill hidden">
+          <span class="hud-label">EFEITO ATIVO</span>
+          <strong id="buffText">⚡ Energia</strong>
         </div>
       </div>
 
       <div class="hud-group">
-        <div class="hud-pill">
-          <span class="hud-label">FÉ / VIDAS</span>
-          <strong id="livesVal">✝️✝️✝️</strong>
-        </div>
-        <button id="bgBtn" class="hud-btn" type="button" title="Trocar fundo (B)" aria-label="Trocar foto de fundo">🖼️</button>
+        <button id="guideHudBtn" class="hud-btn wide" type="button" title="Guia de Locais &amp; Missões (G)">
+          🗺️ <span class="btn-label">Guia</span>
+        </button>
+        <button id="ordersHudBtn" class="hud-btn wide" type="button" title="Ver Encomendas (O)">
+          📦 <span class="btn-label">Pedidos</span>
+        </button>
+        <button id="shopHudBtn" class="hud-btn wide" type="button" title="Loja &amp; Expansão (L)">
+          🛒 <span class="btn-label">Loja</span>
+        </button>
         <button id="muteBtn" class="hud-btn" type="button" title="Som (M)" aria-label="Alternar som">🔊</button>
         <button id="pauseBtn" class="hud-btn" type="button" title="Pausar (P)" aria-label="Pausar jogo">⏸</button>
       </div>
     </div>
 
-    <div id="postToast" class="post-toast hidden">
-      <img id="postToastImg" src="assets/caipira1.jpg" alt="Foto caipira desbloqueada" />
+    <!-- Toast de Notificação -->
+    <div id="toastBox" class="toast-box hidden">
+      <span id="toastIcon" class="toast-icon">🥬</span>
       <div>
-        <span class="hud-label">POST DO FEED</span>
-        <strong id="postToastLabel">Macho Caipira #1</strong>
+        <span id="toastTitle" class="hud-label">COLHEITA</span>
+        <strong id="toastText">Alface Crespa colhida!</strong>
       </div>
     </div>
 
-    <div class="hud-bottom">
-      <div class="dash-meter">
-        <span>FLASH DASH (Shift)</span>
-        <div class="dash-bar-bg">
-          <div id="dashBar" class="dash-bar-fill"></div>
+    <!-- Balão de Fala do Alyffer Coringando (100%) -->
+    <div id="coringaBubble" class="coringa-bubble hidden" aria-live="polite">
+      <div class="coringa-header">🤡 ALYFFER CORINGANDO (100%)</div>
+      <div id="coringaBubbleText" class="coringa-text">HAHAHAHA! A ALFACE ME CONTOU O SEGREDO DO 402!</div>
+    </div>
+
+    <!-- Controles & Prompt Inferior -->
+    <div class="hud-bottom-wrap">
+      <div id="contextPrompt" class="context-prompt hidden">
+        <span id="contextKey" class="ctx-key">Espaço</span>
+        <span id="contextText">Arar canteiro</span>
+      </div>
+
+      <!-- Controles Touch para Celular (Joystick Analógico + Botão Agir) -->
+      <div id="touchControls" class="touch-controls">
+        <div id="joystickBase" class="joystick-base" aria-label="Controle direcional analógico">
+          <span class="joy-dir up">▲</span>
+          <span class="joy-dir down">▼</span>
+          <span class="joy-dir left">◀</span>
+          <span class="joy-dir right">▶</span>
+          <div id="joystickKnob" class="joystick-knob"></div>
+        </div>
+        <div class="action-pads">
+          <button id="touchAction" class="t-btn action primary" type="button">
+            <span id="touchActionEmoji" class="touch-action-emoji">🌱</span>
+            <span id="touchActionLabel">AGIR</span>
+          </button>
         </div>
       </div>
 
-      <div class="bg-gallery-bar" aria-label="Galeria de fundos">
-        <button class="gallery-thumb active" data-bg="assets/profile.jpg" title="Perfil @santos.by1" type="button">
-          <img src="assets/profile.jpg" alt="Perfil Alyffer" />
-        </button>
-        <button class="gallery-thumb" data-bg="assets/caipira1.jpg" title="Caipira no Curral" type="button">
-          <img src="assets/caipira1.jpg" alt="Caipira no Curral" />
-        </button>
-        <button class="gallery-thumb" data-bg="assets/caipira2.jpg" title="Caipira na Estrada" type="button">
-          <img src="assets/caipira2.jpg" alt="Caipira na Estrada" />
-        </button>
-        <button class="gallery-thumb" data-bg="assets/caipira3.jpg" title="Violeiro na Varanda" type="button">
-          <img src="assets/caipira3.jpg" alt="Violeiro na Varanda" />
-        </button>
-      </div>
+      <div class="hud-bottom">
+        <!-- Barra de Sementes -->
+        <div class="seed-hotbar" role="toolbar" aria-label="Escolher semente para plantar">
+          <button class="seed-slot active" data-crop="alface_crespa" type="button" title="Tecla 1: Alface Crespa">
+            <span class="slot-num">1</span>
+            <span class="slot-emoji">🥬</span>
+            <span class="slot-name">Alface Crespa</span>
+            <span class="slot-cost">R$ 4</span>
+          </button>
+          <button class="seed-slot" data-crop="alface_americana" type="button" title="Tecla 2: Alface Americana">
+            <span class="slot-num">2</span>
+            <span class="slot-emoji">🥗</span>
+            <span class="slot-name">Alface Amer.</span>
+            <span class="slot-cost">R$ 8</span>
+          </button>
+          <button class="seed-slot" data-crop="alface_roxa" type="button" title="Tecla 3: Alface Roxa">
+            <span class="slot-num">3</span>
+            <span class="slot-emoji">🟣</span>
+            <span class="slot-name">Alface Roxa</span>
+            <span class="slot-cost">R$ 12</span>
+          </button>
+          <button class="seed-slot" data-crop="tomate" type="button" title="Tecla 4: Tomate Cereja">
+            <span class="slot-num">4</span>
+            <span class="slot-emoji">🍅</span>
+            <span class="slot-name">Tomate</span>
+            <span class="slot-cost">R$ 15</span>
+          </button>
+          <button class="seed-slot" data-crop="cenoura" type="button" title="Tecla 5: Cenoura">
+            <span class="slot-num">5</span>
+            <span class="slot-emoji">🥕</span>
+            <span class="slot-name">Cenoura</span>
+            <span class="slot-cost">R$ 10</span>
+          </button>
+          <button class="seed-slot" data-crop="morango" type="button" title="Tecla 6: Morango">
+            <span class="slot-num">6</span>
+            <span class="slot-emoji">🍓</span>
+            <span class="slot-name">Morango</span>
+            <span class="slot-cost">R$ 18</span>
+          </button>
+        </div>
 
-      <div id="powerupBadge" class="powerup-badge hidden">✝️ #BLESSED ATIVO</div>
-      <div class="hud-hint">WASD / Setas: Mover • Espaço: Pular (2x) • Clique nas fotos ou B: Fundo</div>
-    </div>
-
-    <!-- Controles touch para mobile -->
-    <div id="touchControls" class="touch-controls">
-      <div class="dpad">
-        <button data-key="KeyW" class="t-btn up" type="button">▲</button>
-        <button data-key="KeyA" class="t-btn left" type="button">◀</button>
-        <button data-key="KeyS" class="t-btn down" type="button">▼</button>
-        <button data-key="KeyD" class="t-btn right" type="button">▶</button>
-      </div>
-      <div class="action-pads">
-        <button id="touchDash" class="t-btn action" type="button">FLASH</button>
-        <button id="touchJump" class="t-btn action primary" type="button">PULAR</button>
+        <div class="hud-hint">
+          WASD: Andar • Espaço / E / Clique: Agir • 1–6: Semente • G: Guia • Arraste (Esq/Dir): Câmera
+        </div>
       </div>
     </div>
   </div>
@@ -106,106 +173,163 @@
   <!-- Tela Inicial -->
   <div id="startScreen" class="overlay">
     <div class="panel">
-      <div class="ig-header-card">
-        <div class="ig-avatar-ring">
-          <div class="ig-avatar-inner">
-            <img src="assets/profile.jpg" alt="Foto de perfil de @santos.by1" class="ig-avatar-img" />
-          </div>
+      <div class="farmer-id-card">
+        <div class="avatar-ring">
+          <img id="farmerAvatarImg" src="assets/profile.jpg" alt="Alyffer apelido Macho" />
         </div>
-        <div class="ig-meta">
-          <div class="ig-handle">@santos.by1</div>
-          <div class="ig-name">Alyffer Santos M.</div>
-          <div class="ig-bio">✝️ • #blessed • 148 seguidores • 0 posts</div>
+        <div class="farmer-meta">
+          <div class="badge-mini">PAU ARCADO • CAMPO LIMPO PAULISTA</div>
+          <div class="farmer-name">Alyffer <span class="nick-pill">apelido: Macho</span></div>
+          <div class="farmer-bio">Estudante da ETEC de Campo Limpo Paulista • Morador da roça</div>
         </div>
       </div>
 
-      <h1>JORNADA <span class="gradient-text">#BLESSED</span></h1>
-      <p class="subtitle">O Jogo 3D oficial baseado no Instagram do Alyffer</p>
+      <h1>HORTA DO <span class="gradient-text">MACHO</span> 3D</h1>
+      <p class="subtitle">Simulador de Plantar Comida no Quintal em Pau Arcado</p>
       <p class="desc">
-        O feed do <strong>@santos.by1</strong> está zerado! Controle o <strong>Alyffer</strong> (visual all-black &amp; celular na mão),
-        colete os <strong>Posts Perdidos</strong>, salte nos <strong>Anéis de Story</strong>, pegue a bênção
-        <strong>✝️ #Blessed</strong> e desvie dos bots na arena noturna.
+        Você é o <strong>Alyffer (Macho)</strong>, mora em <strong>Pau Arcado</strong> e estuda na <strong>ETEC de Campo Limpo Paulista</strong>.
+        Plante <strong>Alface</strong> no quintal, pegue o <strong>Ônibus 402</strong> (se não estiver chovendo!) para vender no
+        <strong>Terminal de Campo Limpo Paulista</strong>, e pegue o trem da <strong>Linha 7-Rubi</strong> ao lado para ir à
+        <strong>ETEC (Botujuru)</strong> socializar com <strong>Muzzonline</strong>, <strong>Kaio Wendell</strong> e cumprir missões do
+        <strong>Félix</strong> e do <strong>Pão</strong>!
       </p>
 
       <div class="controls-grid">
-        <div><kbd>W A S D</kbd> ou <kbd>Setas</kbd><span>Mover Alyffer</span></div>
-        <div><kbd>Espaço</kbd><span>Pulo &amp; Pulo Duplo</span></div>
-        <div><kbd>Shift</kbd><span>Flash Dash (Selfie)</span></div>
-        <div><kbd>Mouse</kbd> ou <kbd>Q / E</kbd><span>Girar Câmera</span></div>
+        <div><div class="keys-row"><kbd>W A S D</kbd> ou <kbd>Analógico</kbd></div><span>Andar (PC ou Celular)</span></div>
+        <div><div class="keys-row"><kbd>Espaço</kbd> / <kbd>E</kbd> / <kbd>AGIR</kbd></div><span>Arar, Plantar, Regar, Colher, Vender</span></div>
+        <div><div class="keys-row"><kbd>1</kbd> a <kbd>6</kbd> ou <kbd>Toque</kbd></div><span>Escolher semente (Alfaces &amp; mais)</span></div>
+        <div><div class="keys-row"><kbd>Arraste</kbd> / <kbd>Pinça</kbd></div><span>Girar câmera • Zoom (ou Scroll)</span></div>
       </div>
 
-      <div class="caipira-showcase">
-        <span class="showcase-label">FOTOS DA GALERIA CAIPIRA (clique para escolher o fundo):</span>
-        <div class="showcase-grid">
-          <button class="gallery-thumb active" data-bg="assets/profile.jpg" type="button" title="Perfil @santos.by1">
-            <img src="assets/profile.jpg" alt="Perfil Alyffer" />
-          </button>
-          <button class="gallery-thumb" data-bg="assets/caipira1.jpg" type="button" title="Caipira no Curral">
-            <img src="assets/caipira1.jpg" alt="Macho Caipira no Curral" />
-          </button>
-          <button class="gallery-thumb" data-bg="assets/caipira2.jpg" type="button" title="Caipira na Estrada">
-            <img src="assets/caipira2.jpg" alt="Macho Caipira na Estrada" />
-          </button>
-          <button class="gallery-thumb" data-bg="assets/caipira3.jpg" type="button" title="Violeiro Caipira">
-            <img src="assets/caipira3.jpg" alt="Violeiro Caipira" />
-          </button>
+      <div id="saveInfoLine" class="record-line">
+        Progresso salvo localmente no navegador.
+      </div>
+
+      <div class="start-actions">
+        <button id="startBtn" class="btn-primary" type="button">Ir para o Quintal</button>
+        <button id="resetSaveBtn" class="btn-secondary hidden" type="button">Começar Sítio do Zero</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal do Terminal de Campo Limpo Paulista (Vendas & Encomendas) -->
+  <div id="sellModal" class="overlay hidden">
+    <div class="panel wide">
+      <div class="modal-header">
+        <div>
+          <div class="badge-mini">TERMINAL URBANO DE CAMPO LIMPO PAULISTA • LINHA 402</div>
+          <h2>Vender Produtos no Terminal</h2>
+        </div>
+        <button id="closeSellBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+
+      <p id="sellModeNotice" class="desc compact">
+        Bancas do Terminal de Campo Limpo Paulista (próximo à Av. Alfried Krupp e Estação Linha 7-Rubi).
+      </p>
+
+      <div id="sellActionArea" class="modal-section">
+        <h3>Sua Cesta &amp; Preços de Hoje</h3>
+        <div id="sellInventoryList" class="sell-list"></div>
+        <button id="sellAllBtn" class="btn-primary" type="button">Vender Tudo da Cesta</button>
+      </div>
+
+      <div class="modal-section">
+        <h3>📦 Encomendas de Campo Limpo Paulista</h3>
+        <div id="ordersList" class="orders-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de NPC / Missões da ETEC -->
+  <div id="npcModal" class="overlay hidden">
+    <div class="panel">
+      <div class="modal-header">
+        <div style="text-align:left">
+          <div id="npcTag" class="badge-mini">ETEC DE CAMPO LIMPO PAULISTA</div>
+          <h2 id="npcName">NPC</h2>
+        </div>
+        <button id="closeNpcBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <p id="npcAppearance" class="desc compact" style="text-align:left"></p>
+      <div class="modal-section" style="text-align:left">
+        <p id="npcDialogue" class="npc-quote"></p>
+        <div id="npcMissionBox" class="npc-mission-box hidden">
+          <div id="npcMissionTitle" class="row-title"></div>
+          <div id="npcMissionReq" class="row-sub"></div>
+          <div id="npcMissionReward" class="row-sub" style="color:var(--gold);margin-top:4px"></div>
         </div>
       </div>
-
-      <div class="record-line">
-        Recorde de Seguidores: <strong id="bestScoreStart">148</strong> •
-        <a href="https://www.instagram.com/santos.by1/" target="_blank" rel="noopener noreferrer" class="ig-link">Abrir @santos.by1</a>
+      <div class="btn-stack">
+        <button id="npcActionBtn" class="btn-primary" type="button">Conversar</button>
       </div>
+    </div>
+  </div>
 
-      <button id="startBtn" class="btn-primary" type="button">Entrar na Arena 3D</button>
+  <!-- Modal da Loja de Sítio & Melhorias -->
+  <div id="shopModal" class="overlay hidden">
+    <div class="panel wide">
+      <div class="modal-header">
+        <div>
+          <div class="badge-mini">COOPERATIVA RURAL DE PAU ARCADO</div>
+          <h2>Melhorias do Quintal</h2>
+        </div>
+        <button id="closeShopBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="shop-balance">Seu Caixa: <strong id="shopMoneyVal">R$ 30,00</strong></div>
+      <div id="shopItemsList" class="shop-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal de Guia de Locais, Títulos & Missões -->
+  <div id="guideModal" class="overlay hidden">
+    <div class="panel wide">
+      <div class="modal-header">
+        <div>
+          <div class="badge-mini">MAPA &amp; PROGRESSO • CAMPO LIMPO PAULISTA</div>
+          <h2>Guia do Macho &amp; Missões da ETEC</h2>
+        </div>
+        <button id="closeGuideBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="modal-section">
+        <h3>🏆 Seus Títulos Desbloqueados (clique para equipar)</h3>
+        <div id="titlesList" class="titles-grid"></div>
+      </div>
+      <div class="modal-section">
+        <h3>🎯 Missões dos Amigos na ETEC</h3>
+        <div id="guideQuestsList" class="orders-list"></div>
+      </div>
+      <div class="modal-section">
+        <h3>🗺️ Locais de Campo Limpo Paulista no Jogo</h3>
+        <div class="row-sub" style="line-height:1.6">
+          • <strong>Sítio em Pau Arcado (Estrada do Garcia):</strong> Plante alfaces, tomate, cenoura e morango, colha ovos no galinheiro, use a composteira, faça carinho no Caramelo e pegue o <strong>Ônibus 402</strong> na porteira (exceto em dias de chuva!).<br/>
+          • <strong>Quarto do Alyffer:</strong> Leia mangás, veja o pôster do PAC (TazerCraft) e durma na cama para avançar o dia.<br/>
+          • <strong>Terminal Campo Limpo Paulista + Estação Linha 7-Rubi (Av. Alfried Krupp):</strong> Venda sua colheita nas bancas, tome caldo de cana com pastel e pegue o trem da Linha 7-Rubi.<br/>
+          • <strong>ETEC de Campo Limpo Paulista (Botujuru — Rua João Julião Moreira):</strong> Converse com <strong>Kaio Wendell</strong> e <strong>Muzzonline</strong>, e faça as missões do <strong>Félix</strong> e do <strong>Pão</strong>.<br/>
+          • <strong>🤡 Modo Coringando (100%):</strong> Ao chegar em <strong>100%</strong> socializando na ETEC, o Alyffer começa a <strong>coringar</strong> e falar frases cheias de besteiras! Para a barra descer, você precisa <strong>ficar sem ir para a ETEC</strong> (cada dia inteiro longe da ETEC reduz <strong>25%</strong>).
+        </div>
+      </div>
     </div>
   </div>
 
   <!-- Tela de Pausa -->
   <div id="pauseScreen" class="overlay hidden">
     <div class="panel small">
-      <h2>Modo Low-Profile (Pausa)</h2>
-      <p class="desc">Respira fundo, confere o espelho e volta pro jogo!</p>
+      <h2>Descanso na Varanda (Pausa)</h2>
+      <p class="desc">Toma um café coado na varanda, olha o mato e volta pra horta!</p>
       <div class="btn-stack">
-        <button id="resumeBtn" class="btn-primary" type="button">Continuar</button>
-        <button id="restartPauseBtn" class="btn-secondary" type="button">Reiniciar</button>
+        <button id="resumeBtn" class="btn-primary" type="button">Voltar ao Quintal</button>
+        <button id="sleepPauseBtn" class="btn-secondary" type="button">Dormir até Amanhã (06:00)</button>
+        <button id="restartPauseBtn" class="btn-secondary danger-outline" type="button">Reiniciar Sítio do Zero</button>
       </div>
     </div>
   </div>
 
-  <!-- Tela de Transição de Nível -->
-  <div id="levelBanner" class="level-banner hidden">
-    <span id="levelBannerText">FEED COMPLETO • FASE 2!</span>
+  <!-- Banner de Novo Dia / Evento -->
+  <div id="dayBanner" class="level-banner hidden">
+    <span id="dayBannerText">BOM DIA, MACHO! DIA 2 NA ROÇA</span>
   </div>
 
-  <!-- Tela de Game Over -->
-  <div id="gameOverScreen" class="overlay hidden">
-    <div class="panel">
-      <div class="badge danger">FIM DA JORNADA</div>
-      <h2>Seguimos <span class="gradient-text">#blessed</span>, Alyffer!</h2>
-      <div class="stats-summary">
-        <div class="stat-box">
-          <span>Seguidores</span>
-          <strong id="finalScore">148</strong>
-        </div>
-        <div class="stat-box">
-          <span>Fase Alcançada</span>
-          <strong id="finalLevel">1</strong>
-        </div>
-        <div class="stat-box">
-          <span>Recorde</span>
-          <strong id="finalBest">148</strong>
-        </div>
-      </div>
-      <p class="record-line">
-        Perfil real no Instagram:
-        <a href="https://www.instagram.com/santos.by1/" target="_blank" rel="noopener noreferrer" class="ig-link">@santos.by1</a>
-      </p>
-      <button id="restartBtn" class="btn-primary" type="button">Jogar Novamente</button>
-    </div>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+  <script src="vendor/three.min.js"></script>
   <script src="game.js"></script>
 </body>
 </html>
