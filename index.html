@@ -82,6 +82,13 @@
       </div>
 
       <div class="hud-group">
+        <button id="vaselinaHudBtn" class="hud-btn wide hidden" type="button" title="Tomar Vaselina do Marcelo p/ correr muito mais rápido (Z)">
+          🧴 <span id="vaselinaHudLabel" class="btn-label">Vaselina (0)</span>
+        </button>
+        <button id="phoneHudBtn" class="hud-btn wide phone-hud-btn" type="button" title="Abrir Celular &amp; Only-Resenha (T)">
+          📱 <span class="btn-label">Celular</span>
+          <span id="phoneNotifDot" class="phone-notif-dot hidden">1</span>
+        </button>
         <button id="toolModeBtn" class="hud-btn wide" type="button" title="Alternar entre Regador e Enxada (R)">
           <span id="toolModeIcon">🚿</span> <span id="toolModeLabel" class="btn-label">Regador (R)</span>
         </button>
@@ -134,7 +141,7 @@
       <div class="jaguar-bar-bg">
         <div id="jaguarHpFill" class="jaguar-bar-fill"></div>
       </div>
-      <div class="jaguar-hud-hint">Equipe a <strong>ENXADA (R)</strong> e aperte <strong>Espaço / E</strong> para golpear a Onça!</div>
+      <div class="jaguar-hud-hint">Equipe a <strong>ENXADA (R)</strong> e aperte <strong>E</strong> (ou clique) para golpear • <strong>Espaço</strong> para pular!</div>
     </div>
 
     <!-- Balão do Menino Maluquinho (Terminal à Noite) -->
@@ -166,6 +173,10 @@
           <div id="joystickKnob" class="joystick-knob"></div>
         </div>
         <div class="action-pads">
+          <button id="touchJump" class="t-btn action jump" type="button" aria-label="Pular">
+            <span class="touch-action-emoji">⬆️</span>
+            <span>PULAR</span>
+          </button>
           <button id="touchAction" class="t-btn action primary" type="button">
             <span id="touchActionEmoji" class="touch-action-emoji">🌱</span>
             <span id="touchActionLabel">AGIR</span>
@@ -227,7 +238,7 @@
         </div>
 
         <div class="hud-hint">
-          WASD: Andar • Espaço / E: Agir / Bater / Domar • R: Enxada/Regador • 1–8: Semente • F: Adubo • V: 1ª Pessoa • K: Calendário
+          WASD: Andar • Espaço: Pular • E: Agir / Domar • Z: Vaselina • T: Celular • R: Enxada • 1–8: Semente • F: Adubo • V: 1ª Pessoa • K: Calendário
         </div>
       </div>
     </div>
@@ -259,9 +270,9 @@
 
       <div class="controls-grid">
         <div><div class="keys-row"><kbd>W A S D</kbd> ou <kbd>Analógico</kbd></div><span>Andar (PC ou Celular)</span></div>
-        <div><div class="keys-row"><kbd>Espaço</kbd> / <kbd>E</kbd> / <kbd>F</kbd></div><span>Agir, Plantar, Colher &amp; Usar Adubo</span></div>
-        <div><div class="keys-row"><kbd>V</kbd> / <kbd>K</kbd></div><span>1ª/3ª Pessoa • Calendário &amp; Ônibus 402</span></div>
-        <div><div class="keys-row"><kbd>1</kbd>–<kbd>6</kbd> / <kbd>Arraste</kbd></div><span>Sementes • Girar câmera e Zoom</span></div>
+        <div><div class="keys-row"><kbd>Espaço</kbd> / <kbd>E</kbd> / <kbd>F</kbd></div><span>Pular • Agir/Colher • Usar Adubo</span></div>
+        <div><div class="keys-row"><kbd>T</kbd> / <kbd>Z</kbd> / <kbd>R</kbd></div><span>Celular • Vaselina • Enxada</span></div>
+        <div><div class="keys-row"><kbd>V</kbd> / <kbd>K</kbd> / <kbd>1</kbd>–<kbd>8</kbd></div><span>1ª Pessoa • Calendário • Sementes</span></div>
       </div>
 
       <div id="saveInfoLine" class="record-line">
@@ -402,9 +413,11 @@
       <div class="modal-section">
         <h3>🗺️ Locais de Campo Limpo Paulista no Jogo</h3>
         <div class="row-sub" style="line-height:1.6">
-          • <strong>Sítio &amp; Fazenda em Pau Arcado:</strong> Plante alfaces (incluindo <strong>Alface Guloso</strong> e <strong>Alface Dourado</strong>!), compre <strong>terrenos</strong> para expandir a fazenda, crie <strong>Vacas, Ovelhas e Porcos</strong>, instale <strong>Irrigação Automática</strong> e compre <strong>Enxadas Especiais</strong> (Fogo, Gelo, Relâmpago e Diamante) na Cooperativa. Se uma <strong>Onça</strong> invadir, derrote-a para poder <strong>domar a Onça</strong> — cuidado, ela pode matar seus animais!<br/>
-          • <strong>ETECAMP (ETEC de Campo Limpo Paulista — Botujuru):</strong> Compre <strong>Adubo</strong> com <strong>Kaio Wendell</strong>, contrate o segurança careca <strong>Marcelo</strong> para proteger seus animais e caçar a Onça, converse com <strong>Muzzonline</strong> e faça as missões do <strong>Félix</strong> e do <strong>Pão</strong>.<br/>
-          • <strong>🤡 Modo Coringando (100%):</strong> Ao chegar em <strong>100%</strong> socializando na ETEC, o Alyffer começa a <strong>coringar</strong> — faz 6-7 com os braços, põe a língua para fora e fica com os olhos esbugalhados e vermelhos! Para a barra descer, fique dias inteiros longe da ETEC (-25%/dia).
+          • <strong>Fazenda Ampliada em Pau Arcado:</strong> Muito mais espaço para plantar alfaces (incluindo <strong>Alface Guloso</strong> e <strong>Alface Dourado</strong>!), expandir terrenos, criar <strong>Vacas, Ovelhas e Porcos</strong> e explorar a casa ampliada (Quarto, Sala, Cozinha e Banheiro). O <strong>Ponto do Ônibus 402</strong> fica fora da porteira, descendo a Estrada do Garcia! Se derrotar e <strong>domar a Onça</strong>, ela defende o sítio e leva você ao Terminal CLP mesmo na chuva!<br/>
+          • <strong>ETECAMP Expandida (Botujuru):</strong> Salas <strong>3AI, 2AI, 1AI, 3A, 2A, 1A</strong>, <strong>Labs Info 24, 15 e 7</strong> e <strong>Lab Enfermagem</strong>! Fale com <strong>Pão e Muzzonline</strong> (3AI), <strong>Félix</strong> (1AI), <strong>Kaio Wendell</strong> (Lab Enfermagem), <strong>B****** e T*******</strong> (Lab 24 — aumentam insanidade!) e <strong>Marcelo</strong> no corredor (segurança e vendedor de <strong>Vaselina</strong> p/ correr super rápido!).<br/>
+          • <strong>🏆 Skins de Títulos:</strong> Cada título desbloqueado (<strong>PAC</strong>, <strong>Airfryer</strong>, <strong>Homem Guloso</strong> e <strong>Macho</strong>) transforma o visual 3D do Alyffer! Clique no título no topo ou aqui acima para trocar.<br/>
+          • <strong>🤡 Modo Coringando (100%):</strong> Ao chegar em <strong>100%</strong> na ETEC, o Alyffer começa a <strong>coringar</strong>! Para descer, fique dias inteiros longe da ETEC (-25%/dia).<br/>
+          • <strong>📱 Celular &amp; Only-Resenha (<kbd>T</kbd>):</strong> App <strong>Only-Resenha</strong> (<em>alfinetation • @only_resenha_</em> PF26🏅), <strong>Zap da Roça</strong>, <strong>InstaRoça</strong> e <strong>Pega-Alface</strong>!
         </div>
       </div>
     </div>
@@ -443,6 +456,32 @@
       <p id="deathMsg" class="desc">Nunca tente chutar o Orelha!</p>
       <div class="btn-stack">
         <button id="respawnBtn" class="btn-primary" type="button">Acordar de Volta em Pau Arcado</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal do Celular do Macho (Redes Sociais & Only-Resenha) -->
+  <div id="phoneModal" class="overlay hidden">
+    <div class="phone-chassis" role="dialog" aria-label="Celular do Alyffer">
+      <div class="phone-speaker-notch">
+        <span class="phone-cam-dot"></span>
+        <span class="phone-speaker-slot"></span>
+      </div>
+      <div class="phone-statusbar">
+        <span id="phoneTimeBar">07:00</span>
+        <span id="phoneSignalBar">📶 Pau Arcado 4G</span>
+        <span id="phoneBatteryBar">🔋 92%</span>
+      </div>
+      <div class="phone-topbar">
+        <button id="phoneBackBtn" class="phone-top-btn hidden" type="button" aria-label="Voltar">◀</button>
+        <div id="phoneAppTitle" class="phone-app-title">MachoOS • Celular do Alyffer</div>
+        <button id="closePhoneBtn" class="phone-top-btn" type="button" aria-label="Guardar celular">✕</button>
+      </div>
+      <div id="phoneBody" class="phone-screen-body"></div>
+      <div class="phone-navbar">
+        <button id="phoneNavBack" class="phone-nav-btn" type="button" title="Voltar">◀ Voltar</button>
+        <button id="phoneNavHome" class="phone-nav-btn home" type="button" title="Tela Inicial do Celular">⬤ Início</button>
+        <button id="phoneNavClose" class="phone-nav-btn" type="button" title="Guardar Celular (Esc)">✕ Sair</button>
       </div>
     </div>
   </div>

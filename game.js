@@ -117,6 +117,22 @@ const closeGuideBtn = document.getElementById("closeGuideBtn");
 const titlesList = document.getElementById("titlesList");
 const guideQuestsList = document.getElementById("guideQuestsList");
 
+const vaselinaHudBtn = document.getElementById("vaselinaHudBtn");
+const vaselinaHudLabel = document.getElementById("vaselinaHudLabel");
+const phoneHudBtn = document.getElementById("phoneHudBtn");
+const phoneNotifDot = document.getElementById("phoneNotifDot");
+const phoneModal = document.getElementById("phoneModal");
+const phoneTimeBar = document.getElementById("phoneTimeBar");
+const phoneSignalBar = document.getElementById("phoneSignalBar");
+const phoneBatteryBar = document.getElementById("phoneBatteryBar");
+const phoneAppTitle = document.getElementById("phoneAppTitle");
+const phoneBody = document.getElementById("phoneBody");
+const phoneBackBtn = document.getElementById("phoneBackBtn");
+const closePhoneBtn = document.getElementById("closePhoneBtn");
+const phoneNavBack = document.getElementById("phoneNavBack");
+const phoneNavHome = document.getElementById("phoneNavHome");
+const phoneNavClose = document.getElementById("phoneNavClose");
+
 // Crop & Product Definitions (Alface principalmente + produtos do quintal — tempo maior para valorizar o Adubo do Kaio!)
 const CROPS = {
   alface_crespa: {
@@ -622,6 +638,11 @@ class SoundFX {
       [740, 980, 660, 1120].forEach((f, i) => {
         playTone(f, f * 1.15, 0.08, "triangle", 0.1, i * 0.05);
       });
+    } else if (type === "phone_tap") {
+      playTone(640, 820, 0.055, "sine", 0.08);
+    } else if (type === "phone_notif") {
+      playTone(880, 1046, 0.07, "sine", 0.09, 0);
+      playTone(1174, 1318, 0.09, "sine", 0.09, 0.06);
     } else if (type === "error") {
       playTone(210, 140, 0.15, "sawtooth", 0.08);
     }
@@ -860,6 +881,10 @@ const etecInsideGroup = new THREE.Group();
 etecInsideGroup.visible = false;
 scene.add(etecInsideGroup);
 
+const basementGroup = new THREE.Group();
+basementGroup.visible = false;
+scene.add(basementGroup);
+
 const rainGroup = new THREE.Group();
 rainGroup.visible = false;
 scene.add(rainGroup);
@@ -869,17 +894,22 @@ const clouds = [];
 const chickens = [];
 const fireflies = [];
 const obstacles = []; // Yard AABB colliders
-const interiorObstacles = []; // Bedroom AABB colliders
+const interiorObstacles = []; // House AABB colliders
+const basementObstacles = []; // Secret Basement AABB colliders
 const terminalObstacles = []; // Terminal + Station AABB colliders
 const etecObstacles = []; // ETEC courtyard AABB colliders
 const etecInsideObstacles = []; // ETEC large indoor school AABB colliders
 const etecNpcs = [];
+const basementClones = [];
+const classroomFans = [];
 
 let windowMat;
 let lanternMat;
 let wellWaterMesh;
 let bus402YardMesh;
 let bus402TermMesh;
+let termJaguarMesh;
+let secretTrapdoorMesh;
 let ceilingFanMesh;
 let dogOrelha;
 let jaguarEntity;
@@ -897,6 +927,11 @@ let fpHoeBladeMat;
 let coopEggVisuals = [];
 let sprinklerGroup;
 const sprinklerHeads = [];
+let etecAutoGateMesh = null;
+let etecAutoGateCollider = null;
+let etecAutoGateLightMat = null;
+let etecAutoGateOpen = 0;
+let etecInstRoofGroup = null;
 
 function addObstacleBox(cx, cz, w, d, targetList = obstacles) {
   targetList.push({
@@ -1005,49 +1040,77 @@ function buildCountrysideEnvironment() {
   exteriorGroup.add(ground);
 
   const yardLawn = new THREE.Mesh(
-    new THREE.PlaneGeometry(46, 44),
+    new THREE.PlaneGeometry(70, 62),
     new THREE.MeshStandardMaterial({ color: 0x589a45, roughness: 0.92 })
   );
   yardLawn.rotation.x = -Math.PI / 2;
-  yardLawn.position.set(0, 0.015, 1);
+  yardLawn.position.set(0, 0.015, 0);
   yardLawn.receiveShadow = true;
   exteriorGroup.add(yardLawn);
 
-  // Estrada do Garcia / Estrada Rural de Pau Arcado
+  // Estrada do Garcia / Estrada Rural de Pau Arcado (saída da porteira encontra Estrada do Garcia em z = 47)
   const roadMat = new THREE.MeshStandardMaterial({ color: 0x9b7248, roughness: 0.95 });
-  const mainRoad = new THREE.Mesh(new THREE.PlaneGeometry(5.6, 130), roadMat);
+  const mainRoad = new THREE.Mesh(new THREE.PlaneGeometry(6.0, 96), roadMat);
   mainRoad.rotation.x = -Math.PI / 2;
-  mainRoad.position.set(12.5, 0.025, 68);
+  mainRoad.position.set(12.5, 0.024, 95);
   mainRoad.receiveShadow = true;
   exteriorGroup.add(mainRoad);
 
-  const crossRoad = new THREE.Mesh(new THREE.PlaneGeometry(80, 5.2), roadMat);
+  const crossRoad = new THREE.Mesh(new THREE.PlaneGeometry(130, 6.0), roadMat);
   crossRoad.rotation.x = -Math.PI / 2;
-  crossRoad.position.set(0, 0.024, 24.2);
+  crossRoad.position.set(0, 0.025, 47.0);
   crossRoad.receiveShadow = true;
   exteriorGroup.add(crossRoad);
 
-  // Footpaths inside yard
-  const path1 = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 14), roadMat);
-  path1.rotation.x = -Math.PI / 2;
-  path1.position.set(5.5, 0.022, -1.5);
-  exteriorGroup.add(path1);
+  // Calçada / Recuo pavimentado do Ponto 402 ENCOSTADO ao lado norte da Estrada do Garcia (fora do meio da pista!)
+  const bayMat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.88 });
+  const curbMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.8 });
+  const busBay = new THREE.Mesh(new THREE.PlaneGeometry(16.9, 5.4), bayMat);
+  busBay.rotation.x = -Math.PI / 2;
+  busBay.position.set(23.65, 0.028, 41.3);
+  busBay.receiveShadow = true;
+  exteriorGroup.add(busBay);
 
-  const path2 = new THREE.Mesh(new THREE.PlaneGeometry(11, 3.0), roadMat);
-  path2.rotation.x = -Math.PI / 2;
-  path2.position.set(7.5, 0.023, 6.2);
-  exteriorGroup.add(path2);
+  const busCurb = new THREE.Mesh(new THREE.BoxGeometry(16.9, 0.14, 0.24), curbMat);
+  busCurb.position.set(23.65, 0.07, 43.92);
+  busCurb.receiveShadow = true;
+  exteriorGroup.add(busCurb);
+
+  // Caminhos internos da fazenda ligando casa, horta, galinheiro, poço, cooperativa, cercados e porteira
+  const gatePath = new THREE.Mesh(new THREE.PlaneGeometry(5.4, 59.5), roadMat);
+  gatePath.rotation.x = -Math.PI / 2;
+  gatePath.position.set(12.5, 0.023, 17.25);
+  gatePath.receiveShadow = true;
+  exteriorGroup.add(gatePath);
+
+  const northPath = new THREE.Mesh(new THREE.PlaneGeometry(40.0, 3.0), roadMat);
+  northPath.rotation.x = -Math.PI / 2;
+  northPath.position.set(2.0, 0.022, -11.5);
+  northPath.receiveShadow = true;
+  exteriorGroup.add(northPath);
+
+  const westPath = new THREE.Mesh(new THREE.PlaneGeometry(2.8, 25.5), roadMat);
+  westPath.rotation.x = -Math.PI / 2;
+  westPath.position.set(-13.2, 0.022, 0.8);
+  westPath.receiveShadow = true;
+  exteriorGroup.add(westPath);
+
+  const southPath = new THREE.Mesh(new THREE.PlaneGeometry(31.0, 2.8), roadMat);
+  southPath.rotation.x = -Math.PI / 2;
+  southPath.position.set(-2.5, 0.022, 13.0);
+  southPath.receiveShadow = true;
+  exteriorGroup.add(southPath);
 
   // Serra / Hills around Pau Arcado
   const hillMat = new THREE.MeshStandardMaterial({ color: 0x3b7430, roughness: 1 });
   [
-    [-70, -75, 34, 15],
-    [0, -90, 46, 20],
-    [72, -78, 38, 17],
-    [-85, 25, 36, 14],
-    [88, 18, 40, 16],
-    [-65, 85, 36, 13],
-    [68, 88, 34, 14],
+    [-86, -85, 34, 15],
+    [0, -98, 48, 20],
+    [88, -86, 38, 17],
+    [-98, 25, 36, 14],
+    [98, 18, 40, 16],
+    [-78, 95, 36, 13],
+    [80, 96, 34, 14],
   ].forEach(([x, z, r, h]) => {
     const hill = new THREE.Mesh(new THREE.ConeGeometry(r, h, 14), hillMat);
     hill.position.set(x, h * 0.35, z);
@@ -1057,7 +1120,7 @@ function buildCountrysideEnvironment() {
 
   // Distant Campo Limpo Paulista urban skyline
   const cityGroup = new THREE.Group();
-  cityGroup.position.set(14, 0, 125);
+  cityGroup.position.set(14, 0, 135);
   const bldgMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.8 });
   [
     [-12, 12, 4],
@@ -1073,22 +1136,22 @@ function buildCountrysideEnvironment() {
   });
   exteriorGroup.add(cityGroup);
 
-  // Pesqueiro / Lago de Pau Arcado (outside right fence at x = 29, z = -8)
+  // Pesqueiro / Lago de Pau Arcado (fora da cerca leste em x = 62, z = -10)
   const pond = new THREE.Mesh(
-    new THREE.CircleGeometry(6.5, 20),
+    new THREE.CircleGeometry(7.2, 20),
     new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.2, metalness: 0.3 })
   );
   pond.rotation.x = -Math.PI / 2;
-  pond.position.set(29, 0.03, -8);
+  pond.position.set(62, 0.03, -10);
   exteriorGroup.add(pond);
 
-  // Fence around the homestead (x: -22..22, z: -21..21, gate at x: 9.2..15.8, z: 21)
+  // Cerca ampliada da fazenda (x: -34..34, z: -30..30, porteira aberta em x: 9.0..16.0, z: 30)
   const fenceMat = new THREE.MeshStandardMaterial({ color: 0x7c502b, roughness: 0.85 });
   function addFenceSegment(x1, z1, x2, z2, targetGroup = exteriorGroup) {
     const dx = x2 - x1;
     const dz = z2 - z1;
     const len = Math.hypot(dx, dz);
-    const steps = Math.max(1, Math.round(len / 3.2));
+    const steps = Math.max(1, Math.round(len / 3.4));
     for (let i = 0; i <= steps; i++) {
       const px = x1 + (dx * i) / steps;
       const pz = z1 + (dz * i) / steps;
@@ -1106,49 +1169,54 @@ function buildCountrysideEnvironment() {
       targetGroup.add(rail);
     });
   }
-  addFenceSegment(-22, -21, 22, -21);
-  addFenceSegment(-22, 21, 9.2, 21);
-  addFenceSegment(15.8, 21, 22, 21);
+  addFenceSegment(-34, -30, 34, -30);
+  addFenceSegment(-34, 30, 9.0, 30);
+  addFenceSegment(16.0, 30, 34, 30);
+  // Colisão da cerca sul (deixa apenas a porteira x: 9.0..16.0 aberta p/ sair até o Terminal 402!)
+  addObstacleBox(-12.5, 30, 43.0, 0.7);
+  addObstacleBox(25.0, 30, 18.0, 0.7);
+  addObstacleBox(-44.0, 30, 20.0, 0.7);
+  addObstacleBox(44.0, 30, 20.0, 0.7);
 
   westOriginalFenceGroup = new THREE.Group();
-  addFenceSegment(-22, -21, -22, 21, westOriginalFenceGroup);
+  addFenceSegment(-34, -30, -34, 30, westOriginalFenceGroup);
   exteriorGroup.add(westOriginalFenceGroup);
 
   eastOriginalFenceGroup = new THREE.Group();
-  addFenceSegment(22, -21, 22, 21, eastOriginalFenceGroup);
+  addFenceSegment(34, -30, 34, 30, eastOriginalFenceGroup);
   exteriorGroup.add(eastOriginalFenceGroup);
 
-  // Expansão de Terreno Nível 1 (Pasto Oeste x: -40..-22)
+  // Expansão de Terreno Nível 1 (Pasto Oeste x: -54..-34, z: -30..30)
   expansionWestGroup = new THREE.Group();
   expansionWestGroup.visible = false;
   const westLawn = new THREE.Mesh(
-    new THREE.PlaneGeometry(18.5, 42.5),
+    new THREE.PlaneGeometry(20.5, 60.5),
     new THREE.MeshStandardMaterial({ color: 0x62a84b, roughness: 0.92 })
   );
   westLawn.rotation.x = -Math.PI / 2;
-  westLawn.position.set(-31.2, 0.017, 0);
+  westLawn.position.set(-44.2, 0.017, 0);
   westLawn.receiveShadow = true;
   expansionWestGroup.add(westLawn);
-  addFenceSegment(-40, -21, -22, -21, expansionWestGroup);
-  addFenceSegment(-40, -21, -40, 21, expansionWestGroup);
-  addFenceSegment(-40, 21, -22, 21, expansionWestGroup);
+  addFenceSegment(-54, -30, -34, -30, expansionWestGroup);
+  addFenceSegment(-54, -30, -54, 30, expansionWestGroup);
+  addFenceSegment(-54, 30, -34, 30, expansionWestGroup);
   // Celeiro / Abrigo dos Animais no Pasto Oeste
   const barnMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.8 });
   const barnRoofMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12, roughness: 0.75 });
   const hayMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.95 });
-  const barn = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3.8, 4.6), barnMat);
-  barn.position.set(-34.5, 1.9, -15.2);
+  const barn = new THREE.Mesh(new THREE.BoxGeometry(6.8, 3.8, 4.8), barnMat);
+  barn.position.set(-47.0, 1.9, -22.0);
   barn.castShadow = true;
   expansionWestGroup.add(barn);
-  const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(4.8, 2.0, 4), barnRoofMat);
-  barnRoof.position.set(-34.5, 4.8, -15.2);
+  const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(5.1, 2.0, 4), barnRoofMat);
+  barnRoof.position.set(-47.0, 4.8, -22.0);
   barnRoof.rotation.y = Math.PI / 4;
   barnRoof.scale.set(1.05, 1, 0.8);
   expansionWestGroup.add(barnRoof);
   [
-    [-28.5, 0.45, -14.5],
-    [-27.1, 0.45, -14.5],
-    [-27.8, 1.3, -14.5],
+    [-40.5, 0.45, -21.0],
+    [-39.1, 0.45, -21.0],
+    [-39.8, 1.3, -21.0],
   ].forEach(([hx, hy, hz]) => {
     const hay = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.9, 1.0), hayMat);
     hay.position.set(hx, hy, hz);
@@ -1158,56 +1226,215 @@ function buildCountrysideEnvironment() {
   const westSign = new THREE.Mesh(
     new THREE.BoxGeometry(3.8, 0.9, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("PASTO OESTE • FAZENDA", "+8 Canteiros & Curral", "#14532d", "#fef08a"),
+      map: createWoodSignTexture("PASTO OESTE • FAZENDA", "+12 Canteiros & Pasto", "#14532d", "#fef08a"),
     })
   );
-  westSign.position.set(-24.2, 2.1, -18.5);
+  westSign.position.set(-36.2, 2.1, -26.5);
   expansionWestGroup.add(westSign);
   exteriorGroup.add(expansionWestGroup);
 
-  // Expansão de Terreno Nível 2 (Fazenda Leste x: 22..38)
+  // Expansão de Terreno Nível 2 (Fazenda Leste x: 34..54, z: -30..30)
   expansionEastGroup = new THREE.Group();
   expansionEastGroup.visible = false;
   const eastLawn = new THREE.Mesh(
-    new THREE.PlaneGeometry(16.5, 42.5),
+    new THREE.PlaneGeometry(20.5, 60.5),
     new THREE.MeshStandardMaterial({ color: 0x62a84b, roughness: 0.92 })
   );
   eastLawn.rotation.x = -Math.PI / 2;
-  eastLawn.position.set(30.2, 0.017, 0);
+  eastLawn.position.set(44.2, 0.017, 0);
   eastLawn.receiveShadow = true;
   expansionEastGroup.add(eastLawn);
-  addFenceSegment(22, -21, 38, -21, expansionEastGroup);
-  addFenceSegment(38, -21, 38, 21, expansionEastGroup);
-  addFenceSegment(22, 21, 38, 21, expansionEastGroup);
+  addFenceSegment(34, -30, 54, -30, expansionEastGroup);
+  addFenceSegment(54, -30, 54, 30, expansionEastGroup);
+  addFenceSegment(34, 30, 54, 30, expansionEastGroup);
   const eastSign = new THREE.Mesh(
     new THREE.BoxGeometry(3.8, 0.9, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("FAZENDA LESTE • PAU ARCADO", "+8 Canteiros & Pasto Grande", "#1e3a8a", "#fef08a"),
+      map: createWoodSignTexture("FAZENDA LESTE • PAU ARCADO", "+12 Canteiros & Pasto Grande", "#1e3a8a", "#fef08a"),
     })
   );
-  eastSign.position.set(24.5, 2.1, 14.5);
+  eastSign.position.set(36.5, 2.1, 22.5);
   expansionEastGroup.add(eastSign);
   exteriorGroup.add(expansionEastGroup);
 
+  // Helper para criar Cercados / Currais dos animais dentro da fazenda (com porteira aberta e colisão nas cercas!)
+  const troughWoodMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.82 });
+  const troughWaterMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.2, metalness: 0.2 });
+  const penMudMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 1.0 });
+  const penHayMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.95 });
+
+  function addFencedPen({ minX, maxX, minZ, maxZ, gateSide, gateCenter, gateWidth = 4.0, title, sub, bgColor, signPos }) {
+    const halfG = gateWidth * 0.5;
+    // Norte (z = minZ)
+    if (gateSide === "north") {
+      addFenceSegment(minX, minZ, gateCenter - halfG, minZ);
+      addFenceSegment(gateCenter + halfG, minZ, maxX, minZ);
+      addObstacleBox((minX + gateCenter - halfG) * 0.5, minZ, gateCenter - halfG - minX, 0.55);
+      addObstacleBox((gateCenter + halfG + maxX) * 0.5, minZ, maxX - (gateCenter + halfG), 0.55);
+    } else {
+      addFenceSegment(minX, minZ, maxX, minZ);
+      addObstacleBox((minX + maxX) * 0.5, minZ, maxX - minX, 0.55);
+    }
+    // Sul (z = maxZ)
+    if (gateSide === "south") {
+      addFenceSegment(minX, maxZ, gateCenter - halfG, maxZ);
+      addFenceSegment(gateCenter + halfG, maxZ, maxX, maxZ);
+      addObstacleBox((minX + gateCenter - halfG) * 0.5, maxZ, gateCenter - halfG - minX, 0.55);
+      addObstacleBox((gateCenter + halfG + maxX) * 0.5, maxZ, maxX - (gateCenter + halfG), 0.55);
+    } else {
+      addFenceSegment(minX, maxZ, maxX, maxZ);
+      addObstacleBox((minX + maxX) * 0.5, maxZ, maxX - minX, 0.55);
+    }
+    // Oeste (x = minX)
+    if (gateSide === "west") {
+      addFenceSegment(minX, minZ, minX, gateCenter - halfG);
+      addFenceSegment(minX, gateCenter + halfG, minX, maxZ);
+      addObstacleBox(minX, (minZ + gateCenter - halfG) * 0.5, 0.55, gateCenter - halfG - minZ);
+      addObstacleBox(minX, (gateCenter + halfG + maxZ) * 0.5, 0.55, maxZ - (gateCenter + halfG));
+    } else {
+      addFenceSegment(minX, minZ, minX, maxZ);
+      addObstacleBox(minX, (minZ + maxZ) * 0.5, 0.55, maxZ - minZ);
+    }
+    // Leste (x = maxX)
+    if (gateSide === "east") {
+      addFenceSegment(maxX, minZ, maxX, gateCenter - halfG);
+      addFenceSegment(maxX, gateCenter + halfG, maxX, maxZ);
+      addObstacleBox(maxX, (minZ + gateCenter - halfG) * 0.5, 0.55, gateCenter - halfG - minZ);
+      addObstacleBox(maxX, (gateCenter + halfG + maxZ) * 0.5, 0.55, maxZ - (gateCenter + halfG));
+    } else {
+      addFenceSegment(maxX, minZ, maxX, maxZ);
+      addObstacleBox(maxX, (minZ + maxZ) * 0.5, 0.55, maxZ - minZ);
+    }
+    if (title && signPos) {
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.18, 2.2, 0.18), fenceMat);
+      post.position.set(signPos[0], 1.1, signPos[1]);
+      exteriorGroup.add(post);
+      const sign = new THREE.Mesh(
+        new THREE.BoxGeometry(3.2, 0.78, 0.12),
+        new THREE.MeshBasicMaterial({ map: createWoodSignTexture(title, sub, bgColor || "#14532d", "#fef08a") })
+      );
+      sign.position.set(signPos[0], 2.05, signPos[1]);
+      if (signPos[2]) sign.rotation.y = signPos[2];
+      exteriorGroup.add(sign);
+    }
+  }
+
+  function addWaterTrough(x, z, rotY = 0) {
+    const tg = new THREE.Group();
+    tg.position.set(x, 0, z);
+    tg.rotation.y = rotY;
+    const box = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.65, 0.95), troughWoodMat);
+    box.position.y = 0.325;
+    box.castShadow = true;
+    const water = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.08, 0.72), troughWaterMat);
+    water.position.y = 0.63;
+    tg.add(box, water);
+    exteriorGroup.add(tg);
+    addObstacleBox(x, z, rotY ? 1.0 : 2.4, rotY ? 2.4 : 1.0);
+  }
+
+  // 1) Curral das Vacas (Leste da fazenda: x 17.5..31.5, z -4.0..11.5)
+  addFencedPen({
+    minX: 17.5,
+    maxX: 31.5,
+    minZ: -4.0,
+    maxZ: 11.5,
+    gateSide: "west",
+    gateCenter: 3.8,
+    gateWidth: 4.2,
+    title: "CURRAL DAS VACAS 🐄",
+    sub: "Leite Fresco Diário",
+    bgColor: "#14532d",
+    signPos: [17.5, -1.2, -Math.PI / 2],
+  });
+  addWaterTrough(29.2, -1.6, 0);
+  [
+    [28.5, 0.45, 9.2],
+    [29.9, 0.45, 9.2],
+    [29.2, 1.3, 9.2],
+  ].forEach(([hx, hy, hz]) => {
+    const h = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.85, 0.95), penHayMat);
+    h.position.set(hx, hy, hz);
+    h.castShadow = true;
+    exteriorGroup.add(h);
+  });
+
+  // 2) Chiqueiro dos Porcos (Sudoeste da fazenda: x -31.5..-17.5, z 14.0..27.5)
+  addFencedPen({
+    minX: -31.5,
+    maxX: -17.5,
+    minZ: 14.0,
+    maxZ: 27.5,
+    gateSide: "east",
+    gateCenter: 20.8,
+    gateWidth: 4.2,
+    title: "CHIQUEIRO DOS PORCOS 🐷",
+    sub: "Trufas Caipiras",
+    bgColor: "#7c2d12",
+    signPos: [-17.5, 16.0, Math.PI / 2],
+  });
+  const mudPool = new THREE.Mesh(new THREE.CircleGeometry(3.1, 16), penMudMat);
+  mudPool.rotation.x = -Math.PI / 2;
+  mudPool.position.set(-25.8, 0.026, 22.0);
+  mudPool.receiveShadow = true;
+  exteriorGroup.add(mudPool);
+  addWaterTrough(-29.2, 16.2, 0);
+
+  // 3) Cercado das Ovelhas (Centro-Sul da fazenda: x -13.0..6.5, z 15.5..27.5)
+  addFencedPen({
+    minX: -13.0,
+    maxX: 6.5,
+    minZ: 15.5,
+    maxZ: 27.5,
+    gateSide: "north",
+    gateCenter: -3.2,
+    gateWidth: 4.2,
+    title: "CERCADO DAS OVELHAS 🐑",
+    sub: "Lã Macia da Mantiqueira",
+    bgColor: "#1e3a8a",
+    signPos: [1.8, 15.5, 0],
+  });
+  addWaterTrough(-10.2, 25.0, 0);
+  [
+    [3.8, 0.45, 25.2],
+    [5.1, 0.45, 25.2],
+  ].forEach(([hx, hy, hz]) => {
+    const h = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.85, 0.95), penHayMat);
+    h.position.set(hx, hy, hz);
+    h.castShadow = true;
+    exteriorGroup.add(h);
+  });
+
+  // 4) Cercadinho do Galinheiro (Noroeste da fazenda: x -30.5..-17.5, z -26.5..-12.5)
+  addFencedPen({
+    minX: -30.5,
+    maxX: -17.5,
+    minZ: -26.5,
+    maxZ: -12.5,
+    gateSide: "east",
+    gateCenter: -17.5,
+    gateWidth: 4.2,
+  });
+
   exteriorGroup.add(livestockGroup);
 
-  // Estrada do Garcia Road Sign at the Gate
+  // Estrada do Garcia Road Sign at the Gate (z = 30)
   const gatePost = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.4, 0.22), fenceMat);
-  gatePost.position.set(16.4, 1.2, 21.3);
+  gatePost.position.set(17.2, 1.2, 32.0);
   gatePost.castShadow = true;
   exteriorGroup.add(gatePost);
   const roadSign = new THREE.Mesh(
-    new THREE.BoxGeometry(3.1, 0.9, 0.14),
+    new THREE.BoxGeometry(3.6, 0.95, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("ESTRADA DO GARCIA →", "Pau Arcado • Campo Limpo Pta.", "#14532d", "#fef08a"),
+      map: createWoodSignTexture("ESTRADA DO GARCIA ↓", "Ponto 402 ao lado direito →", "#14532d", "#fef08a"),
     })
   );
-  roadSign.position.set(16.4, 2.15, 21.3);
+  roadSign.position.set(17.2, 2.15, 32.0);
   exteriorGroup.add(roadSign);
 
   // Alyffer's House in Pau Arcado
   const house = new THREE.Group();
-  house.position.set(0, 0, -14.5);
+  house.position.set(0, 0, -20.5);
 
   const wallMat = new THREE.MeshStandardMaterial({ color: 0xf5ecd9, roughness: 0.8 });
   const trimMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.75 });
@@ -1277,7 +1504,7 @@ function buildCountrysideEnvironment() {
   waterLid.position.set(0, 5.64, 0);
   towerGroup.add(waterLid);
   house.add(towerGroup);
-  addObstacleBox(6.75, -16.1, 2.0, 2.0);
+  addObstacleBox(6.75, -22.1, 2.0, 2.0);
 
   const chimney = new THREE.Mesh(
     new THREE.BoxGeometry(0.85, 2.5, 0.85),
@@ -1366,11 +1593,11 @@ function buildCountrysideEnvironment() {
   house.add(houseSign);
 
   exteriorGroup.add(house);
-  addObstacleBox(0, -12.8, 11.0, 10.2);
+  addObstacleBox(0, -18.8, 11.0, 10.2);
 
-  // Galinheiro Caipira (Chicken Coop — produces Ovos Caipiras daily!) at (-14.5, 0, -5.8)
+  // Galinheiro Caipira (Chicken Coop — produces Ovos Caipiras daily!) no cercadinho noroeste (-24.0, 0, -21.0)
   const coop = new THREE.Group();
-  coop.position.set(-14.5, 0, -5.8);
+  coop.position.set(-24.0, 0, -21.0);
   const coopBody = new THREE.Mesh(
     new THREE.BoxGeometry(3.2, 1.8, 2.6),
     new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.85 })
@@ -1406,11 +1633,11 @@ function buildCountrysideEnvironment() {
   });
 
   exteriorGroup.add(coop);
-  addObstacleBox(-14.5, -5.8, 3.3, 2.7);
+  addObstacleBox(-24.0, -21.0, 3.3, 2.7);
 
-  // Water Well (Poço de Água) at (-14.5, 0, 2)
+  // Water Well (Poço de Água) à esquerda da horta (-18.0, 0, -2.5)
   const well = new THREE.Group();
-  well.position.set(-14.5, 0, 2);
+  well.position.set(-18.0, 0, -2.5);
   const stoneMat = new THREE.MeshStandardMaterial({ color: 0x78716c, roughness: 0.9 });
   const wellBase = new THREE.Mesh(new THREE.CylinderGeometry(1.35, 1.5, 1.1, 14), stoneMat);
   wellBase.position.y = 0.55;
@@ -1448,11 +1675,11 @@ function buildCountrysideEnvironment() {
   well.add(wellSign);
 
   exteriorGroup.add(well);
-  addObstacleBox(-14.5, 2, 2.7, 2.7);
+  addObstacleBox(-18.0, -2.5, 2.7, 2.7);
 
-  // Composteira Orgânica at (-14.5, 0, 8.8)
+  // Composteira Orgânica bem espaçada à esquerda da horta (-18.0, 0, 6.5)
   const compost = new THREE.Group();
-  compost.position.set(-14.5, 0, 8.8);
+  compost.position.set(-18.0, 0, 6.5);
   const compBin = new THREE.Mesh(new THREE.BoxGeometry(2.2, 1.1, 2.2), trimMat);
   compBin.position.y = 0.55;
   compBin.castShadow = true;
@@ -1472,12 +1699,12 @@ function buildCountrysideEnvironment() {
   compSign.position.set(0, 1.65, 1.05);
   compost.add(compSign);
   exteriorGroup.add(compost);
-  addObstacleBox(-14.5, 8.8, 2.3, 2.3);
+  addObstacleBox(-18.0, 6.5, 2.3, 2.3);
 
-  // Cooperativa Rural (Melhorias do Quintal) at (10.5, 0, 6.2)
+  // Cooperativa Rural (Melhorias do Quintal) no lado nordeste (21.5, 0, -16.5)
   const stand = new THREE.Group();
-  stand.position.set(10.5, 0, 6.2);
-  stand.rotation.y = -0.35;
+  stand.position.set(21.5, 0, -16.5);
+  stand.rotation.y = -0.25;
 
   const counter = new THREE.Mesh(new THREE.BoxGeometry(4.2, 1.15, 1.7), trimMat);
   counter.position.y = 0.575;
@@ -1508,39 +1735,75 @@ function buildCountrysideEnvironment() {
   stand.add(standSign);
 
   exteriorGroup.add(stand);
-  addObstacleBox(10.5, 6.2, 4.0, 2.2);
+  addObstacleBox(21.5, -16.5, 4.2, 2.2);
 
-  // Ponto do Ônibus 402 (Pau Arcado -> Terminal Campo Limpo Paulista) at (8.2, 0, 17.5)
+  // Ponto / Mini-Terminal do Ônibus 402 ENCOSTADO ao lado da Estrada do Garcia (fora do meio da pista!)
   const stopGroup = new THREE.Group();
-  stopGroup.position.set(8.2, 0, 17.5);
+  stopGroup.position.set(21.8, 0, 39.8);
   const metalMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5, roughness: 0.4 });
-  const shelterBack = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.3, 0.12), metalMat);
-  shelterBack.position.set(0, 1.15, -0.6);
+  const stopGlassMat = new THREE.MeshStandardMaterial({ color: 0x93c5fd, transparent: true, opacity: 0.38, roughness: 0.15 });
+  const shelterBack = new THREE.Mesh(new THREE.BoxGeometry(4.4, 2.45, 0.14), metalMat);
+  shelterBack.position.set(0, 1.225, -0.72);
+  shelterBack.castShadow = true;
   stopGroup.add(shelterBack);
-  const shelterRoof = new THREE.Mesh(new THREE.BoxGeometry(3.5, 0.14, 1.8), metalMat);
-  shelterRoof.position.set(0, 2.35, 0.1);
+  // 4 pilares verticais firmes apoiados direto no chão (y = 0)
+  [
+    [-2.14, -0.68],
+    [2.14, -0.68],
+    [-2.14, 0.78],
+    [2.14, 0.78],
+  ].forEach(([px, pz]) => {
+    const pil = new THREE.Mesh(new THREE.BoxGeometry(0.14, 2.48, 0.14), metalMat);
+    pil.position.set(px, 1.24, pz);
+    pil.castShadow = true;
+    stopGroup.add(pil);
+  });
+  [-2.14, 2.14].forEach((sx) => {
+    const sidePane = new THREE.Mesh(new THREE.BoxGeometry(0.06, 2.1, 1.38), stopGlassMat);
+    sidePane.position.set(sx, 1.22, 0.05);
+    stopGroup.add(sidePane);
+  });
+  const shelterRoof = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.16, 2.15), metalMat);
+  shelterRoof.position.set(0, 2.52, 0.08);
   shelterRoof.castShadow = true;
   stopGroup.add(shelterRoof);
-  const benchStop = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.45, 0.55), trimMat);
-  benchStop.position.set(0, 0.25, -0.15);
+  const benchStop = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.14, 0.54), trimMat);
+  benchStop.position.set(0, 0.52, -0.2);
   stopGroup.add(benchStop);
+  [-1.35, 1.35].forEach((bx) => {
+    const bLeg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.5, 0.44), metalMat);
+    bLeg.position.set(bx, 0.25, -0.2);
+    stopGroup.add(bLeg);
+  });
+  // Poste de Parada JundMob 402 ao lado do abrigo
+  const stopPole = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 2.9, 8), metalMat);
+  stopPole.position.set(2.9, 1.45, 0.75);
+  stopPole.castShadow = true;
+  stopGroup.add(stopPole);
+  const stopPolePlate = new THREE.Mesh(
+    new THREE.BoxGeometry(0.75, 0.75, 0.08),
+    new THREE.MeshBasicMaterial({ map: createWoodSignTexture("402", "JundMob", "#1d4ed8", "#ffffff") })
+  );
+  stopPolePlate.position.set(2.9, 2.65, 0.75);
+  stopGroup.add(stopPolePlate);
 
   const bus402StopBanner = new THREE.Mesh(
-    new THREE.BoxGeometry(3.3, 0.85, 0.12),
+    new THREE.BoxGeometry(4.4, 0.86, 0.12),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("PONTO ÔNIBUS 402", "Pau Arcado → Terminal CLP", "#1e3a8a", "#fef08a"),
+      map: createWoodSignTexture("PONTO ÔNIBUS 402", "Estrada do Garcia → Terminal CLP", "#1e3a8a", "#fef08a"),
     })
   );
-  bus402StopBanner.position.set(0, 2.9, 0.85);
+  bus402StopBanner.position.set(0, 3.04, 1.04);
   stopGroup.add(bus402StopBanner);
   exteriorGroup.add(stopGroup);
-  addObstacleBox(8.2, 17.2, 3.3, 1.2);
+  addObstacleBox(21.8, 39.8, 4.7, 1.65);
 
-  // Bus 402 parked on the road outside the gate (hidden on rainy days!)
+  // Ônibus 402 estacionado paralelo à Estrada do Garcia, encostado na calçada do ponto (hidden on rainy days!)
   bus402YardMesh = createBusModel("402 PAU ARCADO", "Via Estrada do Garcia");
-  bus402YardMesh.position.set(13.2, 0, 17.5);
+  bus402YardMesh.position.set(28.0, 0, 42.9);
+  bus402YardMesh.rotation.y = Math.PI / 2;
   exteriorGroup.add(bus402YardMesh);
-  addObstacleBox(13.2, 17.5, 2.7, 6.6);
+  addObstacleBox(28.0, 42.9, 6.7, 2.65);
 
   // Cachorro Orelha 3D ("Orelha") no quintal — nunca tente chutar ele!
   const dog = new THREE.Group();
@@ -1591,15 +1854,15 @@ function buildCountrysideEnvironment() {
   );
   dogTag.position.set(0, 1.38, 0);
   dog.add(dogTag);
-  dog.position.set(4.2, 0, -3.5);
+  dog.position.set(6.8, 0, -12.5);
   exteriorGroup.add(dog);
   dogOrelha = {
     mesh: dog,
     tail: dogTail,
     leftEar,
     rightEar,
-    home: new THREE.Vector3(4.2, 0, -3.5),
-    target: new THREE.Vector3(4.2, 0, -3.5),
+    home: new THREE.Vector3(6.8, 0, -12.5),
+    target: new THREE.Vector3(6.8, 0, -12.5),
     wait: 1.5,
   };
 
@@ -1710,13 +1973,13 @@ function buildCountrysideEnvironment() {
     transparent: true,
     side: THREE.DoubleSide,
   });
-  tamedJag.position.set(6.5, 0, -5.5);
+  tamedJag.position.set(9.5, 0, -12.0);
   tamedJag.visible = false;
   exteriorGroup.add(tamedJag);
   tamedJaguarEntity = {
     mesh: tamedJag,
-    home: new THREE.Vector3(6.5, 0, -5.5),
-    target: new THREE.Vector3(6.5, 0, -5.5),
+    home: new THREE.Vector3(9.5, 0, -12.0),
+    target: new THREE.Vector3(9.5, 0, -12.0),
     wait: 1.5,
     attackCd: 0,
   };
@@ -1743,13 +2006,35 @@ function buildCountrysideEnvironment() {
   mShineY.scale.set(1.2, 0.3, 1.2);
   mShineY.position.set(0.12, 2.69, 0.12);
   marceloYard.add(mShineY);
-  // Óculos escuros de segurança
-  const mGlassesY = new THREE.Mesh(
-    new THREE.BoxGeometry(0.56, 0.14, 0.08),
-    new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.7, roughness: 0.2 })
-  );
-  mGlassesY.position.set(0, 2.38, 0.35);
-  marceloYard.add(mGlassesY);
+  // Óculos quadrados do Marcelo!
+  const mFrameMatY = new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.45, roughness: 0.35 });
+  const mLensMatY = new THREE.MeshStandardMaterial({
+    color: 0xcbd5e1,
+    transparent: true,
+    opacity: 0.45,
+    metalness: 0.3,
+    roughness: 0.15,
+  });
+  [-0.16, 0.16].forEach((gx) => {
+    const topBar = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.035, 0.05), mFrameMatY);
+    topBar.position.set(gx, 2.47, 0.36);
+    const botBar = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.035, 0.05), mFrameMatY);
+    botBar.position.set(gx, 2.27, 0.36);
+    const leftBar = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.22, 0.05), mFrameMatY);
+    leftBar.position.set(gx - 0.105, 2.37, 0.36);
+    const rightBar = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.22, 0.05), mFrameMatY);
+    rightBar.position.set(gx + 0.105, 2.37, 0.36);
+    const lens = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.17, 0.02), mLensMatY);
+    lens.position.set(gx, 2.37, 0.355);
+    marceloYard.add(topBar, botBar, leftBar, rightBar, lens);
+  });
+  const mBridgeY = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.035, 0.05), mFrameMatY);
+  mBridgeY.position.set(0, 2.4, 0.36);
+  const mTempleLY = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.035, 0.36), mFrameMatY);
+  mTempleLY.position.set(-0.34, 2.4, 0.18);
+  const mTempleRY = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.035, 0.36), mFrameMatY);
+  mTempleRY.position.set(0.34, 2.4, 0.18);
+  marceloYard.add(mBridgeY, mTempleLY, mTempleRY);
   const mLArmY = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.84, 0.26), mSkinY);
   mLArmY.position.set(-0.63, 1.4, 0);
   const mRArmY = new THREE.Group();
@@ -1783,14 +2068,14 @@ function buildCountrysideEnvironment() {
   const mTagY = new THREE.Mesh(
     new THREE.PlaneGeometry(2.4, 0.58),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("MARCELO 🛡️ (CARECA)", "Guarda dos Animais & Caça-Onça", "#0f172a", "#4ade80"),
+      map: createWoodSignTexture("MARCELO 🛡️", "Guarda dos Animais & Caça-Onça", "#0f172a", "#4ade80"),
       transparent: true,
       side: THREE.DoubleSide,
     })
   );
   mTagY.position.set(0, 3.35, 0);
   marceloYard.add(mTagY);
-  marceloYard.position.set(-8.5, 0, -10.5);
+  marceloYard.position.set(-10.5, 0, -14.5);
   marceloYard.visible = false;
   exteriorGroup.add(marceloYard);
   marceloYardEntity = {
@@ -1799,8 +2084,8 @@ function buildCountrysideEnvironment() {
     rArm: mRArmY,
     lLeg: mLLegY,
     rLeg: mRLegY,
-    home: new THREE.Vector3(-8.5, 0, -10.5),
-    target: new THREE.Vector3(-8.5, 0, -10.5),
+    home: new THREE.Vector3(-10.5, 0, -14.5),
+    target: new THREE.Vector3(-10.5, 0, -14.5),
     wait: 1.2,
     attackCd: 0,
     swingTimer: 0,
@@ -1833,24 +2118,23 @@ function buildCountrysideEnvironment() {
     tree.add(crown2);
 
     exteriorGroup.add(tree);
-    if (Math.abs(x) < 22 && Math.abs(z) < 22) {
+    if (Math.abs(x) < 52 && z > -30 && z < 48) {
       addObstacleBox(x, z, 0.95, 0.95);
     }
   }
 
   [
-    [-19, -17, 1.15, "round"],
-    [19, -16, 1.25, "ipe"],
-    [-20, 14, 1.1, "round"],
-    [19, -3, 1.05, "round"],
-    [-28, -28, 1.4, "round"],
-    [-32, 4, 1.5, "ipe"],
-    [30, -24, 1.35, "round"],
-    [32, 12, 1.45, "round"],
-    [-26, 30, 1.3, "round"],
-    [28, 32, 1.3, "ipe"],
-    [-42, -12, 1.6, "round"],
-    [40, -10, 1.5, "round"],
+    [-12, -26, 1.15, "round"],
+    [29, -24, 1.3, "ipe"],
+    [27, 23, 1.15, "ipe"],
+    [-36, -36, 1.45, "round"],
+    [-58, 6, 1.5, "ipe"],
+    [40, -35, 1.35, "round"],
+    [58, 12, 1.45, "round"],
+    [-26, 38, 1.3, "round"],
+    [38, 39, 1.3, "ipe"],
+    [-60, -16, 1.6, "round"],
+    [60, -24, 1.5, "round"],
   ].forEach(([x, z, s, t]) => addTree(x, z, s, t));
 
   // Fluffy drifting clouds
@@ -1900,7 +2184,7 @@ function buildCountrysideEnvironment() {
     beak.position.set(0, 0.58, 0.42);
     ch.add(beak);
 
-    const home = new THREE.Vector3(i === 0 ? -11 : i === 1 ? -13.5 : 4.5, 0, i === 0 ? 11 : i === 1 ? -2.8 : -5.5);
+    const home = new THREE.Vector3(i === 0 ? -27.0 : i === 1 ? -21.0 : -24.5, 0, i === 0 ? -16.5 : i === 1 ? -15.5 : -17.5);
     ch.position.copy(home);
     exteriorGroup.add(ch);
     chickens.push({
@@ -1917,10 +2201,12 @@ function buildCountrysideEnvironment() {
   const pipeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.4, roughness: 0.35 });
   const brassMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.65, roughness: 0.3 });
   [
-    [-6.25, -0.85],
-    [-0.05, -0.85],
-    [-6.25, 5.35],
-    [-0.05, 5.35],
+    [-6.7, -4.95],
+    [-0.5, -4.95],
+    [5.7, -4.95],
+    [-6.7, 4.35],
+    [-0.5, 4.35],
+    [5.7, 4.35],
   ].forEach(([sx, sz]) => {
     const sp = new THREE.Group();
     sp.position.set(sx, 0, sz);
@@ -1960,61 +2246,125 @@ function buildCountrysideEnvironment() {
 }
 buildCountrysideEnvironment();
 
-// 2. QUARTO DO ALYFFER (Casa em Pau Arcado — Mangás, Pôster do PAC, Mesa da ETEC)
+// 2. CASA AMPLIADA DO ALYFFER (Quarto, Sala, Cozinha, Banheiro & Segredo do Porão!)
 function buildBedroomInterior() {
   const floorMat = new THREE.MeshStandardMaterial({ color: 0x8b5a2b, roughness: 0.8 });
+  const kitchenFloorMat = new THREE.MeshStandardMaterial({
+    map: createTileFloorTexture("#f1f5f9", "#cbd5e1", 10),
+    roughness: 0.65,
+  });
+  const bathFloorMat = new THREE.MeshStandardMaterial({
+    map: createTileFloorTexture("#e0f2fe", "#bae6fd", 8),
+    roughness: 0.55,
+  });
   const wallMat = new THREE.MeshStandardMaterial({ color: 0xe6e2d3, roughness: 0.85 });
+  const bathWallMat = new THREE.MeshStandardMaterial({ color: 0xdbeafe, roughness: 0.65 });
   const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.75 });
+  const whiteCeramic = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.3, metalness: 0.1 });
+  const steelMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.65, roughness: 0.3 });
 
-  const roomLamp = new THREE.PointLight(0xfff1c9, 1.2, 24);
-  roomLamp.position.set(0, 3.5, 0.4);
-  interiorGroup.add(roomLamp);
+  // Iluminação completa da casa
+  [
+    [-5.5, 3.8, -3.5],
+    [5.5, 3.8, -3.5],
+    [-4.0, 3.8, 4.5],
+    [6.6, 3.8, 4.8],
+  ].forEach(([lx, ly, lz]) => {
+    const lamp = new THREE.PointLight(0xfff1c9, 0.75, 22);
+    lamp.position.set(lx, ly, lz);
+    interiorGroup.add(lamp);
+  });
 
-  // Forro do teto (FrontSide voltado para baixo: invisível na câmera 3ª pessoa de cima, totalmente visível em 1ª pessoa!)
-  const ceilingMat = new THREE.MeshStandardMaterial({ color: 0xc29b6c, roughness: 0.85, side: THREE.FrontSide });
-  const ceilingPlane = new THREE.Mesh(new THREE.PlaneGeometry(10.8, 8.6), ceilingMat);
+  // Forro do teto (FrontSide p/ baixo: visível em 1ª pessoa, transparente em 3ª pessoa)
+  const ceilingPlane = new THREE.Mesh(
+    new THREE.PlaneGeometry(20.4, 16.4),
+    new THREE.MeshStandardMaterial({ color: 0xc29b6c, roughness: 0.85, side: THREE.FrontSide })
+  );
   ceilingPlane.rotation.x = Math.PI / 2;
-  ceilingPlane.position.set(0, 4.3, 0);
+  ceilingPlane.position.set(0, 4.4, 0);
   interiorGroup.add(ceilingPlane);
 
-  // Parede frontal (FrontSide voltado p/ dentro do quarto: 3ª pessoa enxerga por fora, 1ª pessoa vê parede fechada!)
+  // Parede frontal (FrontSide voltado p/ dentro)
   const frontWallIn = new THREE.Mesh(
-    new THREE.PlaneGeometry(10.8, 4.3),
+    new THREE.PlaneGeometry(20.4, 4.4),
     new THREE.MeshStandardMaterial({ color: 0xe6e2d3, roughness: 0.85, side: THREE.FrontSide })
   );
   frontWallIn.rotation.y = Math.PI;
-  frontWallIn.position.set(0, 2.15, 4.25);
+  frontWallIn.position.set(0, 2.2, 8.1);
   interiorGroup.add(frontWallIn);
 
-  // Viga de madeira de parede a parede segurando o ventilador de teto (nunca mais voando no ar!)
-  const ceilingBeam = new THREE.Mesh(new THREE.BoxGeometry(10.6, 0.18, 0.24), woodMat);
-  ceilingBeam.position.set(0, 4.21, 0);
+  // Pisos (Madeira principal + Azulejo Cozinha + Azulejo Banheiro)
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(20.4, 0.2, 16.4), floorMat);
+  floor.position.y = -0.1;
+  floor.receiveShadow = true;
+  interiorGroup.add(floor);
+
+  const kitchenTile = new THREE.Mesh(new THREE.PlaneGeometry(9.0, 9.0), kitchenFloorMat);
+  kitchenTile.rotation.x = -Math.PI / 2;
+  kitchenTile.position.set(5.5, 0.012, -3.5);
+  interiorGroup.add(kitchenTile);
+
+  const bathTile = new THREE.Mesh(new THREE.PlaneGeometry(6.8, 7.0), bathFloorMat);
+  bathTile.rotation.x = -Math.PI / 2;
+  bathTile.position.set(6.6, 0.015, 4.5);
+  interiorGroup.add(bathTile);
+
+  // Paredes externas (Norte, Oeste, Leste)
+  const backWall = new THREE.Mesh(new THREE.BoxGeometry(20.4, 4.4, 0.25), wallMat);
+  backWall.position.set(0, 2.2, -8.1);
+  interiorGroup.add(backWall);
+
+  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.25, 4.4, 16.4), wallMat);
+  leftWall.position.set(-10.1, 2.2, 0);
+  interiorGroup.add(leftWall);
+
+  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.25, 4.4, 16.4), wallMat);
+  rightWall.position.set(10.1, 2.2, 0);
+  interiorGroup.add(rightWall);
+
+  function addHouseWall(cx, cz, w, d, mat = wallMat) {
+    const wm = new THREE.Mesh(new THREE.BoxGeometry(w, 3.7, d), mat);
+    wm.position.set(cx, 1.85, cz);
+    wm.castShadow = true;
+    wm.receiveShadow = true;
+    interiorGroup.add(wm);
+    addObstacleBox(cx, cz, w, d, interiorObstacles);
+  }
+
+  // Divisórias internas com portas amplas
+  // Quarto (NO) x Cozinha (NE)
+  addHouseWall(-1.0, -5.4, 0.24, 5.2); // z: -8 .. -2.8 (porta em -2.8 .. -0.2)
+  addHouseWall(-1.0, 0.4, 0.24, 1.2); // z: -0.2 .. +1.0
+  // Quarto (NO) x Sala (SO)
+  addHouseWall(-7.0, 1.0, 6.0, 0.24); // x: -10 .. -4.0 (porta em -4.0 .. -1.0)
+  // Cozinha (NE) x Banheiro (SE)
+  addHouseWall(7.9, 1.0, 4.2, 0.24, bathWallMat); // x: 5.8 .. 10 (porta em 3.2 .. 5.8)
+  // Sala (Centro) x Banheiro (SE)
+  addHouseWall(3.2, 5.7, 0.24, 4.6, bathWallMat); // z: 3.4 .. 8.0 (porta em 1.0 .. 3.4)
+
+  // ===================== QUARTO DO ALYFFER (NO) =====================
+  const ceilingBeam = new THREE.Mesh(new THREE.BoxGeometry(9.0, 0.16, 0.22), woodMat);
+  ceilingBeam.position.set(-5.5, 4.28, -3.5);
   interiorGroup.add(ceilingBeam);
+  const fanCanopy = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.1, 12), steelMat);
+  fanCanopy.position.set(-5.5, 4.14, -3.5);
+  const fanRod = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.48, 10), steelMat);
+  fanRod.position.set(-5.5, 3.88, -3.5);
+  interiorGroup.add(fanCanopy, fanRod);
 
-  // Suporte fixo + haste metálica descendo da viga até o motor do ventilador
-  const metalRodMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.65, roughness: 0.3 });
-  const fanCanopy = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.1, 0.1, 12), metalRodMat);
-  fanCanopy.position.set(0, 4.08, 0);
-  interiorGroup.add(fanCanopy);
-  const fanRod = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.48, 10), metalRodMat);
-  fanRod.position.set(0, 3.84, 0);
-  interiorGroup.add(fanRod);
-
-  // Rotating Ceiling Fan preso na haste
   ceilingFanMesh = new THREE.Group();
-  ceilingFanMesh.position.set(0, 3.58, 0);
-  const fanHub = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.16, 12), metalRodMat);
-  ceilingFanMesh.add(fanHub);
+  ceilingFanMesh.position.set(-5.5, 3.62, -3.5);
+  ceilingFanMesh.add(new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.16, 12), steelMat));
   for (let b = 0; b < 4; b++) {
-    const bladePivot = new THREE.Group();
-    bladePivot.rotation.y = (b * Math.PI) / 2;
-    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.04, 0.06), metalRodMat);
+    const bp = new THREE.Group();
+    bp.rotation.y = (b * Math.PI) / 2;
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.04, 0.06), steelMat);
     arm.position.set(0.22, 0, 0);
     const blade = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.03, 0.22), woodMat);
     blade.position.set(0.56, 0, 0);
     blade.rotation.x = 0.08;
-    bladePivot.add(arm, blade);
-    ceilingFanMesh.add(bladePivot);
+    bp.add(arm, blade);
+    ceilingFanMesh.add(bp);
   }
   const fanGlobe = new THREE.Mesh(
     new THREE.SphereGeometry(0.14, 10, 10),
@@ -2024,83 +2374,54 @@ function buildBedroomInterior() {
   ceilingFanMesh.add(fanGlobe);
   interiorGroup.add(ceilingFanMesh);
 
-  const floor = new THREE.Mesh(new THREE.BoxGeometry(10.8, 0.2, 8.6), floorMat);
-  floor.position.y = -0.1;
-  floor.receiveShadow = true;
-  interiorGroup.add(floor);
-
-  const rug = new THREE.Mesh(
-    new THREE.PlaneGeometry(4.4, 3.2),
-    new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.95 })
-  );
-  rug.rotation.x = -Math.PI / 2;
-  rug.position.set(0, 0.015, 0.4);
-  interiorGroup.add(rug);
-
-  const backWall = new THREE.Mesh(new THREE.BoxGeometry(10.8, 4.3, 0.2), wallMat);
-  backWall.position.set(0, 2.15, -4.2);
-  backWall.receiveShadow = true;
-  interiorGroup.add(backWall);
-
-  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.3, 8.6), wallMat);
-  leftWall.position.set(-5.3, 2.15, 0);
-  interiorGroup.add(leftWall);
-
-  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.2, 4.3, 8.6), wallMat);
-  rightWall.position.set(5.3, 2.15, 0);
-  interiorGroup.add(rightWall);
-
-  // Bed (Cama do Alyffer) at (-3.2, 0, -2.2)
+  // Cama do Alyffer em (-7.0, 0, -5.0) — espaço discreto no canto extremo (-9.1, -7.0) p/ alçapão secreto!
   const bed = new THREE.Group();
-  bed.position.set(-3.2, 0, -2.2);
-  const bedBase = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.45, 2.9), woodMat);
+  bed.position.set(-7.0, 0, -5.0);
+  const bedBase = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.45, 2.7), woodMat);
   bedBase.position.y = 0.225;
   bedBase.castShadow = true;
   bed.add(bedBase);
   const mattress = new THREE.Mesh(
-    new THREE.BoxGeometry(1.95, 0.28, 2.72),
+    new THREE.BoxGeometry(1.86, 0.28, 2.55),
     new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.85 })
   );
   mattress.position.y = 0.58;
   bed.add(mattress);
   const blanket = new THREE.Mesh(
-    new THREE.BoxGeometry(1.98, 0.3, 1.8),
+    new THREE.BoxGeometry(1.9, 0.3, 1.7),
     new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.8 })
   );
-  blanket.position.set(0, 0.59, 0.45);
+  blanket.position.set(0, 0.59, 0.4);
   bed.add(blanket);
   const pillow = new THREE.Mesh(
-    new THREE.BoxGeometry(1.2, 0.18, 0.55),
+    new THREE.BoxGeometry(1.15, 0.18, 0.52),
     new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.9 })
   );
-  pillow.position.set(0, 0.78, -0.95);
+  pillow.position.set(0, 0.78, -0.9);
   bed.add(pillow);
   interiorGroup.add(bed);
-  addObstacleBox(-3.2, -2.2, 2.2, 2.95, interiorObstacles);
+  addObstacleBox(-7.0, -5.0, 2.1, 2.75, interiorObstacles);
 
-  // Framed Poster of YouTuber "PAC do TazerCraft"
+  // Pôster do PAC do TazerCraft na parede do quarto
   const pacFrame = new THREE.Mesh(
     new THREE.BoxGeometry(1.7, 2.0, 0.08),
     new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 })
   );
-  pacFrame.position.set(-3.2, 2.38, -4.06);
+  pacFrame.position.set(-7.0, 2.38, -7.94);
   interiorGroup.add(pacFrame);
-
   const pacPoster = new THREE.Mesh(
     new THREE.PlaneGeometry(1.5, 1.78),
     new THREE.MeshBasicMaterial({ map: createPacPosterTexture() })
   );
-  pacPoster.position.set(-3.2, 2.38, -4.0);
+  pacPoster.position.set(-7.0, 2.38, -7.88);
   interiorGroup.add(pacPoster);
 
-  // Bookshelf full of Mangás at (0, 0, -3.65)
+  // Estante de Mangás em (-3.6, 0, -7.45)
   const shelfGroup = new THREE.Group();
-  shelfGroup.position.set(0, 0, -3.65);
+  shelfGroup.position.set(-3.6, 0, -7.45);
   const shelfBody = new THREE.Mesh(new THREE.BoxGeometry(2.2, 2.6, 0.6), woodMat);
   shelfBody.position.y = 1.3;
-  shelfBody.castShadow = true;
   shelfGroup.add(shelfBody);
-
   const mangaColors = [0xffffff, 0x18181b, 0xef4444, 0x3b82f6, 0xfacc15, 0x22c55e, 0xa855f7, 0xf97316];
   [0.55, 1.22, 1.88].forEach((sy, rowIdx) => {
     const recess = new THREE.Mesh(
@@ -2109,93 +2430,538 @@ function buildBedroomInterior() {
     );
     recess.position.set(0, sy, 0.25);
     shelfGroup.add(recess);
-
     for (let m = 0; m < 9; m++) {
-      const col = mangaColors[(m + rowIdx * 3) % mangaColors.length];
       const book = new THREE.Mesh(
         new THREE.BoxGeometry(0.16, 0.38, 0.28),
-        new THREE.MeshStandardMaterial({ color: col, roughness: 0.65 })
+        new THREE.MeshStandardMaterial({ color: mangaColors[(m + rowIdx * 3) % mangaColors.length], roughness: 0.65 })
       );
       book.position.set(-0.76 + m * 0.19, sy - 0.03, 0.22);
       if (m === 7 && rowIdx === 1) book.rotation.z = 0.22;
       shelfGroup.add(book);
     }
   });
-
   const mangaSign = new THREE.Mesh(
     new THREE.BoxGeometry(1.85, 0.48, 0.08),
     new THREE.MeshBasicMaterial({ map: createWoodSignTexture("MANGÁS", "Coleção do Macho", "#1e1b4b", "#facc15") })
   );
   mangaSign.position.set(0, 2.86, 0.15);
   shelfGroup.add(mangaSign);
-
   interiorGroup.add(shelfGroup);
-  addObstacleBox(0, -3.65, 2.3, 0.75, interiorObstacles);
+  addObstacleBox(-3.6, -7.45, 2.3, 0.72, interiorObstacles);
 
-  // Study Desk + ETEC de Campo Limpo Paulista Backpack & Notebook at (3.2, 0, -2.95)
+  // Escrivaninha da ETEC no quarto em (-8.4, 0, -0.55)
   const deskGroup = new THREE.Group();
-  deskGroup.position.set(3.2, 0, -2.95);
-
-  const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.35, 0.14, 1.25), woodMat);
+  deskGroup.position.set(-8.4, 0, -0.55);
+  const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.14, 1.15), woodMat);
   deskTop.position.y = 0.95;
-  deskTop.castShadow = true;
   deskGroup.add(deskTop);
-  [
-    [-1.0, -0.5],
-    [1.0, -0.5],
-    [-1.0, 0.5],
-    [1.0, 0.5],
-  ].forEach(([lx, lz]) => {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.95, 0.12), woodMat);
+  [[-0.9, -0.45], [0.9, -0.45], [-0.9, 0.45], [0.9, 0.45]].forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.95, 0.11), woodMat);
     leg.position.set(lx, 0.475, lz);
     deskGroup.add(leg);
   });
-
-  const notebook = new THREE.Mesh(
-    new THREE.BoxGeometry(0.55, 0.05, 0.4),
-    new THREE.MeshStandardMaterial({ color: 0xffffff })
-  );
-  notebook.position.set(-0.35, 1.05, 0.1);
-  deskGroup.add(notebook);
-
+  const notebook = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.05, 0.4), whiteCeramic);
+  notebook.position.set(-0.3, 1.05, 0.1);
   const backpack = new THREE.Mesh(
-    new THREE.BoxGeometry(0.48, 0.62, 0.3),
+    new THREE.BoxGeometry(0.46, 0.6, 0.28),
     new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.75 })
   );
-  backpack.position.set(0.85, 0.31, 0.52);
-  backpack.rotation.y = -0.35;
-  deskGroup.add(backpack);
-
+  backpack.position.set(0.7, 0.3, 0.4);
+  deskGroup.add(notebook, backpack);
   const etecSign = new THREE.Mesh(
-    new THREE.BoxGeometry(2.25, 0.85, 0.08),
-    new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("ETEC CAMPO LIMPO", "Cadernos & Tarefas", "#7f1d1d", "#fef08a"),
-    })
+    new THREE.BoxGeometry(2.1, 0.72, 0.08),
+    new THREE.MeshBasicMaterial({ map: createWoodSignTexture("ETECAMP", "Cadernos & Tarefas", "#7f1d1d", "#fef08a") })
   );
-  etecSign.position.set(0, 2.25, -1.04);
+  etecSign.position.set(-1.35, 2.2, 0);
+  etecSign.rotation.y = Math.PI / 2;
   deskGroup.add(etecSign);
-
   interiorGroup.add(deskGroup);
-  addObstacleBox(3.2, -2.95, 2.45, 1.4, interiorObstacles);
+  addObstacleBox(-8.4, -0.55, 2.2, 1.25, interiorObstacles);
 
-  // Exit Doormat
+  // Alçapão Secreto do Porão (invisível até completar os 2 passos escondidos!)
+  secretTrapdoorMesh = new THREE.Group();
+  secretTrapdoorMesh.position.set(-9.15, 0.03, -7.05);
+  const hatchFrame = new THREE.Mesh(
+    new THREE.BoxGeometry(1.15, 0.06, 1.15),
+    new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.6, roughness: 0.4 })
+  );
+  const hatchCore = new THREE.Mesh(
+    new THREE.BoxGeometry(0.92, 0.08, 0.92),
+    new THREE.MeshStandardMaterial({ color: 0x09090b, emissive: 0x581c87, emissiveIntensity: 0.45 })
+  );
+  const hatchRing = new THREE.Mesh(
+    new THREE.TorusGeometry(0.14, 0.025, 8, 16),
+    new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.8 })
+  );
+  hatchRing.rotation.x = Math.PI / 2;
+  hatchRing.position.y = 0.05;
+  secretTrapdoorMesh.add(hatchFrame, hatchCore, hatchRing);
+  secretTrapdoorMesh.visible = false;
+  interiorGroup.add(secretTrapdoorMesh);
+
+  // ===================== COZINHA (NE) =====================
+  const kitchenSign = new THREE.Mesh(
+    new THREE.BoxGeometry(2.8, 0.65, 0.08),
+    new THREE.MeshBasicMaterial({ map: createWoodSignTexture("COZINHA DO SÍTIO", "Café Coado & Fogão", "#7c2d12", "#fef08a") })
+  );
+  kitchenSign.position.set(4.6, 2.95, -7.92);
+  interiorGroup.add(kitchenSign);
+
+  // Pia + Balcão + Fogão (parede norte da cozinha)
+  const kCounter = new THREE.Mesh(new THREE.BoxGeometry(3.6, 0.96, 0.95), woodMat);
+  kCounter.position.set(3.2, 0.48, -7.45);
+  interiorGroup.add(kCounter);
+  const kTop = new THREE.Mesh(new THREE.BoxGeometry(3.7, 0.08, 1.02), new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.35 }));
+  kTop.position.set(3.2, 0.99, -7.45);
+  interiorGroup.add(kTop);
+  const kSinkBasin = new THREE.Mesh(new THREE.BoxGeometry(0.85, 0.06, 0.56), steelMat);
+  kSinkBasin.position.set(2.4, 1.04, -7.45);
+  const kFaucet = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.34, 8), steelMat);
+  kFaucet.position.set(2.4, 1.2, -7.75);
+  interiorGroup.add(kSinkBasin, kFaucet);
+  addObstacleBox(3.2, -7.45, 3.7, 1.05, interiorObstacles);
+
+  // Fogão 4 bocas ao lado do balcão
+  const stove = new THREE.Mesh(new THREE.BoxGeometry(1.15, 0.98, 0.95), whiteCeramic);
+  stove.position.set(5.75, 0.49, -7.45);
+  const ovenDoor = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.52, 0.06), new THREE.MeshStandardMaterial({ color: 0x1e293b }));
+  ovenDoor.position.set(5.75, 0.42, -6.96);
+  const pan = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.18, 0.16, 12), new THREE.MeshStandardMaterial({ color: 0xdc2626, metalness: 0.4 }));
+  pan.position.set(5.55, 1.06, -7.4);
+  interiorGroup.add(stove, ovenDoor, pan);
+  addObstacleBox(5.75, -7.45, 1.2, 1.02, interiorObstacles);
+
+  // Geladeira no canto nordeste (com frestinha secreta à esquerda em x=7.4, z=-7.4!)
+  const fridge = new THREE.Mesh(new THREE.BoxGeometry(1.15, 2.3, 1.05), whiteCeramic);
+  fridge.position.set(9.15, 1.15, -7.3);
+  fridge.castShadow = true;
+  const fridgeHandle1 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.45, 0.06), steelMat);
+  fridgeHandle1.position.set(8.7, 1.78, -6.75);
+  const fridgeHandle2 = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.6, 0.06), steelMat);
+  fridgeHandle2.position.set(8.7, 1.0, -6.75);
+  interiorGroup.add(fridge, fridgeHandle1, fridgeHandle2);
+  addObstacleBox(9.15, -7.3, 1.22, 1.12, interiorObstacles);
+
+  // Botão secreto minúsculo enferrujado escondido na fresta da parede atrás da geladeira!
+  const hiddenSwitch1 = new THREE.Mesh(
+    new THREE.BoxGeometry(0.14, 0.14, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0x7c2d12, metalness: 0.5, roughness: 0.7 })
+  );
+  hiddenSwitch1.position.set(7.55, 0.72, -7.95);
+  interiorGroup.add(hiddenSwitch1);
+
+  // Mesa de Jantar da Cozinha + Bule de Café Coado
+  const kTable = new THREE.Mesh(new THREE.BoxGeometry(2.5, 0.1, 1.45), woodMat);
+  kTable.position.set(5.4, 0.85, -2.6);
+  interiorGroup.add(kTable);
+  [[-1.05, -0.58], [1.05, -0.58], [-1.05, 0.58], [1.05, 0.58]].forEach(([tx, tz]) => {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.85, 0.1), woodMat);
+    leg.position.set(5.4 + tx, 0.425, -2.6 + tz);
+    interiorGroup.add(leg);
+  });
+  const coffeePot = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.16, 0.32, 10),
+    new THREE.MeshStandardMaterial({ color: 0xb91c1c, metalness: 0.35, roughness: 0.35 })
+  );
+  coffeePot.position.set(5.4, 1.06, -2.6);
+  interiorGroup.add(coffeePot);
+  addObstacleBox(5.4, -2.6, 2.6, 1.55, interiorObstacles);
+
+  // ===================== BANHEIRO (SE) =====================
+  const bathSign = new THREE.Mesh(
+    new THREE.BoxGeometry(2.2, 0.56, 0.08),
+    new THREE.MeshBasicMaterial({ map: createWoodSignTexture("BANHEIRO", "Chuveiro & Pia", "#0369a1", "#e0f2fe") })
+  );
+  bathSign.position.set(7.9, 2.8, 1.16);
+  interiorGroup.add(bathSign);
+
+  // Vaso Sanitário em (9.1, 0, 2.5)
+  const toiletBase = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.24, 0.46, 12), whiteCeramic);
+  toiletBase.position.set(9.1, 0.23, 2.5);
+  const toiletTank = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.56, 0.58), whiteCeramic);
+  toiletTank.position.set(9.45, 0.65, 2.5);
+  const toiletLid = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.06, 12), whiteCeramic);
+  toiletLid.position.set(9.1, 0.48, 2.5);
+  interiorGroup.add(toiletBase, toiletTank, toiletLid);
+  addObstacleBox(9.2, 2.5, 0.95, 0.9, interiorObstacles);
+
+  // Pia + Espelho do Banheiro em (4.8, 0, 7.3)
+  const bSinkCabinet = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.86, 0.72), whiteCeramic);
+  bSinkCabinet.position.set(4.8, 0.43, 7.35);
+  const bMirror = new THREE.Mesh(
+    new THREE.BoxGeometry(1.15, 1.0, 0.06),
+    new THREE.MeshStandardMaterial({ color: 0xbae6fd, metalness: 0.85, roughness: 0.1 })
+  );
+  bMirror.position.set(4.8, 1.72, 7.9);
+  interiorGroup.add(bSinkCabinet, bMirror);
+  addObstacleBox(4.8, 7.35, 1.5, 0.85, interiorObstacles);
+
+  // Box de Chuveiro Walk-in no canto Sudeste (x: 7.4..9.9, z: 5.2..7.9)
+  const glassMat = new THREE.MeshStandardMaterial({
+    color: 0x7dd3fc,
+    transparent: true,
+    opacity: 0.32,
+    roughness: 0.1,
+    metalness: 0.2,
+  });
+  const showerPane = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.4, 2.4), glassMat);
+  showerPane.position.set(7.35, 1.2, 6.7);
+  interiorGroup.add(showerPane);
+  addObstacleBox(7.35, 6.7, 0.18, 2.4, interiorObstacles);
+  const showerHead = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.12, 0.12, 12), whiteCeramic);
+  showerHead.position.set(9.4, 2.55, 6.6);
+  const showerPipe = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.07, 0.07), steelMat);
+  showerPipe.position.set(9.7, 2.6, 6.6);
+  // Ralo/registro oculto no fundo do box (Passo 2 do porão secreto)
+  const hiddenDrainValve = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.12, 0.04, 10),
+    new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7 })
+  );
+  hiddenDrainValve.position.set(9.1, 0.03, 7.1);
+  interiorGroup.add(showerHead, showerPipe, hiddenDrainValve);
+
+  // ===================== SALA DE ESTAR (SO / CENTRO) =====================
+  const livingRug = new THREE.Mesh(
+    new THREE.PlaneGeometry(5.2, 3.8),
+    new THREE.MeshStandardMaterial({ color: 0x166534, roughness: 0.95 })
+  );
+  livingRug.rotation.x = -Math.PI / 2;
+  livingRug.position.set(-4.2, 0.015, 4.5);
+  interiorGroup.add(livingRug);
+
+  // Sofá aconchegante
+  const sofaMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12, roughness: 0.9 });
+  const sofaSeat = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.5, 3.2), sofaMat);
+  sofaSeat.position.set(-8.6, 0.25, 4.5);
+  const sofaBack = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.95, 3.2), sofaMat);
+  sofaBack.position.set(-9.1, 0.65, 4.5);
+  interiorGroup.add(sofaSeat, sofaBack);
+  addObstacleBox(-8.7, 4.5, 1.45, 3.3, interiorObstacles);
+
+  // Rack + TV da Sala
+  const tvRack = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.62, 0.72), woodMat);
+  tvRack.position.set(-4.2, 0.31, 7.35);
+  const tvScreen = new THREE.Mesh(
+    new THREE.BoxGeometry(1.7, 1.0, 0.1),
+    new THREE.MeshStandardMaterial({ color: 0x0f172a, emissive: 0x1e3a8a, emissiveIntensity: 0.35 })
+  );
+  tvScreen.position.set(-4.2, 1.15, 7.45);
+  interiorGroup.add(tvRack, tvScreen);
+  addObstacleBox(-4.2, 7.35, 2.3, 0.85, interiorObstacles);
+
+  // Tapete & Placa de Saída para o Quintal
   const doormat = new THREE.Mesh(
-    new THREE.BoxGeometry(2.1, 0.04, 1.1),
+    new THREE.BoxGeometry(2.2, 0.04, 1.1),
     new THREE.MeshStandardMaterial({ color: 0xb4532a, roughness: 0.9 })
   );
-  doormat.position.set(0, 0.02, 3.5);
+  doormat.position.set(0, 0.02, 7.35);
   interiorGroup.add(doormat);
 
   const exitSign = new THREE.Mesh(
-    new THREE.BoxGeometry(2.2, 0.62, 0.08),
+    new THREE.BoxGeometry(2.3, 0.62, 0.08),
     new THREE.MeshBasicMaterial({
       map: createWoodSignTexture("SAIR P/ QUINTAL", "Pau Arcado", "#14532d", "#fef08a"),
     })
   );
-  exitSign.position.set(0, 0.55, 4.08);
+  exitSign.position.set(0, 0.65, 7.92);
   interiorGroup.add(exitSign);
 }
 buildBedroomInterior();
+
+// 2B. PORÃO SECRETO DO MULTIVERSO DOS MACHOS (Cópias Alternativas do Macho com Diversas Roupas e Cores!)
+const MACHO_ALTERNATIVES = [
+  {
+    id: "clone_gold",
+    name: "Macho Dourado",
+    sub: "Universo 24K",
+    quote: "No meu universo a Alface Crespa nasce de ouro maciço e o Ônibus 402 é uma limusine!",
+    shirt: 0xfacc15,
+    pocket: 0xca8a04,
+    pants: 0xf8fafc,
+    boots: 0xb45309,
+    hat: 0xfef08a,
+    band: 0xd97706,
+    skin: 0xc98a63,
+    pos: [-8.0, -5.8],
+  },
+  {
+    id: "clone_cyber",
+    name: "Macho Cyberpunk",
+    sub: "Pau Arcado 2077",
+    quote: "Em 2077 a ETECAMP flutua sobre Botujuru e o Muzzonline virou inteligência artificial!",
+    shirt: 0x7e22ce,
+    pocket: 0x06b6d4,
+    pants: 0x0f172a,
+    boots: 0xec4899,
+    hat: 0x22d3ee,
+    band: 0xf43f5e,
+    skin: 0xc98a63,
+    pos: [-4.2, -6.2],
+  },
+  {
+    id: "clone_etec",
+    name: "Macho ETECAMP",
+    sub: "Aluno Exemplar",
+    quote: "No meu universo eu tiro MB em tudo na ETEC de Campo Limpo Paulista sem nunca coringar!",
+    shirt: 0xdc2626,
+    pocket: 0x991b1b,
+    pants: 0x1d4ed8,
+    boots: 0xf8fafc,
+    hat: 0xf8fafc,
+    band: 0xdc2626,
+    skin: 0xc98a63,
+    pos: [0.0, -6.4],
+  },
+  {
+    id: "clone_goth",
+    name: "Macho Sombrio",
+    sub: "Trevas da Roça",
+    quote: "Eu só colho Alface Roxa às 3 da manhã ouvindo rock pesado no porão...",
+    shirt: 0x111827,
+    pocket: 0x6b21a8,
+    pants: 0x09090b,
+    boots: 0x3b0764,
+    hat: 0x18181b,
+    band: 0xa855f7,
+    skin: 0xd6b49c,
+    pos: [4.2, -6.2],
+  },
+  {
+    id: "clone_beach",
+    name: "Macho Praiano",
+    sub: "Pau Arcado Beach",
+    quote: "No meu universo o Rio Jundiaí virou praia de água azul e a gente surfa até o Terminal!",
+    shirt: 0x06b6d4,
+    pocket: 0xf97316,
+    pants: 0xfde047,
+    boots: 0xfb923c,
+    hat: 0xfef3c7,
+    band: 0x0284c7,
+    skin: 0xb8764f,
+    pos: [8.0, -5.8],
+  },
+  {
+    id: "clone_joker",
+    name: "Macho Coringa Prime",
+    sub: "Sanidade Infinita",
+    quote: "HAHAHAHA! Eu já nasci nos 100% de sanidade e sou dono oficial do @only_resenha_!",
+    shirt: 0x6b21a8,
+    pocket: 0x22c55e,
+    pants: 0x581c87,
+    boots: 0x16a34a,
+    hat: 0x22c55e,
+    band: 0xec4899,
+    skin: 0xf1f5f9,
+    pos: [-8.2, -0.5],
+  },
+  {
+    id: "clone_lettuce",
+    name: "Macho Alface Suprema",
+    sub: "100% Orgânico",
+    quote: "Eu não planto alface... EU SOU A PRÓPRIA ALFACE CRESPA!",
+    shirt: 0x22c55e,
+    pocket: 0x15803d,
+    pants: 0x166534,
+    boots: 0x4ade80,
+    hat: 0x86efac,
+    band: 0x14532d,
+    skin: 0x86efac,
+    pos: [8.2, -0.5],
+  },
+  {
+    id: "clone_science",
+    name: "Macho Cientista",
+    sub: "Discípulo do Kaio",
+    quote: "Sintetizei o Adubo NPK Quântico junto com o Kaio Wendell no Lab de Enfermagem!",
+    shirt: 0xf8fafc,
+    pocket: 0x38bdf8,
+    pants: 0x334155,
+    boots: 0x0f172a,
+    hat: 0xe2e8f0,
+    band: 0x0284c7,
+    skin: 0xc98a63,
+    pos: [-7.5, 4.2],
+  },
+  {
+    id: "clone_ice",
+    name: "Macho Glacial",
+    sub: "Inverno em CLP",
+    quote: "No meu universo neva todo dia em Campo Limpo Paulista e a Onça usa cachecol!",
+    shirt: 0x38bdf8,
+    pocket: 0xe0f2fe,
+    pants: 0x0369a1,
+    boots: 0xbae6fd,
+    hat: 0xe0f2fe,
+    band: 0x0284c7,
+    skin: 0xdbeafe,
+    pos: [7.5, 4.2],
+  },
+  {
+    id: "clone_classic",
+    name: "Macho Original",
+    sub: "Restaurar Roupa Padrão",
+    quote: "Quer voltar para o uniforme raiz da roça de Pau Arcado? Só falar comigo!",
+    shirt: 0x1f4e2e,
+    pocket: 0x14331e,
+    pants: 0x1e3a5f,
+    boots: 0x4a2c16,
+    hat: 0xe9c46a,
+    band: 0x7c2d12,
+    skin: 0xc98a63,
+    pos: [-3.4, 5.2],
+  },
+];
+
+function createMachoCloneMesh(cfg) {
+  const g = new THREE.Group();
+  const sMat = new THREE.MeshStandardMaterial({ color: cfg.skin, roughness: 0.65 });
+  const shMat = new THREE.MeshStandardMaterial({ color: cfg.shirt, roughness: 0.65 });
+  const pkMat = new THREE.MeshStandardMaterial({ color: cfg.pocket, roughness: 0.7 });
+  const pMat = new THREE.MeshStandardMaterial({ color: cfg.pants, roughness: 0.8 });
+  const bMat = new THREE.MeshStandardMaterial({ color: cfg.boots, roughness: 0.7 });
+  const hMat = new THREE.MeshStandardMaterial({ color: cfg.hat, roughness: 0.75 });
+  const bdMat = new THREE.MeshStandardMaterial({ color: cfg.band, roughness: 0.6 });
+
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.92, 1.12, 0.52), shMat);
+  torso.position.y = 1.4;
+  const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.28, 0.04), pkMat);
+  pocket.position.set(0.22, 1.56, 0.27);
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.68, 0.68), sMat);
+  head.position.y = 2.34;
+  const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+  const lEye = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.05), eyeMat);
+  lEye.position.set(-0.14, 2.38, 0.34);
+  const rEye = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.08, 0.05), eyeMat);
+  rEye.position.set(0.14, 2.38, 0.34);
+  const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.84, 0.88, 0.08, 14), hMat);
+  brim.position.y = 2.7;
+  const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.36, 0.44, 0.36, 12), hMat);
+  crown.position.y = 2.91;
+  const band = new THREE.Mesh(new THREE.CylinderGeometry(0.445, 0.45, 0.09, 12), bdMat);
+  band.position.y = 2.77;
+  const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.84, 0.25), sMat);
+  lArm.position.set(-0.62, 1.4, 0);
+  const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.84, 0.25), sMat);
+  rArm.position.set(0.62, 1.4, 0);
+  const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.8, 0.32), pMat);
+  lLeg.position.set(-0.23, 0.44, 0);
+  const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.8, 0.32), pMat);
+  rLeg.position.set(0.23, 0.44, 0);
+  const lBoot = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.2, 0.44), bMat);
+  lBoot.position.set(-0.23, 0.1, 0.05);
+  const rBoot = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.2, 0.44), bMat);
+  rBoot.position.set(0.23, 0.1, 0.05);
+
+  const tag = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.3, 0.56),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture(cfg.name, cfg.sub, "#1e1b4b", "#fef08a"),
+      transparent: true,
+      side: THREE.DoubleSide,
+    })
+  );
+  tag.position.set(0, 3.55, 0);
+  g.add(torso, pocket, head, lEye, rEye, brim, crown, band, lArm, rArm, lLeg, rLeg, lBoot, rBoot, tag);
+  return g;
+}
+
+function buildSecretBasement() {
+  const floorMat = new THREE.MeshStandardMaterial({
+    map: createTileFloorTexture("#1e1b2e", "#13111f", 12),
+    roughness: 0.7,
+  });
+  const wallMat = new THREE.MeshStandardMaterial({ color: 0x1c1926, roughness: 0.9 });
+  const pipeMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.7, roughness: 0.35 });
+
+  // Iluminação neon misteriosa do Multiverso
+  [
+    [-6, 4.2, -5, 0xa855f7],
+    [6, 4.2, -5, 0x38bdf8],
+    [-6, 4.2, 4, 0x22c55e],
+    [6, 4.2, 4, 0xfacc15],
+  ].forEach(([lx, ly, lz, col]) => {
+    const pt = new THREE.PointLight(col, 0.95, 22);
+    pt.position.set(lx, ly, lz);
+    basementGroup.add(pt);
+  });
+
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(22.4, 0.24, 18.4), floorMat);
+  floor.position.y = -0.12;
+  floor.receiveShadow = true;
+  basementGroup.add(floor);
+
+  const ceil = new THREE.Mesh(
+    new THREE.PlaneGeometry(22.4, 18.4),
+    new THREE.MeshStandardMaterial({ color: 0x0f0d16, roughness: 0.95, side: THREE.FrontSide })
+  );
+  ceil.rotation.x = Math.PI / 2;
+  ceil.position.set(0, 4.8, 0);
+  basementGroup.add(ceil);
+
+  const backW = new THREE.Mesh(new THREE.BoxGeometry(22.4, 4.8, 0.3), wallMat);
+  backW.position.set(0, 2.4, -9.1);
+  const leftW = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 18.4), wallMat);
+  leftW.position.set(-11.1, 2.4, 0);
+  const rightW = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 18.4), wallMat);
+  rightW.position.set(11.1, 2.4, 0);
+  const frontW = new THREE.Mesh(
+    new THREE.PlaneGeometry(22.4, 4.8),
+    new THREE.MeshStandardMaterial({ color: 0x1c1926, roughness: 0.9, side: THREE.FrontSide })
+  );
+  frontW.rotation.y = Math.PI;
+  frontW.position.set(0, 2.4, 9.1);
+  basementGroup.add(backW, leftW, rightW, frontW);
+
+  // Canos industriais ao longo da parede do porão
+  [-8.7, 8.7].forEach((px) => {
+    const pipe = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 17, 10), pipeMat);
+    pipe.rotation.x = Math.PI / 2;
+    pipe.position.set(px, 3.7, 0);
+    basementGroup.add(pipe);
+  });
+
+  const banner = new THREE.Mesh(
+    new THREE.BoxGeometry(8.8, 1.5, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("PORÃO SECRETO • MULTIVERSO DO MACHO", "Cópias Alternativas do Alyffer • Fale p/ Vestir!", "#3b0764", "#facc15"),
+    })
+  );
+  banner.position.set(0, 3.1, -8.88);
+  basementGroup.add(banner);
+
+  // Escada de ferro de volta para a Casa
+  const ladderGroup = new THREE.Group();
+  ladderGroup.position.set(0, 0, 8.2);
+  [-0.38, 0.38].forEach((rx) => {
+    const rail = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 4.4, 8), pipeMat);
+    rail.position.set(rx, 2.2, 0);
+    ladderGroup.add(rail);
+  });
+  for (let r = 0; r < 9; r++) {
+    const rung = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.78, 8), pipeMat);
+    rung.rotation.z = Math.PI / 2;
+    rung.position.set(0, 0.4 + r * 0.46, 0);
+    ladderGroup.add(rung);
+  }
+  const ladderSign = new THREE.Mesh(
+    new THREE.BoxGeometry(2.8, 0.65, 0.1),
+    new THREE.MeshBasicMaterial({ map: createWoodSignTexture("SUBIR P/ CASA", "Tecla E: Voltar ao Quarto", "#14532d", "#fef08a") })
+  );
+  ladderSign.position.set(0, 1.15, 0.45);
+  ladderGroup.add(ladderSign);
+  basementGroup.add(ladderGroup);
+
+  // Espalha todas as cópias alternativas do Macho pelo porão!
+  MACHO_ALTERNATIVES.forEach((cfg) => {
+    const mesh = createMachoCloneMesh(cfg);
+    mesh.position.set(cfg.pos[0], 0, cfg.pos[1]);
+    mesh.rotation.y = Math.atan2(-cfg.pos[0], 2 - cfg.pos[1]);
+    basementGroup.add(mesh);
+    addObstacleBox(cfg.pos[0], cfg.pos[1], 1.1, 1.1, basementObstacles);
+    basementClones.push({ ...cfg, posVec: new THREE.Vector3(cfg.pos[0], 0, cfg.pos[1]), mesh });
+  });
+}
+buildSecretBasement();
 
 // 3. TERMINAL URBANO DE CAMPO LIMPO PAULISTA & ESTAÇÃO LINHA 7-RUBI (Av. Alfried Krupp)
 function buildTerminalAndStation() {
@@ -2494,22 +3260,34 @@ function buildTerminalAndStation() {
     lLeg: mLLeg,
     rLeg: mRLeg,
   };
+
+  // Onça Domada estacionada na entrada do Terminal (para voltar de Onça para Pau Arcado!)
+  if (tamedJaguarEntity && tamedJaguarEntity.mesh) {
+    termJaguarMesh = tamedJaguarEntity.mesh.clone();
+    termJaguarMesh.position.set(-11.8, 0, -5.8);
+    termJaguarMesh.rotation.y = Math.PI * 0.35;
+    termJaguarMesh.visible = false;
+    terminalGroup.add(termJaguarMesh);
+  }
 }
 buildTerminalAndStation();
 
 // 3D NPC Character Builder for ETEC de Campo Limpo Paulista
 function createNpcModel({
   name,
-  roleSub = "Espaço / E: Falar",
+  roleSub = "Tecla E: Falar",
   skinColor,
   shirtColor,
   pantsColor,
   shoeColor,
-  hairStyle, // "messy" | "sparse" | "long" | "short"
+  hairStyle, // "messy" | "sparse" | "long" | "short" | "bald" | "wavy_medium" | "curly_long"
   hairColor = 0x1e1b18,
   trenchCoat = false,
   redGlasses = false,
+  squareGlasses = false,
   etecBadge = false,
+  slimBody = false,
+  bigHead = false,
 }) {
   const npc = new THREE.Group();
   const skinMat = new THREE.MeshStandardMaterial({ color: skinColor, roughness: 0.65 });
@@ -2518,7 +3296,9 @@ function createNpcModel({
   const shoeMat = new THREE.MeshStandardMaterial({ color: shoeColor, roughness: 0.45, metalness: 0.15 });
   const hairMat = new THREE.MeshStandardMaterial({ color: hairColor, roughness: 0.85 });
 
-  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.9, 1.12, 0.5), shirtMat);
+  const torsoW = slimBody ? 0.54 : 0.9;
+  const torsoD = slimBody ? 0.32 : 0.5;
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(torsoW, 1.12, torsoD), shirtMat);
   torso.position.y = 1.4;
   torso.castShadow = true;
   npc.add(torso);
@@ -2546,62 +3326,98 @@ function createNpcModel({
     npc.add(badge);
   }
 
+  // Grupo da cabeça (permite cabeça grande desproporcional em corpo fino!)
+  const headScale = bigHead ? 1.62 : 1.0;
+  const headGroup = new THREE.Group();
+  headGroup.position.set(0, bigHead ? 2.5 : 2.32, 0);
+  headGroup.scale.setScalar(headScale);
+
   const head = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.66, 0.66), skinMat);
-  head.position.y = 2.32;
   head.castShadow = true;
-  npc.add(head);
+  headGroup.add(head);
 
   const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
   const lEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.07, 0.05), eyeMat);
-  lEye.position.set(-0.14, 2.36, 0.34);
+  lEye.position.set(-0.14, 0.04, 0.34);
   const rEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.07, 0.05), eyeMat);
-  rEye.position.set(0.14, 2.36, 0.34);
-  npc.add(lEye, rEye);
+  rEye.position.set(0.14, 0.04, 0.34);
+  headGroup.add(lEye, rEye);
 
   if (redGlasses) {
     // Óculos vermelho do Muzzonline
     const glassFrameMat = new THREE.MeshStandardMaterial({ color: 0xef4444, roughness: 0.3 });
     const lRim = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.06), glassFrameMat);
-    lRim.position.set(-0.15, 2.36, 0.36);
+    lRim.position.set(-0.15, 0.04, 0.36);
     const rRim = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.16, 0.06), glassFrameMat);
-    rRim.position.set(0.15, 2.36, 0.36);
+    rRim.position.set(0.15, 0.04, 0.36);
     const bridge = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.05, 0.06), glassFrameMat);
-    bridge.position.set(0, 2.38, 0.36);
-    npc.add(lRim, rRim, bridge);
+    bridge.position.set(0, 0.06, 0.36);
+    headGroup.add(lRim, rRim, bridge);
+  }
+
+  if (squareGlasses) {
+    // Óculos quadrados (Marcelo e B******)
+    const sqFrameMat = new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.4, roughness: 0.3 });
+    const sqLensMat = new THREE.MeshStandardMaterial({
+      color: 0xcbd5e1,
+      transparent: true,
+      opacity: 0.42,
+      metalness: 0.25,
+      roughness: 0.15,
+    });
+    [-0.16, 0.16].forEach((gx) => {
+      const topB = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.032, 0.045), sqFrameMat);
+      topB.position.set(gx, 0.14, 0.355);
+      const botB = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.032, 0.045), sqFrameMat);
+      botB.position.set(gx, -0.05, 0.355);
+      const leftB = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.21, 0.045), sqFrameMat);
+      leftB.position.set(gx - 0.105, 0.045, 0.355);
+      const rightB = new THREE.Mesh(new THREE.BoxGeometry(0.032, 0.21, 0.045), sqFrameMat);
+      rightB.position.set(gx + 0.105, 0.045, 0.355);
+      const lens = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.16, 0.018), sqLensMat);
+      lens.position.set(gx, 0.045, 0.35);
+      headGroup.add(topB, botB, leftB, rightB, lens);
+    });
+    const sqBridge = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.032, 0.045), sqFrameMat);
+    sqBridge.position.set(0, 0.07, 0.355);
+    const tL = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.032, 0.36), sqFrameMat);
+    tL.position.set(-0.33, 0.07, 0.18);
+    const tR = new THREE.Mesh(new THREE.BoxGeometry(0.028, 0.032, 0.36), sqFrameMat);
+    tR.position.set(0.33, 0.07, 0.18);
+    headGroup.add(sqBridge, tL, tR);
   }
 
   if (hairStyle === "messy") {
     const baseHair = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.24, 0.72), hairMat);
-    baseHair.position.set(0, 2.66, -0.02);
-    npc.add(baseHair);
+    baseHair.position.set(0, 0.34, -0.02);
+    headGroup.add(baseHair);
     [
-      [-0.22, 2.82, 0.15, 0.35],
-      [0.18, 2.84, -0.1, -0.4],
-      [0, 2.86, 0.1, 0.2],
-      [-0.1, 2.8, -0.22, -0.3],
-      [0.26, 2.76, 0.12, 0.45],
+      [-0.22, 0.5, 0.15, 0.35],
+      [0.18, 0.52, -0.1, -0.4],
+      [0, 0.54, 0.1, 0.2],
+      [-0.1, 0.48, -0.22, -0.3],
+      [0.26, 0.44, 0.12, 0.45],
     ].forEach(([hx, hy, hz, rot]) => {
       const tuft = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.24, 0.22), hairMat);
       tuft.position.set(hx, hy, hz);
       tuft.rotation.z = rot;
-      npc.add(tuft);
+      headGroup.add(tuft);
     });
   } else if (hairStyle === "sparse") {
-    // Cabelo visível do Kaio Wendell (topo coberto + mechas de cientista)
     const topHair = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.2, 0.68), hairMat);
-    topHair.position.set(0, 2.68, -0.02);
+    topHair.position.set(0, 0.36, -0.02);
     const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.32, 0.64), hairMat);
-    sideL.position.set(-0.34, 2.48, -0.04);
+    sideL.position.set(-0.34, 0.16, -0.04);
     const sideR = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.32, 0.64), hairMat);
-    sideR.position.set(0.34, 2.48, -0.04);
+    sideR.position.set(0.34, 0.16, -0.04);
     const back = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.36, 0.14), hairMat);
-    back.position.set(0, 2.46, -0.31);
+    back.position.set(0, 0.14, -0.31);
     const frontStrand = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.1, 0.16), hairMat);
-    frontStrand.position.set(-0.05, 2.67, 0.29);
+    frontStrand.position.set(-0.05, 0.35, 0.29);
     const wisp = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.14), hairMat);
-    wisp.position.set(0.16, 2.8, 0.06);
+    wisp.position.set(0.16, 0.48, 0.06);
     wisp.rotation.z = -0.28;
-    npc.add(topHair, sideL, sideR, back, frontStrand, wisp);
+    headGroup.add(topHair, sideL, sideR, back, frontStrand, wisp);
   } else if (hairStyle === "bald") {
     // Careca lustrosa do Marcelo!
     const shine = new THREE.Mesh(
@@ -2609,482 +3425,1245 @@ function createNpcModel({
       new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })
     );
     shine.scale.set(1.2, 0.28, 1.2);
-    shine.position.set(0.12, 2.66, 0.12);
-    const shades = new THREE.Mesh(
-      new THREE.BoxGeometry(0.54, 0.13, 0.08),
-      new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.7, roughness: 0.2 })
-    );
-    shades.position.set(0, 2.36, 0.35);
-    npc.add(shine, shades);
+    shine.position.set(0.12, 0.34, 0.12);
+    headGroup.add(shine);
+  } else if (hairStyle === "wavy_medium") {
+    // Cabelo marrom escuro ondulado médio (B******)
+    const top = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.22, 0.74), hairMat);
+    top.position.set(0, 0.34, -0.02);
+    headGroup.add(top);
+    const backMid = new THREE.Mesh(new THREE.BoxGeometry(0.78, 0.72, 0.2), hairMat);
+    backMid.position.set(0, -0.04, -0.32);
+    headGroup.add(backMid);
+    [-0.36, 0.36].forEach((sx, si) => {
+      for (let w = 0; w < 3; w++) {
+        const wave = new THREE.Mesh(new THREE.SphereGeometry(0.14, 8, 8), hairMat);
+        wave.scale.set(0.75, 1.15, 1.1);
+        wave.position.set(sx + (w % 2 === 0 ? 0.03 : -0.03) * (si === 0 ? -1 : 1), 0.16 - w * 0.22, -0.02);
+        headGroup.add(wave);
+      }
+    });
+  } else if (hairStyle === "curly_long") {
+    // Cabelo encaracolado longo volumoso (T*******)
+    const top = new THREE.Mesh(new THREE.SphereGeometry(0.42, 10, 10), hairMat);
+    top.scale.set(1.05, 0.55, 1.05);
+    top.position.set(0, 0.35, -0.03);
+    headGroup.add(top);
+    for (let row = 0; row < 5; row++) {
+      const y = 0.22 - row * 0.2;
+      [-0.38, 0.38].forEach((sx) => {
+        const curl = new THREE.Mesh(new THREE.SphereGeometry(0.15, 8, 8), hairMat);
+        curl.position.set(sx + (row % 2 === 0 ? 0.04 : -0.04), y, -0.04);
+        headGroup.add(curl);
+      });
+      [-0.24, 0, 0.24].forEach((bx) => {
+        const backCurl = new THREE.Mesh(new THREE.SphereGeometry(0.16, 8, 8), hairMat);
+        backCurl.position.set(bx, y, -0.34 - (row % 2) * 0.03);
+        headGroup.add(backCurl);
+      });
+    }
   } else if (hairStyle === "long") {
     const top = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.22, 0.74), hairMat);
-    top.position.set(0, 2.66, -0.02);
+    top.position.set(0, 0.34, -0.02);
     const backLong = new THREE.Mesh(new THREE.BoxGeometry(0.74, 1.05, 0.18), hairMat);
-    backLong.position.set(0, 2.15, -0.32);
+    backLong.position.set(0, -0.17, -0.32);
     const sideL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.85, 0.32), hairMat);
-    sideL.position.set(-0.34, 2.18, -0.08);
+    sideL.position.set(-0.34, -0.14, -0.08);
     const sideR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.85, 0.32), hairMat);
-    sideR.position.set(0.34, 2.18, -0.08);
-    npc.add(top, backLong, sideL, sideR);
+    sideR.position.set(0.34, -0.14, -0.08);
+    headGroup.add(top, backLong, sideL, sideR);
   } else {
     const top = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.2, 0.7), hairMat);
-    top.position.set(0, 2.65, -0.02);
+    top.position.set(0, 0.33, -0.02);
     const back = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.32, 0.14), hairMat);
-    back.position.set(0, 2.44, -0.29);
-    npc.add(top, back);
+    back.position.set(0, 0.12, -0.29);
+    headGroup.add(top, back);
   }
 
-  const lArm = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.82, 0.24), trenchCoat ? shirtMat : skinMat);
-  lArm.position.set(-0.6, 1.4, 0);
-  const rArm = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.82, 0.24), trenchCoat ? shirtMat : skinMat);
-  rArm.position.set(0.6, 1.4, 0);
+  npc.add(headGroup);
+
+  const armW = slimBody ? 0.14 : 0.24;
+  const armX = slimBody ? 0.37 : 0.6;
+  const lArm = new THREE.Mesh(new THREE.BoxGeometry(armW, 0.82, armW), trenchCoat ? shirtMat : skinMat);
+  lArm.position.set(-armX, 1.4, 0);
+  const rArm = new THREE.Mesh(new THREE.BoxGeometry(armW, 0.82, armW), trenchCoat ? shirtMat : skinMat);
+  rArm.position.set(armX, 1.4, 0);
   npc.add(lArm, rArm);
 
-  const lLeg = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), pantsMat);
-  lLeg.position.set(-0.22, 0.44, 0);
-  const rLeg = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), pantsMat);
-  rLeg.position.set(0.22, 0.44, 0);
+  const legW = slimBody ? 0.18 : 0.3;
+  const legX = slimBody ? 0.14 : 0.22;
+  const lLeg = new THREE.Mesh(new THREE.BoxGeometry(legW, 0.8, legW), pantsMat);
+  lLeg.position.set(-legX, 0.44, 0);
+  const rLeg = new THREE.Mesh(new THREE.BoxGeometry(legW, 0.8, legW), pantsMat);
+  rLeg.position.set(legX, 0.44, 0);
   npc.add(lLeg, rLeg);
 
-  const lShoe = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.18, 0.44), shoeMat);
-  lShoe.position.set(-0.22, 0.09, 0.06);
-  const rShoe = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.18, 0.44), shoeMat);
-  rShoe.position.set(0.22, 0.09, 0.06);
+  const lShoe = new THREE.Mesh(new THREE.BoxGeometry(legW + 0.03, 0.18, 0.38), shoeMat);
+  lShoe.position.set(-legX, 0.09, 0.05);
+  const rShoe = new THREE.Mesh(new THREE.BoxGeometry(legW + 0.03, 0.18, 0.38), shoeMat);
+  rShoe.position.set(legX, 0.09, 0.05);
   npc.add(lShoe, rShoe);
 
   const tag = new THREE.Mesh(
-    new THREE.PlaneGeometry(2.2, 0.58),
+    new THREE.PlaneGeometry(2.3, 0.58),
     new THREE.MeshBasicMaterial({
       map: createWoodSignTexture(name, roleSub, "#0f172a", "#fef08a"),
       transparent: true,
       side: THREE.DoubleSide,
     })
   );
-  tag.position.set(0, 3.38, 0);
+  tag.position.set(0, bigHead ? 3.85 : 3.38, 0);
   npc.add(tag);
 
   return npc;
 }
 
-// 4. PÁTIO EXTERNO DA ETEC DE CAMPO LIMPO PAULISTA & ESTAÇÃO BOTUJURU
+// 4. CAMPUS COMPLETO DA ETECAMP (Fiel à foto aérea: muros, entrada principal, estacionamento com portão automático, quadra aberta, fundos, entrada aberta do corredor e sala de instrumentos!)
 function buildEtecCampus() {
+  const concreteMat = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.9 });
   const yardMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
+  const asphaltMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.92 });
+  const parkingFloorMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.88 });
   const grassMat = new THREE.MeshStandardMaterial({ color: 0x4b8b3b, roughness: 0.95 });
   const buildingMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.8 });
-  const cpsRedMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.55 });
+  const roofCorrugMat = new THREE.MeshStandardMaterial({ color: 0x9ca3af, roughness: 0.88 });
+  const cpsRedMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.58 });
+  const salmonWallMat = new THREE.MeshStandardMaterial({ color: 0xd98a76, roughness: 0.84 });
+  const grayWallMat = new THREE.MeshStandardMaterial({ color: 0x8f969e, roughness: 0.88 });
+  const wallCapMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.8 });
+  const blueGateMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, metalness: 0.3, roughness: 0.5 });
+  const pillarBlueMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.65 });
   const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.5, roughness: 0.4 });
+  const darkMetalMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.45, roughness: 0.45 });
   const glassMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.4, roughness: 0.2 });
+  const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.5 });
+  const yellowMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
+  const woodMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.78 });
 
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(110, 110), grassMat);
+  // Terreno externo e árvores ao redor dos muros
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(140, 140), grassMat);
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   etecGroup.add(ground);
 
-  const patio = new THREE.Mesh(new THREE.BoxGeometry(27, 0.12, 21), yardMat);
-  patio.position.set(3.5, 0.06, 2);
-  patio.receiveShadow = true;
-  etecGroup.add(patio);
+  // Pátio cimentado interno dentro de todos os muros (x = -33.6..33.6, z = -28.6..19.6)
+  const campusFloor = new THREE.Mesh(new THREE.BoxGeometry(67.2, 0.12, 48.2), concreteMat);
+  campusFloor.position.set(0, 0.06, -4.5);
+  campusFloor.receiveShadow = true;
+  etecGroup.add(campusFloor);
 
-  // Quadra Poliesportiva Coberta da ETEC (right side)
+  // Calçada externa + Rua João Julião Moreira (frente da ETECAMP)
+  const sidewalk = new THREE.Mesh(new THREE.BoxGeometry(92, 0.14, 3.2), yardMat);
+  sidewalk.position.set(0, 0.07, 21.6);
+  sidewalk.receiveShadow = true;
+  etecGroup.add(sidewalk);
+
+  const street = new THREE.Mesh(new THREE.PlaneGeometry(110, 6.8), asphaltMat);
+  street.rotation.x = -Math.PI / 2;
+  street.position.set(0, 0.04, 26.5);
+  street.receiveShadow = true;
+  etecGroup.add(street);
+
+  for (let dx = -48; dx <= 48; dx += 5.0) {
+    const dash = new THREE.Mesh(new THREE.PlaneGeometry(2.4, 0.18), yellowMat);
+    dash.rotation.x = -Math.PI / 2;
+    dash.position.set(dx, 0.055, 26.5);
+    etecGroup.add(dash);
+  }
+
+  // ===================== MUROS CERCANDO TODA A ETECAMP =====================
+  function addCampusWall(cx, cz, w, d, h = 2.9, mat = grayWallMat, collide = true) {
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    wall.position.set(cx, h * 0.5, cz);
+    wall.castShadow = true;
+    wall.receiveShadow = true;
+    etecGroup.add(wall);
+    const cap = new THREE.Mesh(new THREE.BoxGeometry(w + 0.08, 0.14, d + 0.08), wallCapMat);
+    cap.position.set(cx, h + 0.07, cz);
+    etecGroup.add(cap);
+    if (collide) addObstacleBox(cx, cz, w + 0.1, d + 0.1, etecObstacles);
+  }
+
+  // Muro dos fundos (Norte), Oeste e Leste
+  addCampusWall(0, -29.0, 68.4, 0.6, 3.0, grayWallMat, true);
+  addCampusWall(-34.0, -4.5, 0.6, 49.4, 3.0, grayWallMat, true);
+  addCampusWall(34.0, -4.5, 0.6, 49.4, 3.0, grayWallMat, true);
+
+  // Muro Frontal da Rua (Salmão/Terracota igual à foto!) em z = +20.0
+  // Seg 1: x = -34..-28 | Portão Automático: x = -28..-20 | Seg 2: x = -20..-4 | Portão Principal: x = -4..+4 | Seg 3: x = +4..+18 | Portão Azul: x = +18..+26 | Seg 4: x = +26..+34
+  addCampusWall(-31.0, 20.0, 6.0, 0.6, 2.8, salmonWallMat, true);
+  addCampusWall(-12.0, 20.0, 16.0, 0.6, 2.8, salmonWallMat, true);
+  addCampusWall(11.0, 20.0, 14.0, 0.6, 2.8, salmonWallMat, true);
+  addCampusWall(30.0, 20.0, 8.0, 0.6, 2.8, salmonWallMat, true);
+
+  // Portão Azul da Quadra encaixado no muro frontal (idêntico à foto!)
+  const blueCourtGate = new THREE.Mesh(new THREE.BoxGeometry(8.0, 2.65, 0.28), blueGateMat);
+  blueCourtGate.position.set(22.0, 1.325, 20.0);
+  blueCourtGate.castShadow = true;
+  etecGroup.add(blueCourtGate);
+  addObstacleBox(22.0, 20.0, 8.0, 0.65, etecObstacles);
+
+  // Portão Principal — ENTRADA PRINCIPAL (FRENTE) (x = -4..+4, z = 20.0 — aberto!)
+  [-4.1, 4.1].forEach((px) => {
+    const col = new THREE.Mesh(new THREE.BoxGeometry(0.75, 3.8, 0.75), buildingMat);
+    col.position.set(px, 1.9, 20.0);
+    col.castShadow = true;
+    etecGroup.add(col);
+  });
+  const mainGateArch = new THREE.Mesh(new THREE.BoxGeometry(9.0, 0.75, 0.8), cpsRedMat);
+  mainGateArch.position.set(0, 3.85, 20.0);
+  etecGroup.add(mainGateArch);
+  const mainGateSign = new THREE.Mesh(
+    new THREE.BoxGeometry(7.8, 1.05, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("ENTRADA PRINCIPAL (FRENTE)", "ETECAMP • ← Estacionamento | Corredor ↑ | Quadra →", "#991b1b", "#fef08a"),
+    })
+  );
+  mainGateSign.position.set(0, 4.55, 20.38);
+  etecGroup.add(mainGateSign);
+
+  // Caixa d'água cilíndrica branca icônica ao lado da Entrada Principal (igual à foto!)
+  const waterTower = new THREE.Mesh(new THREE.CylinderGeometry(1.32, 1.38, 9.6, 20), whiteMat);
+  waterTower.position.set(6.0, 4.8, 17.8);
+  waterTower.castShadow = true;
+  etecGroup.add(waterTower);
+  const towerCap = new THREE.Mesh(new THREE.CylinderGeometry(1.42, 1.42, 0.28, 20), steelMat);
+  towerCap.position.set(6.0, 9.68, 17.8);
+  etecGroup.add(towerCap);
+  addObstacleBox(6.0, 17.8, 2.9, 2.9, etecObstacles);
+
+  // Portão Automático do Estacionamento (x = -28..-20, z = 20.0 — abre sozinho ao chegar perto!)
+  const autoGateGroup = new THREE.Group();
+  autoGateGroup.position.set(-24.0, 0, 20.0);
+  const gatePanel = new THREE.Mesh(new THREE.BoxGeometry(7.9, 2.55, 0.22), steelMat);
+  gatePanel.position.y = 1.32;
+  gatePanel.castShadow = true;
+  autoGateGroup.add(gatePanel);
+  for (let gx = -3.4; gx <= 3.4; gx += 0.85) {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.1, 2.45, 0.28), darkMetalMat);
+    bar.position.set(gx, 1.32, 0);
+    autoGateGroup.add(bar);
+  }
+  const warnStripe = new THREE.Mesh(new THREE.BoxGeometry(7.92, 0.28, 0.26), yellowMat);
+  warnStripe.position.y = 0.45;
+  autoGateGroup.add(warnStripe);
+  etecGroup.add(autoGateGroup);
+  etecAutoGateMesh = autoGateGroup;
+  etecAutoGateOpen = 0;
+  etecAutoGateCollider = { minX: -28.0, maxX: -20.0, minZ: 19.65, maxZ: 20.35 };
+  etecObstacles.push(etecAutoGateCollider);
+
+  // Motor + Farolete sensor + placa do Portão Automático
+  const gateMotor = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.7, 0.55), darkMetalMat);
+  gateMotor.position.set(-28.4, 0.35, 19.3);
+  etecGroup.add(gateMotor);
+  etecAutoGateLightMat = new THREE.MeshStandardMaterial({
+    color: 0xef4444,
+    emissive: 0xef4444,
+    emissiveIntensity: 0.7,
+  });
+  const gateBeacon = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.16, 0.26, 10), etecAutoGateLightMat);
+  gateBeacon.position.set(-19.8, 3.05, 20.0);
+  etecGroup.add(gateBeacon);
+  const autoGateSign = new THREE.Mesh(
+    new THREE.BoxGeometry(5.6, 0.9, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("ESTACIONAMENTO • PORTÃO AUTOMÁTICO", "Aproxime-se para abrir automaticamente", "#1e293b", "#fde047"),
+    })
+  );
+  autoGateSign.position.set(-24.0, 3.65, 20.35);
+  etecGroup.add(autoGateSign);
+
+  // ===================== ESTACIONAMENTO (ESQUERDA — ABERTO E DENTRO DO MURO!) =====================
+  const parkingLot = new THREE.Mesh(new THREE.PlaneGeometry(19.5, 29.0), parkingFloorMat);
+  parkingLot.rotation.x = -Math.PI / 2;
+  parkingLot.position.set(-23.2, 0.135, 2.5);
+  parkingLot.receiveShadow = true;
+  etecGroup.add(parkingLot);
+
+  // Vagas pintadas no estacionamento
+  for (let pz = -9.0; pz <= 11.0; pz += 4.0) {
+    const stallLine = new THREE.Mesh(new THREE.PlaneGeometry(5.2, 0.14), whiteMat);
+    stallLine.rotation.x = -Math.PI / 2;
+    stallLine.position.set(-30.0, 0.145, pz);
+    etecGroup.add(stallLine);
+  }
+
+  // Helper de carro estacionado 3D (usado no estacionamento e na rua)
+  function addParkedCar(cx, cz, yaw, colorHex, collide = true) {
+    const car = new THREE.Group();
+    car.position.set(cx, 0.12, cz);
+    car.rotation.y = yaw;
+    const bodyMat = new THREE.MeshStandardMaterial({ color: colorHex, metalness: 0.35, roughness: 0.45 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.75, 4.1), bodyMat);
+    body.position.y = 0.62;
+    body.castShadow = true;
+    const cabin = new THREE.Mesh(new THREE.BoxGeometry(1.65, 0.62, 2.1), glassMat);
+    cabin.position.set(0, 1.25, -0.15);
+    const roof = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.1, 1.9), bodyMat);
+    roof.position.set(0, 1.58, -0.15);
+    car.add(body, cabin, roof);
+    const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.9 });
+    [
+      [-0.95, 0.34, 1.25],
+      [0.95, 0.34, 1.25],
+      [-0.95, 0.34, -1.25],
+      [0.95, 0.34, -1.25],
+    ].forEach(([wx, wy, wz]) => {
+      const wh = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.24, 10), wheelMat);
+      wh.rotation.z = Math.PI / 2;
+      wh.position.set(wx, wy, wz);
+      car.add(wh);
+    });
+    etecGroup.add(car);
+    if (collide) {
+      const horiz = Math.abs(Math.sin(yaw)) > 0.7;
+      addObstacleBox(cx, cz, horiz ? 4.3 : 2.1, horiz ? 2.1 : 4.3, etecObstacles);
+    }
+  }
+
+  // Carros estacionados encostados no muro oeste (pista larga x = -27..-12 totalmente livre!)
+  addParkedCar(-30.2, -7.0, Math.PI / 2, 0x991b1b, true);
+  addParkedCar(-30.2, -3.0, Math.PI / 2, 0x1d4ed8, true);
+  addParkedCar(-30.2, 5.0, Math.PI / 2, 0xe2e8f0, true);
+  addParkedCar(-30.2, 9.0, Math.PI / 2, 0x1f2937, true);
+  // Carros decorativos na rua externa
+  addParkedCar(-18.0, 28.6, Math.PI / 2, 0xcbd5e1, false);
+  addParkedCar(18.0, 28.6, -Math.PI / 2, 0x991b1b, false);
+  addParkedCar(28.0, 28.6, -Math.PI / 2, 0x475569, false);
+
+  // ===================== QUADRA POLIESPORTIVA (DIREITA — TUDO ABERTO!) =====================
   const court = new THREE.Mesh(
-    new THREE.PlaneGeometry(10.5, 14),
-    new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.85 })
+    new THREE.PlaneGeometry(16.5, 19.5),
+    new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.86 })
   );
   court.rotation.x = -Math.PI / 2;
-  court.position.set(12.2, 0.14, 3.8);
+  court.position.set(23.2, 0.145, 6.2);
+  court.receiveShadow = true;
   etecGroup.add(court);
 
-  const courtRoof = new THREE.Mesh(
-    new THREE.BoxGeometry(11.0, 0.25, 14.4),
-    new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.55 })
-  );
-  courtRoof.position.set(12.2, 5.2, 3.8);
-  courtRoof.castShadow = true;
-  etecGroup.add(courtRoof);
+  // Marcações brancas da quadra (bordas, linha central, círculo central e áreas)
+  [
+    [23.2, 15.6, 15.4, 0.16],
+    [23.2, -3.2, 15.4, 0.16],
+    [15.5, 6.2, 0.16, 18.8],
+    [30.9, 6.2, 0.16, 18.8],
+    [23.2, 6.2, 15.4, 0.16],
+    [23.2, 13.0, 7.6, 0.14],
+    [23.2, -0.6, 7.6, 0.14],
+  ].forEach(([lx, lz, lw, ld]) => {
+    const ln = new THREE.Mesh(new THREE.PlaneGeometry(lw, ld), whiteMat);
+    ln.rotation.x = -Math.PI / 2;
+    ln.position.set(lx, 0.155, lz);
+    etecGroup.add(ln);
+  });
+  const centerRing = new THREE.Mesh(new THREE.RingGeometry(2.1, 2.26, 28), whiteMat);
+  centerRing.rotation.x = -Math.PI / 2;
+  centerRing.position.set(23.2, 0.155, 6.2);
+  etecGroup.add(centerRing);
 
-  // Main ETEC Building (Prédio Centro Paula Souza — Rua João Julião Moreira, Botujuru)
-  const schoolBody = new THREE.Mesh(new THREE.BoxGeometry(22, 6.8, 8.2), buildingMat);
-  schoolBody.position.set(2.5, 3.4, -9.5);
+  // Traves de futsal + tabelas de basquete nas pontas norte e sul da quadra
+  [-2.8, 15.2].forEach((gz) => {
+    const goal = new THREE.Group();
+    goal.position.set(23.2, 0.12, gz);
+    const pL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 0.12), whiteMat);
+    pL.position.set(-1.6, 1.05, 0);
+    const pR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 0.12), whiteMat);
+    pR.position.set(1.6, 1.05, 0);
+    const topBar = new THREE.Mesh(new THREE.BoxGeometry(3.32, 0.12, 0.12), whiteMat);
+    topBar.position.set(0, 2.1, 0);
+    // Tabela de basquete acima da trave
+    const bPole = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.6, 0.16), steelMat);
+    bPole.position.set(0, 1.8, gz < 6 ? -0.45 : 0.45);
+    const bBoard = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.05, 0.1), whiteMat);
+    bBoard.position.set(0, 3.35, gz < 6 ? -0.25 : 0.25);
+    const bRim = new THREE.Mesh(
+      new THREE.TorusGeometry(0.28, 0.035, 8, 14),
+      new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.4 })
+    );
+    bRim.rotation.x = Math.PI / 2;
+    bRim.position.set(0, 3.05, gz < 6 ? 0.1 : -0.1);
+    goal.add(pL, pR, topBar, bPole, bBoard, bRim);
+    etecGroup.add(goal);
+  });
+
+  const courtSign = new THREE.Mesh(
+    new THREE.BoxGeometry(4.6, 0.9, 0.12),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("QUADRA ETECAMP", "Área Aberta • Futsal & Basquete", "#14532d", "#fef08a"),
+    })
+  );
+  courtSign.position.set(33.4, 2.35, 6.2);
+  courtSign.rotation.y = -Math.PI / 2;
+  etecGroup.add(courtSign);
+
+  // ===================== PRÉDIO PRINCIPAL DA ETECAMP (BLOCOS + CORREDOR CENTRAL) =====================
+  // Prédio central x = -11..+11, z = -16..+8 (corredor comprido no meio + blocos de salas nas laterais igual à foto!)
+  const schoolBody = new THREE.Mesh(new THREE.BoxGeometry(22.0, 4.6, 24.0), buildingMat);
+  schoolBody.position.set(0, 2.3, -4.0);
   schoolBody.castShadow = true;
   schoolBody.receiveShadow = true;
   etecGroup.add(schoolBody);
-  addObstacleBox(2.5, -9.4, 22.2, 8.2, etecObstacles);
+  addObstacleBox(0, -4.0, 22.0, 24.0, etecObstacles);
 
-  const redBandTop = new THREE.Mesh(new THREE.BoxGeometry(22.4, 0.9, 8.4), cpsRedMat);
-  redBandTop.position.set(2.5, 6.3, -9.5);
-  etecGroup.add(redBandTop);
+  // Telhado comprido de duas águas do corredor central (correndo de frente a fundos, fiel à foto!)
+  const corridorRoofL = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.18, 25.4), roofCorrugMat);
+  corridorRoofL.position.set(-1.55, 5.25, -4.0);
+  corridorRoofL.rotation.z = 0.26;
+  const corridorRoofR = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.18, 25.4), roofCorrugMat);
+  corridorRoofR.position.set(1.55, 5.25, -4.0);
+  corridorRoofR.rotation.z = -0.26;
+  etecGroup.add(corridorRoofL, corridorRoofR);
 
-  const entranceAwning = new THREE.Mesh(new THREE.BoxGeometry(6.8, 0.32, 3.0), cpsRedMat);
-  entranceAwning.position.set(2.5, 3.4, -4.4);
-  etecGroup.add(entranceAwning);
-
-  const schoolDoor = new THREE.Mesh(
-    new THREE.BoxGeometry(2.6, 2.85, 0.16),
-    new THREE.MeshStandardMaterial({ color: 0x1e293b, metalness: 0.45 })
-  );
-  schoolDoor.position.set(2.5, 1.42, -5.36);
-  etecGroup.add(schoolDoor);
-
-  const doorSign = new THREE.Mesh(
-    new THREE.BoxGeometry(3.6, 0.78, 0.12),
-    new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("ENTRAR NA ETEC", "Corredor, Labs, Salas & Cantina", "#7f1d1d", "#fef08a"),
-    })
-  );
-  doorSign.position.set(2.5, 3.1, -5.28);
-  etecGroup.add(doorSign);
-
-  [-6.5, -2.5, 6.8, 10.8].forEach((wx) => {
-    [1.9, 4.4].forEach((wy) => {
-      const win = new THREE.Mesh(new THREE.BoxGeometry(2.6, 1.35, 0.15), glassMat);
-      win.position.set(wx, wy, -5.38);
-      etecGroup.add(win);
+  // Blocos de telhado das salas (3 blocos por ala com faixa vermelha CPS nas bordas igual à foto!)
+  [-11.8, -4.0, 3.8].forEach((bz) => {
+    [-7.1, 7.1].forEach((bx) => {
+      const blkRoof = new THREE.Mesh(new THREE.BoxGeometry(7.6, 0.32, 7.0), roofCorrugMat);
+      blkRoof.position.set(bx, 4.76, bz);
+      blkRoof.castShadow = true;
+      const blkBand = new THREE.Mesh(new THREE.BoxGeometry(7.8, 0.55, 7.2), cpsRedMat);
+      blkBand.position.set(bx, 4.45, bz);
+      etecGroup.add(blkRoof, blkBand);
     });
   });
 
-  const etecBanner = new THREE.Mesh(
-    new THREE.BoxGeometry(9.2, 1.4, 0.18),
+  // Janelas nas fachadas frente, fundos e laterais
+  [-8.0, -5.0, 5.0, 8.0].forEach((wx) => {
+    const winF = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.2, 0.14), glassMat);
+    winF.position.set(wx, 2.55, 8.06);
+    const winB = new THREE.Mesh(new THREE.BoxGeometry(2.1, 1.2, 0.14), glassMat);
+    winB.position.set(wx, 2.55, -16.06);
+    etecGroup.add(winF, winB);
+  });
+  [-11.5, -6.5, 5.0].forEach((wz) => {
+    const winW = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.2, 2.4), glassMat);
+    winW.position.set(-11.06, 2.55, wz);
+    const winE = new THREE.Mesh(new THREE.BoxGeometry(0.14, 1.2, 2.4), glassMat);
+    winE.position.set(11.06, 2.55, wz);
+    etecGroup.add(winW, winE);
+  });
+
+  // 1) ENTRADA FRONTAL DO CORREDOR COM AS SALAS (reto após o Portão Principal!)
+  const frontAwning = new THREE.Mesh(new THREE.BoxGeometry(6.4, 0.3, 2.6), cpsRedMat);
+  frontAwning.position.set(0, 3.35, 9.2);
+  etecGroup.add(frontAwning);
+  const frontDoor = new THREE.Mesh(new THREE.BoxGeometry(3.2, 2.85, 0.16), darkMetalMat);
+  frontDoor.position.set(0, 1.425, 8.05);
+  etecGroup.add(frontDoor);
+  const frontDoorSign = new THREE.Mesh(
+    new THREE.BoxGeometry(5.6, 0.95, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture(
-        "ETEC DE CAMPO LIMPO PAULISTA",
-        "Centro Paula Souza • Rua João Julião Moreira - Botujuru",
-        "#991b1b",
-        "#ffffff"
-      ),
+      map: createWoodSignTexture("CORREDOR & SALAS • ETECAMP", "Entrar (E): 3AI, 2AI, 1AI, Labs & Cantina", "#7f1d1d", "#fef08a"),
     })
   );
-  etecBanner.position.set(2.5, 4.85, -5.28);
-  etecGroup.add(etecBanner);
+  frontDoorSign.position.set(0, 3.95, 10.45);
+  etecGroup.add(frontDoorSign);
 
-  // Estação Botujuru (Linha 7-Rubi) on the left with characteristic sloped ramp!
-  const botPlatform = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.9, 24), yardMat);
-  botPlatform.position.set(-13.5, 0.45, 0);
+  // 2) ENTRADA LATERAL DO ESTACIONAMENTO PARA O CORREDOR (parede oeste x = -11.0, z = 1.0)
+  const parkAwning = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.25, 4.2), cpsRedMat);
+  parkAwning.position.set(-12.0, 3.25, 1.0);
+  etecGroup.add(parkAwning);
+  const parkDoor = new THREE.Mesh(new THREE.BoxGeometry(0.16, 2.75, 2.6), blueGateMat);
+  parkDoor.position.set(-11.06, 1.375, 1.0);
+  etecGroup.add(parkDoor);
+  const parkDoorSign = new THREE.Mesh(
+    new THREE.BoxGeometry(0.12, 0.85, 4.0),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("ENTRADA P/ CORREDOR", "Acesso pelo Estacionamento (E)", "#1e3a8a", "#fef08a"),
+    })
+  );
+  parkDoorSign.position.set(-13.0, 3.7, 1.0);
+  etecGroup.add(parkDoorSign);
+
+  // 3) ENTRADA ABERTA (CORREDOR) NOS FUNDOS (z = -16.0 — pilares azuis + cobertura igual à foto!)
+  const backArchGroup = new THREE.Group();
+  backArchGroup.position.set(0, 0, -16.0);
+  [-2.15, 2.15].forEach((px) => {
+    const col = new THREE.Mesh(new THREE.BoxGeometry(0.42, 3.05, 0.42), pillarBlueMat);
+    col.position.set(px, 1.525, -2.1);
+    col.castShadow = true;
+    backArchGroup.add(col);
+  });
+  const backHeader = new THREE.Mesh(new THREE.BoxGeometry(5.1, 0.42, 2.5), whiteMat);
+  backHeader.position.set(0, 3.18, -1.2);
+  const backBlueTrim = new THREE.Mesh(new THREE.BoxGeometry(5.14, 0.2, 2.54), pillarBlueMat);
+  backBlueTrim.position.set(0, 2.95, -1.2);
+  const backGableL = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.16, 2.7), roofCorrugMat);
+  backGableL.position.set(-1.3, 3.75, -1.2);
+  backGableL.rotation.z = 0.34;
+  const backGableR = new THREE.Mesh(new THREE.BoxGeometry(2.9, 0.16, 2.7), roofCorrugMat);
+  backGableR.position.set(1.3, 3.75, -1.2);
+  backGableR.rotation.z = -0.34;
+  const backOpenVoid = new THREE.Mesh(new THREE.BoxGeometry(3.4, 2.85, 0.16), darkMetalMat);
+  backOpenVoid.position.set(0, 1.425, -0.06);
+  const backArchSign = new THREE.Mesh(
+    new THREE.BoxGeometry(5.0, 0.85, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("ENTRADA ABERTA (CORREDOR)", "Entrar no Corredor pelos Fundos (E)", "#1e3a8a", "#ffffff"),
+    })
+  );
+  backArchSign.position.set(0, 4.35, -2.42);
+  backArchSign.rotation.y = Math.PI;
+  backArchGroup.add(backHeader, backBlueTrim, backGableL, backGableR, backOpenVoid, backArchSign);
+  etecGroup.add(backArchGroup);
+
+  // ===================== PARTE EXTERNA (FUNDOS) =====================
+  const backYardSign = new THREE.Mesh(
+    new THREE.BoxGeometry(5.2, 0.9, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("PARTE EXTERNA (FUNDOS)", "Área dos Fundos • ETECAMP", "#14532d", "#fef08a"),
+    })
+  );
+  backYardSign.position.set(-12.0, 2.2, -28.55);
+  etecGroup.add(backYardSign);
+
+  // Bancos de concreto na parte externa dos fundos
+  [-15.5, -7.5, 8.5].forEach((bx) => {
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.52, 0.65), yardMat);
+    bench.position.set(bx, 0.38, -24.5);
+    bench.castShadow = true;
+    etecGroup.add(bench);
+    addObstacleBox(bx, -24.5, 2.5, 0.8, etecObstacles);
+  });
+
+  // Árvores frondosas na parte externa dos fundos e atrás dos muros (fiel à foto!)
+  const trunkMat = new THREE.MeshStandardMaterial({ color: 0x6b4423, roughness: 0.95 });
+  const leafMat = new THREE.MeshStandardMaterial({ color: 0x2d6a4f, roughness: 0.85 });
+  const treeCoords = [
+    [-25.5, -25.5, true],
+    [-19.5, -25.8, true],
+    [-3.5, -26.5, true],
+    [11.5, -25.8, true],
+    [-30.0, -34.0, false],
+    [-14.0, -34.5, false],
+    [2.0, -34.2, false],
+    [18.0, -34.5, false],
+    [31.0, -33.5, false],
+    [-39.0, -12.0, false],
+    [-39.0, 6.0, false],
+    [39.0, -10.0, false],
+  ];
+  treeCoords.forEach(([tx, tz, inside]) => {
+    const tr = new THREE.Group();
+    tr.position.set(tx, 0, tz);
+    const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.4, 2.8, 8), trunkMat);
+    trunk.position.y = 1.4;
+    trunk.castShadow = true;
+    const crown = new THREE.Mesh(new THREE.DodecahedronGeometry(2.15, 0), leafMat);
+    crown.position.y = 3.7;
+    crown.castShadow = true;
+    tr.add(trunk, crown);
+    etecGroup.add(tr);
+    if (inside) addObstacleBox(tx, tz, 1.0, 1.0, etecObstacles);
+  });
+
+  // ===================== SALA DE INSTRUMENTOS (FUNDO-DIREITA — WALK-IN 3D!) =====================
+  // Posicionada entre a Quadra e os Fundos (x = 16.5..32.5, z = -27.0..-14.5), porta aberta em x = 16.5, z = -20.7
+  const instFloor = new THREE.Mesh(
+    new THREE.BoxGeometry(15.6, 0.16, 12.1),
+    new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 })
+  );
+  instFloor.position.set(24.5, 0.14, -20.75);
+  instFloor.receiveShadow = true;
+  etecGroup.add(instFloor);
+
+  const stageRug = new THREE.Mesh(
+    new THREE.PlaneGeometry(9.6, 6.4),
+    new THREE.MeshStandardMaterial({ color: 0x7f1d1d, roughness: 0.9 })
+  );
+  stageRug.rotation.x = -Math.PI / 2;
+  stageRug.position.set(25.2, 0.23, -20.75);
+  etecGroup.add(stageRug);
+
+  // Paredes da Sala de Instrumentos (porta aberta de 4.2m na parede oeste)
+  function addInstWall(cx, cz, w, d) {
+    const wM = new THREE.Mesh(new THREE.BoxGeometry(w, 3.8, d), buildingMat);
+    wM.position.set(cx, 1.9, cz);
+    wM.castShadow = true;
+    wM.receiveShadow = true;
+    etecGroup.add(wM);
+    addObstacleBox(cx, cz, w, d, etecObstacles);
+  }
+  addInstWall(24.5, -27.0, 16.0, 0.42); // Norte
+  addInstWall(24.5, -14.5, 16.0, 0.42); // Sul
+  addInstWall(32.5, -20.75, 0.42, 12.5); // Leste
+  addInstWall(16.5, -24.9, 0.42, 4.2); // Oeste (lado norte da porta)
+  addInstWall(16.5, -16.55, 0.42, 4.1); // Oeste (lado sul da porta)
+  // Verga acima da porta aberta
+  const instLint = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.9, 4.4), buildingMat);
+  instLint.position.set(16.5, 3.35, -20.7);
+  etecGroup.add(instLint);
+
+  // Telhado de fibrocimento da Sala de Instrumentos (oculta ao entrar para visão limpa!)
+  etecInstRoofGroup = new THREE.Group();
+  const instRoof = new THREE.Mesh(new THREE.BoxGeometry(16.8, 0.26, 13.4), roofCorrugMat);
+  instRoof.position.set(24.5, 3.95, -20.75);
+  instRoof.castShadow = true;
+  etecInstRoofGroup.add(instRoof);
+  etecGroup.add(etecInstRoofGroup);
+
+  const instSign = new THREE.Mesh(
+    new THREE.BoxGeometry(0.14, 0.95, 5.2),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("SALA DE INSTRUMENTOS", "Banda & Música • Entre para tocar!", "#581c87", "#fef08a"),
+    })
+  );
+  instSign.position.set(16.18, 3.45, -20.7);
+  etecGroup.add(instSign);
+
+  // --- Instrumentos Musicais 3D dentro da sala ---
+  // 1. Bateria completa (centro-fundo)
+  const drumGroup = new THREE.Group();
+  drumGroup.position.set(27.5, 0.22, -21.0);
+  const drumRedMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, metalness: 0.35, roughness: 0.4 });
+  const cymbalMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.75, roughness: 0.25 });
+  const bassDrum = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.56, 16), drumRedMat);
+  bassDrum.rotation.z = Math.PI / 2;
+  bassDrum.position.set(0, 0.62, 0);
+  const bassHead = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.58, 16), whiteMat);
+  bassHead.rotation.z = Math.PI / 2;
+  bassHead.position.set(0, 0.62, 0);
+  const snare = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.18, 12), whiteMat);
+  snare.position.set(0.45, 0.92, 0.58);
+  const tom1 = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.28, 12), drumRedMat);
+  tom1.position.set(0.05, 1.25, -0.25);
+  const tom2 = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.3, 12), drumRedMat);
+  tom2.position.set(0.05, 1.25, 0.28);
+  const floorTom = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.58, 12), drumRedMat);
+  floorTom.position.set(0.45, 0.52, -0.78);
+  drumGroup.add(bassDrum, bassHead, snare, tom1, tom2, floorTom);
+  [
+    [0.15, 1.55, 0.98, 0.38],
+    [0.05, 1.65, -0.95, 0.44],
+  ].forEach(([cx, cy, cz, cr]) => {
+    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, cy, 6), steelMat);
+    stand.position.set(cx, cy * 0.5, cz);
+    const cym = new THREE.Mesh(new THREE.CylinderGeometry(cr, cr, 0.03, 14), cymbalMat);
+    cym.position.set(cx, cy, cz);
+    drumGroup.add(stand, cym);
+  });
+  etecGroup.add(drumGroup);
+  addObstacleBox(27.5, -21.0, 1.9, 2.2, etecObstacles);
+
+  // 2. Teclado / Sintetizador (parede norte)
+  const kbGroup = new THREE.Group();
+  kbGroup.position.set(23.5, 0.22, -25.2);
+  const kbStand = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.82, 0.42), darkMetalMat);
+  kbStand.position.y = 0.41;
+  const kbBody = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.16, 0.58), darkMetalMat);
+  kbBody.position.y = 0.88;
+  const kbKeys = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.05, 0.24), whiteMat);
+  kbKeys.position.set(0, 0.97, 0.12);
+  kbGroup.add(kbStand, kbBody, kbKeys);
+  etecGroup.add(kbGroup);
+  addObstacleBox(23.5, -25.2, 2.2, 0.8, etecObstacles);
+
+  // 3. Guitarras & Violões no suporte (parede sul)
+  [21.0, 23.0, 25.0].forEach((gx, idx) => {
+    const gCol = [0xef4444, 0x2563eb, 0xd97706][idx];
+    const gBody = new THREE.Mesh(
+      new THREE.BoxGeometry(0.46, 0.62, 0.14),
+      new THREE.MeshStandardMaterial({ color: gCol, roughness: 0.45 })
+    );
+    gBody.position.set(gx, 0.62, -15.3);
+    const gNeck = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.92, 0.08), woodMat);
+    gNeck.position.set(gx, 1.35, -15.3);
+    etecGroup.add(gBody, gNeck);
+  });
+
+  // 4. Amplificadores & Caixas de Som (parede leste)
+  [-24.2, -17.2].forEach((az) => {
+    const amp = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.35, 1.0), darkMetalMat);
+    amp.position.set(31.2, 0.88, az);
+    const grille = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.1, 0.82), steelMat);
+    grille.position.set(30.78, 0.88, az);
+    etecGroup.add(amp, grille);
+    addObstacleBox(31.2, az, 1.0, 1.2, etecObstacles);
+  });
+
+  // ===================== ESTAÇÃO BOTUJURU (LINHA 7-RUBI — FRENTE SUL DA RUA!) =====================
+  const botPlatform = new THREE.Mesh(new THREE.BoxGeometry(26.0, 0.85, 4.6), yardMat);
+  botPlatform.position.set(0, 0.425, 32.6);
+  botPlatform.receiveShadow = true;
   etecGroup.add(botPlatform);
-  addObstacleBox(-14.5, 0, 3.2, 24, etecObstacles);
-  addObstacleBox(-11.0, -5.8, 0.6, 12.0, etecObstacles);
-  addObstacleBox(-11.0, 7.8, 0.6, 8.0, etecObstacles);
+  // Colliders laterais da plataforma deixando rampa aberta no meio (x = -3..+3)
+  addObstacleBox(-8.5, 32.6, 10.5, 4.6, etecObstacles);
+  addObstacleBox(8.5, 32.6, 10.5, 4.6, etecObstacles);
+  addObstacleBox(0, 34.4, 28.0, 1.2, etecObstacles);
 
-  const ramp = new THREE.Mesh(new THREE.BoxGeometry(4.5, 0.25, 3.6), yardMat);
-  ramp.position.set(-9.2, 0.48, 2);
-  ramp.rotation.z = 0.18;
+  const ramp = new THREE.Mesh(new THREE.BoxGeometry(5.2, 0.24, 3.0), concreteMat);
+  ramp.position.set(0, 0.34, 29.8);
+  ramp.rotation.x = -0.18;
   etecGroup.add(ramp);
 
+  const botRoof = new THREE.Mesh(new THREE.BoxGeometry(20.0, 0.22, 4.4), steelMat);
+  botRoof.position.set(0, 4.15, 32.6);
+  etecGroup.add(botRoof);
+  [-8.0, 8.0].forEach((px) => {
+    const bP = new THREE.Mesh(new THREE.BoxGeometry(0.24, 3.4, 0.24), steelMat);
+    bP.position.set(px, 2.45, 32.6);
+    etecGroup.add(bP);
+  });
+
   const botTotem = new THREE.Mesh(
-    new THREE.BoxGeometry(0.25, 1.2, 5.6),
+    new THREE.BoxGeometry(6.2, 1.15, 0.24),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("ESTAÇÃO BOTUJURU", "Linha 7-Rubi • Volta Terminal", "#881337", "#ffffff"),
+      map: createWoodSignTexture("ESTAÇÃO BOTUJURU", "Linha 7-Rubi • Volta Terminal CLP (E)", "#881337", "#ffffff"),
     })
   );
-  botTotem.position.set(-12.2, 3.2, 2);
-  botTotem.rotation.y = Math.PI / 2;
+  botTotem.position.set(0, 3.25, 30.8);
   etecGroup.add(botTotem);
 
-  const botRoof = new THREE.Mesh(new THREE.BoxGeometry(4.8, 0.22, 18), steelMat);
-  botRoof.position.set(-13.5, 4.3, 0);
-  etecGroup.add(botRoof);
-
   const trainBot = createTrain7RubiModel("7-RUBI • TERMINAL CLP");
-  trainBot.position.set(-18.2, 0.1, 0);
+  trainBot.rotation.y = Math.PI / 2;
+  trainBot.position.set(0, 0.1, 36.8);
   etecGroup.add(trainBot);
 }
 buildEtecCampus();
 
-// 5. INTERIOR GRANDE DA ETEC DE CAMPO LIMPO PAULISTA (32m x 26m — 5 Ambientes Completos!)
+// 5. INTERIOR EXPANDIDO DA ETECAMP (32m x 66m — 12 Salas fiéis à foto real!)
+// Salas: 3AI (Pão & Muzzonline), 2AI, 1AI (Félix), 3A, 2A, 1A,
+// Lab Info 24 (B****** & T*******), Lab Info 15, Lab Info 7,
+// Lab Enfermagem (Kaio Wendell + Bancada NPK), Cantina & Convivência + Marcelo no Corredor!
 function buildEtecInside() {
-  const tileTex = createTileFloorTexture("#e2e8f0", "#cbd5e1", 20);
-  const floorMat = new THREE.MeshStandardMaterial({ map: tileTex, roughness: 0.65 });
-  const wallMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.85 });
+  const concreteTex = createTileFloorTexture("#9aa09c", "#8d938f", 32);
+  const floorMat = new THREE.MeshStandardMaterial({ map: concreteTex, roughness: 0.72 });
+  const corridorTileMat = new THREE.MeshStandardMaterial({
+    map: createTileFloorTexture("#e2e8f0", "#cbd5e1", 26),
+    roughness: 0.65,
+  });
+  const hallWallMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.85 });
+  // Cores fiéis à foto real das salas da ETECAMP!
+  const classGreenWallMat = new THREE.MeshStandardMaterial({ color: 0x507d4a, roughness: 0.86 });
+  const woodTrimMat = new THREE.MeshStandardMaterial({ color: 0x7c4a26, roughness: 0.72 });
+  const blueDoorMat = new THREE.MeshStandardMaterial({ color: 0x1e4b8f, roughness: 0.55 });
+  const silverMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, metalness: 0.7, roughness: 0.28 });
+  const whiteboardMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.25 });
+  const deskTopMat = new THREE.MeshStandardMaterial({ color: 0xeaece7, roughness: 0.5 });
+  const greenSteelMat = new THREE.MeshStandardMaterial({ color: 0x165a31, metalness: 0.35, roughness: 0.45 });
+  const chairWoodMat = new THREE.MeshStandardMaterial({ color: 0x824822, roughness: 0.6 });
+  const orangeGrateMat = new THREE.MeshStandardMaterial({
+    color: 0xd07d24,
+    metalness: 0.3,
+    roughness: 0.45,
+    wireframe: true,
+  });
+  const fanBladeMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.5 });
   const cpsRedMat = new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.55 });
-  const deskWood = new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 });
   const labGranite = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.45 });
+  const pcScreenMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, emissive: 0x0284c7, emissiveIntensity: 0.55 });
+  const pcCaseMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.55 });
+  const nurseWhiteMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.4 });
+  const nurseMintMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.5 });
   const lockerMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.4, roughness: 0.5 });
 
-  // Indoor School Lights
-  [
-    [-8, 5.5, -6],
-    [8, 5.5, -6],
-    [-8, 5.5, 6],
-    [8, 5.5, 6],
-  ].forEach(([lx, ly, lz]) => {
-    const pt = new THREE.PointLight(0xffffff, 0.48, 28);
-    pt.position.set(lx, ly, lz);
-    etecInsideGroup.add(pt);
+  // Geometrias compartilhadas para carteiras + cadeiras atrás (alta performance!)
+  const gDeskTop = new THREE.BoxGeometry(1.12, 0.05, 0.66);
+  const gDeskLegV = new THREE.BoxGeometry(0.05, 0.74, 0.05);
+  const gDeskFoot = new THREE.BoxGeometry(0.05, 0.04, 0.62);
+  const gDeskBasket = new THREE.BoxGeometry(0.92, 0.14, 0.48);
+  const gChairSeat = new THREE.BoxGeometry(0.48, 0.04, 0.44);
+  const gChairBack = new THREE.BoxGeometry(0.48, 0.28, 0.04);
+  const gChairLeg = new THREE.BoxGeometry(0.04, 0.44, 0.04);
+  const gChairUp = new THREE.BoxGeometry(0.04, 0.42, 0.04);
+  const gMonitor = new THREE.BoxGeometry(0.54, 0.36, 0.06);
+  const gMonStand = new THREE.BoxGeometry(0.14, 0.14, 0.12);
+  const gKeyboard = new THREE.BoxGeometry(0.44, 0.025, 0.16);
+  const gCpu = new THREE.BoxGeometry(0.18, 0.38, 0.36);
+
+  // Iluminação fluorescente ao longo dos 66m do prédio
+  [-27.5, -16.5, -5.5, 5.5, 16.5, 27.5].forEach((lz) => {
+    const ptC = new THREE.PointLight(0xffffff, 0.42, 26);
+    ptC.position.set(0, 4.4, lz);
+    etecInsideGroup.add(ptC);
+    [-9.8, 9.8].forEach((lx) => {
+      const lampBar = new THREE.Mesh(
+        new THREE.BoxGeometry(1.6, 0.08, 0.38),
+        new THREE.MeshBasicMaterial({ color: 0xf8fafc })
+      );
+      lampBar.position.set(lx, 4.72, lz);
+      etecInsideGroup.add(lampBar);
+    });
   });
 
-  // Large School Floor (32m wide x 26m deep: x = -16..16, z = -13..13)
-  const floor = new THREE.Mesh(new THREE.BoxGeometry(32.4, 0.24, 26.4), floorMat);
+  // Piso Geral (32m x 66m: x = -16..16, z = -33..33)
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(32.4, 0.24, 66.4), floorMat);
   floor.position.y = -0.12;
   floor.receiveShadow = true;
   etecInsideGroup.add(floor);
 
-  // Outer Perimeter Walls (Back, Left, Right)
-  const backWall = new THREE.Mesh(new THREE.BoxGeometry(32.4, 4.8, 0.3), wallMat);
-  backWall.position.set(0, 2.4, -13.1);
-  etecInsideGroup.add(backWall);
+  // Piso claro no Corredor Central (x = -3.8..+3.8)
+  const corridorFloor = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 66.0), corridorTileMat);
+  corridorFloor.rotation.x = -Math.PI / 2;
+  corridorFloor.position.set(0, 0.012, 0);
+  etecInsideGroup.add(corridorFloor);
 
-  const redStripeBack = new THREE.Mesh(new THREE.BoxGeometry(32.2, 0.5, 0.34), cpsRedMat);
-  redStripeBack.position.set(0, 4.1, -13.08);
-  etecInsideGroup.add(redStripeBack);
-
-  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 26.4), wallMat);
-  leftWall.position.set(-16.1, 2.4, 0);
-  etecInsideGroup.add(leftWall);
-
-  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 26.4), wallMat);
-  rightWall.position.set(16.1, 2.4, 0);
-  etecInsideGroup.add(rightWall);
-
-  // Teto interno da ETEC (FrontSide voltado para baixo: visível em 1ª pessoa, transparente em 3ª pessoa)
+  // Teto interno da ETEC (FrontSide voltado p/ baixo: visível em 1ª pessoa)
   const etecCeiling = new THREE.Mesh(
-    new THREE.PlaneGeometry(32.4, 26.4),
+    new THREE.PlaneGeometry(32.4, 66.4),
     new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.9, side: THREE.FrontSide })
   );
   etecCeiling.rotation.x = Math.PI / 2;
   etecCeiling.position.set(0, 4.8, 0);
   etecInsideGroup.add(etecCeiling);
 
-  // Interior Partition Walls with Wide Doorways (Central Corridor is x = -4.2 .. +4.2)
-  function addInteriorWall(cx, cz, w, d) {
-    const wMesh = new THREE.Mesh(new THREE.BoxGeometry(w, 3.8, d), wallMat);
-    wMesh.position.set(cx, 1.9, cz);
-    wMesh.castShadow = true;
+  // Paredes Externas (Norte, Oeste, Leste, Sul)
+  const backWall = new THREE.Mesh(new THREE.BoxGeometry(32.4, 4.8, 0.3), hallWallMat);
+  backWall.position.set(0, 2.4, -33.15);
+  const redStripeBack = new THREE.Mesh(new THREE.BoxGeometry(32.2, 0.5, 0.34), cpsRedMat);
+  redStripeBack.position.set(0, 4.15, -33.12);
+  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 66.4), classGreenWallMat);
+  leftWall.position.set(-16.15, 2.4, 0);
+  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 66.4), classGreenWallMat);
+  rightWall.position.set(16.15, 2.4, 0);
+  const frontWall = new THREE.Mesh(
+    new THREE.PlaneGeometry(32.4, 4.8),
+    new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.85, side: THREE.FrontSide })
+  );
+  frontWall.rotation.y = Math.PI;
+  frontWall.position.set(0, 2.4, 33.15);
+  etecInsideGroup.add(backWall, redStripeBack, leftWall, rightWall, frontWall);
+
+  function addInteriorWall(cx, cz, w, d, mat = classGreenWallMat) {
+    const wMesh = new THREE.Mesh(new THREE.BoxGeometry(w, 4.2, d), mat);
+    wMesh.position.set(cx, 2.1, cz);
     wMesh.receiveShadow = true;
     etecInsideGroup.add(wMesh);
     addObstacleBox(cx, cz, w, d, etecInsideObstacles);
   }
 
-  // Left corridor wall segments (x = -4.2) with doorways at z = -6.5 and z = +5.5
-  addInteriorWall(-4.2, -10.8, 0.28, 4.4); // z: -13 to -8.6
-  addInteriorWall(-4.2, -2.0, 0.28, 5.2); // z: -4.6 to +0.6
-  addInteriorWall(-4.2, 2.2, 0.28, 3.2); // z: +0.6 to +3.8
-  addInteriorWall(-4.2, 10.1, 0.28, 5.8); // z: +7.2 to +13
+  // Carteira + 1 Cadeira ATRÁS idêntica à foto enviada!
+  function createPhotoDeskAndChair(x, z, withPC = false) {
+    const g = new THREE.Group();
+    g.position.set(x, 0, z);
 
-  // Right corridor wall segments (x = +4.2) with doorways at z = -6.5 and z = +5.5
-  addInteriorWall(4.2, -10.8, 0.28, 4.4);
-  addInteriorWall(4.2, -2.0, 0.28, 5.2);
-  addInteriorWall(4.2, 2.2, 0.28, 3.2);
-  addInteriorWall(4.2, 10.1, 0.28, 5.8);
+    // Tampo branco
+    const top = new THREE.Mesh(gDeskTop, deskTopMat);
+    top.position.y = 0.76;
+    top.castShadow = true;
+    g.add(top);
 
-  // Horizontal room dividers (z = 0) separating North labs from South rooms
-  addInteriorWall(-10.1, 0, 11.6, 0.28); // separates Lab Info (NW) from Sala de Aula (SW)
-  addInteriorWall(10.1, 0, 11.6, 0.28); // separates Lab Química (NE) from Cantina (SE)
-
-  // --- ALA NOROESTE (NW): LABORATÓRIO DE INFORMÁTICA / M-TEC (Muzzonline) ---
-  const infoSign = new THREE.Mesh(
-    new THREE.BoxGeometry(5.8, 1.5, 0.12),
-    new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("LAB. DE INFORMÁTICA • ETEC", "Desenvolvimento de Sistemas & Info", "#1e3a8a", "#38bdf8"),
-    })
-  );
-  infoSign.position.set(-10.2, 2.7, -12.88);
-  etecInsideGroup.add(infoSign);
-
-  // Computer Lab Benches + PCs
-  [-12.5, -8.2].forEach((bx) => {
-    const pcDesk = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.9, 5.2), labGranite);
-    pcDesk.position.set(bx, 0.45, -7.2);
-    pcDesk.castShadow = true;
-    etecInsideGroup.add(pcDesk);
-    addObstacleBox(bx, -7.2, 2.3, 5.3, etecInsideObstacles);
-
-    [-8.8, -7.2, -5.6].forEach((mz) => {
-      const monitor = new THREE.Mesh(
-        new THREE.BoxGeometry(0.12, 0.52, 0.78),
-        new THREE.MeshStandardMaterial({ color: 0x0ea5e9, emissive: 0x0284c7, emissiveIntensity: 0.6 })
-      );
-      monitor.position.set(bx + 0.3, 1.22, mz);
-      etecInsideGroup.add(monitor);
+    // Pernas de ferro verde escuro + pés horizontais + gradinha embaixo
+    [-0.48, 0.48].forEach((lx) => {
+      const post = new THREE.Mesh(gDeskLegV, greenSteelMat);
+      post.position.set(lx, 0.38, 0);
+      const foot = new THREE.Mesh(gDeskFoot, greenSteelMat);
+      foot.position.set(lx, 0.02, 0);
+      g.add(post, foot);
     });
-  });
+    const basket = new THREE.Mesh(gDeskBasket, greenSteelMat);
+    basket.position.set(0, 0.62, 0);
+    g.add(basket);
 
-  // --- ALA NORDESTE (NE): LABORATÓRIO DE QUÍMICA & CIÊNCIAS (Kaio Wendell + Bancada NPK) ---
-  const chemBoard = new THREE.Mesh(
-    new THREE.BoxGeometry(6.2, 1.65, 0.12),
-    new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("LABORATÓRIO DE QUÍMICA • ETEC", "Estequiometria • pH • Síntese NPK", "#14532d", "#fef08a"),
-    })
-  );
-  chemBoard.position.set(10.2, 2.7, -12.88);
-  etecInsideGroup.add(chemBoard);
+    // Computador (nos Laboratórios de Informática 24, 15 e 7)
+    if (withPC) {
+      const mon = new THREE.Mesh(gMonitor, pcScreenMat);
+      mon.position.set(-0.08, 1.06, -0.14);
+      const stand = new THREE.Mesh(gMonStand, pcCaseMat);
+      stand.position.set(-0.08, 0.84, -0.14);
+      const kb = new THREE.Mesh(gKeyboard, pcCaseMat);
+      kb.position.set(-0.08, 0.8, 0.14);
+      const cpu = new THREE.Mesh(gCpu, pcCaseMat);
+      cpu.position.set(0.38, 0.98, -0.06);
+      g.add(mon, stand, kb, cpu);
+    }
 
-  // Main Chemistry Experimental Bench (Interactable!) at (10.2, 0, -9.2)
-  const chemBench = new THREE.Mesh(new THREE.BoxGeometry(5.6, 1.05, 1.6), labGranite);
-  chemBench.position.set(10.2, 0.525, -9.2);
-  chemBench.castShadow = true;
-  etecInsideGroup.add(chemBench);
-  addObstacleBox(10.2, -9.2, 5.7, 1.7, etecInsideObstacles);
+    // CADEIRA ATRÁS DA MESA (+z), voltada para o quadro branco (-z)!
+    const cz = 0.56;
+    const seat = new THREE.Mesh(gChairSeat, chairWoodMat);
+    seat.position.set(0, 0.45, cz);
+    const back = new THREE.Mesh(gChairBack, chairWoodMat);
+    back.position.set(0, 0.78, cz + 0.21);
+    g.add(seat, back);
+    [
+      [-0.21, cz - 0.18],
+      [0.21, cz - 0.18],
+      [-0.21, cz + 0.18],
+      [0.21, cz + 0.18],
+    ].forEach(([cx, clz]) => {
+      const cl = new THREE.Mesh(gChairLeg, greenSteelMat);
+      cl.position.set(cx, 0.22, clz);
+      g.add(cl);
+    });
+    [-0.21, 0.21].forEach((ux) => {
+      const up = new THREE.Mesh(gChairUp, greenSteelMat);
+      up.position.set(ux, 0.65, cz + 0.21);
+      g.add(up);
+    });
 
-  [
-    [8.2, 0x38bdf8],
-    [9.2, 0x4ade80],
-    [10.2, 0xec4899],
-    [11.2, 0xa855f7],
-    [12.2, 0xfacc15],
-  ].forEach(([fx, col]) => {
-    const flask = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.12, 0.22, 0.48, 12),
-      new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.35 })
+    etecInsideGroup.add(g);
+    addObstacleBox(x, z + 0.22, 1.14, 1.18, etecInsideObstacles);
+  }
+
+  // Construtor fiel de Sala de Aula / Lab Info da ETECAMP (12.2m x 11m)
+  function buildPhotoRoom({ side, bandIndex, code, subtitle, isComputerLab = false, customKind = null }) {
+    const isWest = side === "west";
+    const zMin = -33 + bandIndex * 11;
+    const zMax = zMin + 11;
+    const zCenter = (zMin + zMax) * 0.5;
+    const xCenter = isWest ? -9.9 : 9.9;
+    const corrX = isWest ? -3.8 : 3.8;
+    const outerX = isWest ? -15.95 : 15.95;
+
+    // Parede divisória Sul da sala (se não for a última)
+    if (bandIndex < 5) {
+      addInteriorWall(xCenter, zMax, 12.1, 0.26, classGreenWallMat);
+    }
+
+    // Parede do Corredor com porta ampla de 2.6m perto da frente da sala (igual à foto!)
+    // Porta fica de zMin + 1.0 até zMin + 3.6
+    const doorZ1 = zMin + 1.0;
+    const doorZ2 = zMin + 3.6;
+    const doorMidZ = (doorZ1 + doorZ2) * 0.5;
+    addInteriorWall(corrX, zMin + 0.5, 0.26, 1.0, hallWallMat);
+    addInteriorWall(corrX, (doorZ2 + zMax) * 0.5, 0.26, zMax - doorZ2, hallWallMat);
+
+    // Folha da Porta Azul Royal aberta p/ dentro ao lado da entrada + maçaneta prateada!
+    const doorPanel = new THREE.Mesh(new THREE.BoxGeometry(1.1, 2.35, 0.08), blueDoorMat);
+    doorPanel.position.set(corrX + (isWest ? -0.62 : 0.62), 1.175, doorZ1 + 0.08);
+    const doorHandle = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.05, 0.14), silverMat);
+    doorHandle.position.set(corrX + (isWest ? -0.95 : 0.95), 1.05, doorZ1 + 0.12);
+    etecInsideGroup.add(doorPanel, doorHandle);
+
+    // Placa do Corredor identificando a sala acima da porta!
+    const hallPlaque = new THREE.Mesh(
+      new THREE.BoxGeometry(0.1, 0.72, 2.7),
+      new THREE.MeshBasicMaterial({
+        map: createWoodSignTexture(code, subtitle, isComputerLab ? "#1e3a8a" : customKind === "nurse" ? "#065f46" : "#14532d", "#fef08a"),
+      })
     );
-    flask.position.set(fx, 1.28, -9.2);
-    etecInsideGroup.add(flask);
-  });
+    hallPlaque.position.set(corrX + (isWest ? 0.2 : -0.2), 2.95, doorMidZ);
+    etecInsideGroup.add(hallPlaque);
 
-  const chemBenchSign = new THREE.Mesh(
-    new THREE.BoxGeometry(3.4, 0.62, 0.1),
-    new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("BANCADA QUÍMICA NPK", "Espaço / E: Sintetizar Adubo", "#0f172a", "#38bdf8"),
-    })
-  );
-  chemBenchSign.position.set(10.2, 1.85, -8.4);
-  etecInsideGroup.add(chemBenchSign);
+    if (customKind === "cantina" || customKind === "lounge") {
+      // Ambientes especiais (Cantina / Convivência)
+      const roomSign = new THREE.Mesh(
+        new THREE.BoxGeometry(5.2, 1.25, 0.1),
+        new THREE.MeshBasicMaterial({
+          map: createWoodSignTexture(code, subtitle, "#991b1b", "#fef08a"),
+        })
+      );
+      roomSign.position.set(xCenter, 2.8, zMin + 0.24);
+      etecInsideGroup.add(roomSign);
 
-  // --- ALA SUDOESTE (SW): SALA DE AULA (Ensino Médio / M-Tec) ---
-  const classBoard = new THREE.Mesh(
-    new THREE.BoxGeometry(5.6, 1.5, 0.12),
-    new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("SALA DE AULA • M-TEC ETEC", "Administração, Logística & Química", "#14532d", "#ffffff"),
-    })
-  );
-  classBoard.position.set(-10.2, 2.5, 0.22);
-  etecInsideGroup.add(classBoard);
+      if (customKind === "cantina") {
+        const counter = new THREE.Mesh(new THREE.BoxGeometry(5.2, 1.1, 1.3), cpsRedMat);
+        counter.position.set(xCenter + 1.2, 0.55, zMin + 2.2);
+        etecInsideGroup.add(counter);
+        addObstacleBox(xCenter + 1.2, zMin + 2.2, 5.3, 1.4, etecInsideObstacles);
+        [zCenter + 1.2, zCenter + 3.6].forEach((tz) => {
+          const tbl = new THREE.Mesh(new THREE.BoxGeometry(4.2, 0.82, 1.25), chairWoodMat);
+          tbl.position.set(xCenter, 0.41, tz);
+          etecInsideGroup.add(tbl);
+          addObstacleBox(xCenter, tz, 4.3, 1.35, etecInsideObstacles);
+        });
+      } else {
+        // Sala de Convivência / Armários CPS
+        [-2.2, 1.6].forEach((ox) => {
+          const lk = new THREE.Mesh(new THREE.BoxGeometry(0.7, 2.2, 4.4), lockerMat);
+          lk.position.set(xCenter + ox, 1.1, zCenter + 1.0);
+          etecInsideGroup.add(lk);
+          addObstacleBox(xCenter + ox, zCenter + 1.0, 0.8, 4.5, etecInsideObstacles);
+        });
+      }
+      return;
+    }
 
-  [
-    [-12.8, 3.8],
-    [-9.8, 3.8],
-    [-12.8, 7.2],
-    [-9.8, 7.2],
-  ].forEach(([dx, dz]) => {
-    const desk = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.82, 1.1), deskWood);
-    desk.position.set(dx, 0.41, dz);
-    desk.castShadow = true;
-    etecInsideGroup.add(desk);
-    addObstacleBox(dx, dz, 1.8, 1.2, etecInsideObstacles);
-  });
+    // --- DETALHES FIÉIS À FOTO EM TODAS AS SALAS & LABS ---
+    // 1. Revestimento interno verde-oliva na parede norte da sala + faixa de madeira marrom em todas as paredes!
+    const frontGreen = new THREE.Mesh(new THREE.PlaneGeometry(11.9, 4.2), classGreenWallMat);
+    frontGreen.position.set(xCenter, 2.1, zMin + 0.16);
+    etecInsideGroup.add(frontGreen);
 
-  // --- ALA SUDESTE (SE): CANTINA & REFEITÓRIO DA ETEC (Félix & Pão) ---
-  const cantinaSign = new THREE.Mesh(
-    new THREE.BoxGeometry(5.4, 1.4, 0.12),
-    new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("CANTINA & REFEITÓRIO ETEC", "Salgados, Lanches & Resenha", "#991b1b", "#fef08a"),
-    })
-  );
-  cantinaSign.position.set(10.2, 2.6, 0.22);
-  etecInsideGroup.add(cantinaSign);
+    const trimFront = new THREE.Mesh(new THREE.BoxGeometry(11.9, 0.13, 0.06), woodTrimMat);
+    trimFront.position.set(xCenter, 0.96, zMin + 0.18);
+    const trimOuter = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.13, 10.6), woodTrimMat);
+    trimOuter.position.set(outerX + (isWest ? 0.05 : -0.05), 0.96, zCenter);
+    const trimBack = new THREE.Mesh(new THREE.BoxGeometry(11.9, 0.13, 0.06), woodTrimMat);
+    trimBack.position.set(xCenter, 0.96, zMax - 0.18);
+    etecInsideGroup.add(trimFront, trimOuter, trimBack);
 
-  const cantinaCounter = new THREE.Mesh(new THREE.BoxGeometry(4.6, 1.1, 1.4), cpsRedMat);
-  cantinaCounter.position.set(11.8, 0.55, 2.4);
-  cantinaCounter.castShadow = true;
-  etecInsideGroup.add(cantinaCounter);
-  addObstacleBox(11.8, 2.4, 4.7, 1.5, etecInsideObstacles);
+    // 2. Quadro Branco com moldura de alumínio na parede frontal (igual à foto!)
+    const wbFrame = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.55, 0.08), silverMat);
+    wbFrame.position.set(xCenter + (isWest ? -0.9 : 0.9), 2.15, zMin + 0.22);
+    const wbSurface = new THREE.Mesh(new THREE.PlaneGeometry(4.2, 1.38), whiteboardMat);
+    wbSurface.position.set(xCenter + (isWest ? -0.9 : 0.9), 2.15, zMin + 0.27);
+    etecInsideGroup.add(wbFrame, wbSurface);
 
-  const cantinaTable = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.85, 1.6), deskWood);
-  cantinaTable.position.set(9.2, 0.425, 8.8);
-  cantinaTable.castShadow = true;
-  etecInsideGroup.add(cantinaTable);
-  addObstacleBox(9.2, 8.8, 3.5, 1.7, etecInsideObstacles);
+    // Quadro de avisos na parede lateral externa
+    const noticeBoard = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.15, 1.7), whiteboardMat);
+    noticeBoard.position.set(outerX + (isWest ? 0.08 : -0.08), 2.1, zCenter - 1.2);
+    etecInsideGroup.add(noticeBoard);
 
-  // --- CORREDOR CENTRAL: Lockers, CPS Mural & Exit Door ---
+    // 3. Ventilador de parede com grade laranja + eletroduto vertical no canto (igual à foto!)
+    const fanX = outerX + (isWest ? 0.36 : -0.36);
+    const fanZ = zMin + 1.15;
+    const conduit = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 2.3, 6), silverMat);
+    conduit.position.set(fanX, 2.0, fanZ);
+    const switchBox = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.2, 0.14), silverMat);
+    switchBox.position.set(fanX, 1.55, fanZ);
+    const fanGrate = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.42, 0.14, 14), orangeGrateMat);
+    fanGrate.rotation.z = Math.PI / 2;
+    fanGrate.position.set(fanX + (isWest ? 0.18 : -0.18), 3.18, fanZ);
+    const fanSpinner = new THREE.Group();
+    fanSpinner.position.copy(fanGrate.position);
+    for (let b = 0; b < 3; b++) {
+      const bl = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.34, 0.08), fanBladeMat);
+      bl.rotation.x = (b * Math.PI * 2) / 3;
+      fanSpinner.add(bl);
+    }
+    classroomFans.push(fanSpinner);
+    etecInsideGroup.add(conduit, switchBox, fanGrate, fanSpinner);
+
+    if (customKind === "nurse") {
+      // --- LABORATÓRIO DE ENFERMAGEM (Kaio Wendell + Maca + Armário + Bancada NPK!) ---
+      const nurseBanner = new THREE.Mesh(
+        new THREE.BoxGeometry(4.2, 1.25, 0.06),
+        new THREE.MeshBasicMaterial({
+          map: createWoodSignTexture("LAB. DE ENFERMAGEM • ETECAMP", "Kaio Wendell • Saúde & Adubo NPK", "#065f46", "#fef08a"),
+        })
+      );
+      nurseBanner.position.set(xCenter + 0.9, 2.15, zMin + 0.28);
+      etecInsideGroup.add(nurseBanner);
+
+      // Maca hospitalar de enfermagem
+      const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.72, 1.05), silverMat);
+      bedFrame.position.set(xCenter - 1.2, 0.36, zCenter + 2.4);
+      const bedSheet = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.2, 0.96), nurseWhiteMat);
+      bedSheet.position.set(xCenter - 1.2, 0.8, zCenter + 2.4);
+      const bedPillow = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.14, 0.72), nurseMintMat);
+      bedPillow.position.set(xCenter - 2.0, 0.94, zCenter + 2.4);
+      etecInsideGroup.add(bedFrame, bedSheet, bedPillow);
+      addObstacleBox(xCenter - 1.2, zCenter + 2.4, 2.3, 1.15, etecInsideObstacles);
+
+      // Armário de medicamentos + Cruz verde
+      const medCab = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.1, 0.65), nurseWhiteMat);
+      medCab.position.set(xCenter + 4.4, 1.05, zCenter + 2.6);
+      const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.56, 0.05), nurseMintMat);
+      crossV.position.set(xCenter + 4.4, 1.55, zCenter + 2.25);
+      const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.16, 0.05), nurseMintMat);
+      crossH.position.set(xCenter + 4.4, 1.55, zCenter + 2.25);
+      etecInsideGroup.add(medCab, crossV, crossH);
+      addObstacleBox(xCenter + 4.4, zCenter + 2.6, 1.5, 0.75, etecInsideObstacles);
+
+      // Bancada Química/Enfermagem NPK interativa em (12.4, 0, 2.2)!
+      const benchX = 12.4;
+      const benchZ = 2.2;
+      const chemBench = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.02, 1.35), labGranite);
+      chemBench.position.set(benchX, 0.51, benchZ);
+      etecInsideGroup.add(chemBench);
+      addObstacleBox(benchX, benchZ, 4.5, 1.45, etecInsideObstacles);
+      [
+        [benchX - 1.5, 0x38bdf8],
+        [benchX - 0.75, 0x4ade80],
+        [benchX, 0xec4899],
+        [benchX + 0.75, 0xa855f7],
+        [benchX + 1.5, 0xfacc15],
+      ].forEach(([fx, col]) => {
+        const flask = new THREE.Mesh(
+          new THREE.CylinderGeometry(0.1, 0.18, 0.44, 10),
+          new THREE.MeshStandardMaterial({ color: col, emissive: col, emissiveIntensity: 0.35 })
+        );
+        flask.position.set(fx, 1.24, benchZ);
+        etecInsideGroup.add(flask);
+      });
+      const benchSign = new THREE.Mesh(
+        new THREE.BoxGeometry(3.2, 0.58, 0.08),
+        new THREE.MeshBasicMaterial({
+          map: createWoodSignTexture("BANCADA NPK DO KAIO", "Tecla E: Sintetizar Adubo", "#0f172a", "#38bdf8"),
+        })
+      );
+      benchSign.position.set(benchX, 1.82, benchZ + 0.72);
+      etecInsideGroup.add(benchSign);
+      return;
+    }
+
+    // 4. Fileiras de Carteiras + Cadeira ATRÁS (3 colunas x 3 fileiras = 9 mesas por sala!)
+    const colOffsets = [-3.1, 0.0, 3.1];
+    const rowZ = [zMin + 4.3, zMin + 6.65, zMin + 9.0];
+    colOffsets.forEach((ox) => {
+      rowZ.forEach((rz) => {
+        createPhotoDeskAndChair(xCenter + ox, rz, isComputerLab);
+      });
+    });
+  }
+
+  // ===================== ALA OESTE: SALAS 3AI, 2AI, 1AI, 3A, 2A, 1A =====================
+  buildPhotoRoom({ side: "west", bandIndex: 0, code: "SALA 3AI", subtitle: "Pão & Muzzonline" });
+  buildPhotoRoom({ side: "west", bandIndex: 1, code: "SALA 2AI", subtitle: "Ensino Médio + Info" });
+  buildPhotoRoom({ side: "west", bandIndex: 2, code: "SALA 1AI", subtitle: "Félix • Missões PAC" });
+  buildPhotoRoom({ side: "west", bandIndex: 3, code: "SALA 3A", subtitle: "3º Ano A • ETECAMP" });
+  buildPhotoRoom({ side: "west", bandIndex: 4, code: "SALA 2A", subtitle: "2º Ano A • ETECAMP" });
+  buildPhotoRoom({ side: "west", bandIndex: 5, code: "SALA 1A", subtitle: "1º Ano A • ETECAMP" });
+
+  // ===================== ALA LESTE: LABS 24, 15, 7, ENFERMAGEM, CANTINA, CONVIVÊNCIA =====================
+  buildPhotoRoom({ side: "east", bandIndex: 0, code: "LAB. INFO 24", subtitle: "B****** & T*******", isComputerLab: true });
+  buildPhotoRoom({ side: "east", bandIndex: 1, code: "LAB. INFO 15", subtitle: "Informática • PCs", isComputerLab: true });
+  buildPhotoRoom({ side: "east", bandIndex: 2, code: "LAB. INFO 7", subtitle: "Informática • Redes", isComputerLab: true });
+  buildPhotoRoom({ side: "east", bandIndex: 3, code: "LAB. ENFERMAGEM", subtitle: "Kaio Wendell • Adubo", customKind: "nurse" });
+  buildPhotoRoom({ side: "east", bandIndex: 4, code: "CANTINA ETECAMP", subtitle: "Salgados & Resenha", customKind: "cantina" });
+  buildPhotoRoom({ side: "east", bandIndex: 5, code: "CONVIVÊNCIA CPS", subtitle: "Armários & Mural", customKind: "lounge" });
+
+  // Letreiro Principal no Fundo do Corredor + Saída no Sul (z = +31.4)
   const cpsCenterSign = new THREE.Mesh(
-    new THREE.BoxGeometry(6.6, 1.5, 0.14),
+    new THREE.BoxGeometry(6.8, 1.5, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("ETEC DE CAMPO LIMPO PAULISTA", "Corredor Principal • Centro Paula Souza", "#7f1d1d", "#ffffff"),
+      map: createWoodSignTexture("ETECAMP • CAMPO LIMPO PAULISTA", "3AI • 2AI • 1AI • 3A • 2A • 1A • Labs 24/15/7", "#7f1d1d", "#ffffff"),
     })
   );
-  cpsCenterSign.position.set(0, 2.75, -12.88);
+  cpsCenterSign.position.set(0, 2.85, -32.92);
   etecInsideGroup.add(cpsCenterSign);
 
-  // School Lockers along corridor wall
-  const lockers = new THREE.Mesh(new THREE.BoxGeometry(0.65, 2.3, 4.2), lockerMat);
-  lockers.position.set(-3.65, 1.15, -2.0);
-  lockers.castShadow = true;
-  etecInsideGroup.add(lockers);
-  addObstacleBox(-3.65, -2.0, 0.75, 4.3, etecInsideObstacles);
-
-  // Exit Doormat at (0, 0, 11.4)
   const exitMat = new THREE.Mesh(
-    new THREE.BoxGeometry(3.0, 0.05, 1.3),
+    new THREE.BoxGeometry(3.2, 0.05, 1.4),
     new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.85 })
   );
-  exitMat.position.set(0, 0.025, 11.4);
+  exitMat.position.set(0, 0.025, 31.4);
   etecInsideGroup.add(exitMat);
 
   const exitBoard = new THREE.Mesh(
-    new THREE.BoxGeometry(3.2, 0.72, 0.1),
+    new THREE.BoxGeometry(3.4, 0.72, 0.1),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("SAIR P/ O PÁTIO EXTERNO", "Rumo à Estação Botujuru", "#7f1d1d", "#fef08a"),
+      map: createWoodSignTexture("SAIR P/ ENTRADA PRINCIPAL", "Pátio Aberto • Quadra • Estação", "#7f1d1d", "#fef08a"),
     })
   );
-  exitBoard.position.set(0, 0.62, 12.35);
+  exitBoard.position.set(0, 0.65, 32.5);
   etecInsideGroup.add(exitBoard);
 
-  // Spawn the 4 memorable ETEC NPCs inside their respective rooms!
+  // Saída Aberta nos Fundos do Corredor (z = -31.4 -> Parte Externa Fundos)
+  const exitBackMat = new THREE.Mesh(
+    new THREE.BoxGeometry(3.2, 0.05, 1.4),
+    new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.85 })
+  );
+  exitBackMat.position.set(0, 0.025, -31.4);
+  etecInsideGroup.add(exitBackMat);
+
+  const exitBackBoard = new THREE.Mesh(
+    new THREE.BoxGeometry(4.2, 0.72, 0.1),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("ENTRADA ABERTA • SAIR P/ FUNDOS", "Parte Externa Fundos & Sala de Instrumentos", "#1e3a8a", "#ffffff"),
+    })
+  );
+  exitBackBoard.position.set(0, 0.95, -32.6);
+  etecInsideGroup.add(exitBackBoard);
+
+  // Saída Lateral do Corredor para o Estacionamento (x = -3.4, z = 29.2)
+  const exitParkMat = new THREE.Mesh(
+    new THREE.BoxGeometry(1.1, 0.05, 2.2),
+    new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.85 })
+  );
+  exitParkMat.position.set(-3.15, 0.025, 29.2);
+  etecInsideGroup.add(exitParkMat);
+
+  const exitParkBoard = new THREE.Mesh(
+    new THREE.BoxGeometry(0.1, 0.76, 3.0),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("SAIR P/ ESTACIONAMENTO", "Acesso lateral ao estacionamento (E)", "#0f766e", "#fef08a"),
+    })
+  );
+  exitParkBoard.position.set(-3.62, 2.15, 29.2);
+  etecInsideGroup.add(exitParkBoard);
+
+  // ===================== TODOS OS NPCs DA ETECAMP NAS SUAS SALAS EXATAS =====================
   const npcSpecs = [
     {
       id: "muzzonline",
       name: "Muzzonline",
-      roleSub: "Lab Info • +Insanidade",
-      pos: new THREE.Vector3(-6.0, 0, -4.5), // Inside Computer Lab (NW)
-      yaw: 0.45,
+      roleSub: "Sala 3AI • +Insanidade",
+      pos: new THREE.Vector3(-7.0, 0, -30.5), // Sala 3AI (West Band 0)
+      yaw: 0.25,
       skinColor: 0xf3d2b8,
-      shirtColor: 0x9ca3af, // Blusa cinza
-      pantsColor: 0x6b7280, // Calça cinza
-      shoeColor: 0xdc2626, // Tênis vermelho
+      shirtColor: 0x9ca3af,
+      pantsColor: 0x6b7280,
+      shoeColor: 0xdc2626,
       hairStyle: "messy",
       hairColor: 0x261c15,
       redGlasses: true,
     },
     {
-      id: "kaio",
-      name: "Kaio Wendell",
-      roleSub: "Química • Vende Adubo",
-      pos: new THREE.Vector3(7.2, 0, -5.8), // Inside Chemistry Lab (NE)
-      yaw: -0.35,
-      skinColor: 0xf3d2b8,
-      shirtColor: 0x1e293b, // Sobretudo estiloso
-      pantsColor: 0x334155, // Calça social
-      shoeColor: 0x09090b, // Sapato social estiloso
-      hairStyle: "sparse", // Com cabelo visível!
-      hairColor: 0x292524,
-      trenchCoat: true,
-    },
-    {
-      id: "felix",
-      name: "Félix",
-      roleSub: "Missões: PAC / Guloso",
-      pos: new THREE.Vector3(6.8, 0, 5.2), // Inside Cantina (SE)
-      yaw: -0.25,
-      skinColor: 0xf3d2b8,
-      shirtColor: 0x111827, // Blusa de frio preta
-      pantsColor: 0x1e293b,
-      shoeColor: 0x27272a,
-      hairStyle: "long", // Cabelo grande
-      hairColor: 0x1c140d,
-    },
-    {
       id: "pao",
       name: "Pão",
-      roleSub: "Missões: Airfryer / Macho",
-      pos: new THREE.Vector3(12.2, 0, 6.2), // Inside Cantina (SE)
-      yaw: -0.55,
-      skinColor: 0x8d5524, // Moreno
-      shirtColor: 0xdc2626, // Camisa vermelha da ETEC
-      pantsColor: 0x1d4ed8, // Calça jeans
+      roleSub: "Sala 3AI • Missões",
+      pos: new THREE.Vector3(-12.2, 0, -30.5), // Sala 3AI (West Band 0)
+      yaw: 0.15,
+      skinColor: 0x8d5524,
+      shirtColor: 0xdc2626,
+      pantsColor: 0x1d4ed8,
       shoeColor: 0xf8fafc,
       hairStyle: "short",
       hairColor: 0x171717,
       etecBadge: true,
     },
     {
+      id: "felix",
+      name: "Félix",
+      roleSub: "Sala 1AI • Missões PAC",
+      pos: new THREE.Vector3(-9.6, 0, -8.4), // Sala 1AI (West Band 2)
+      yaw: 0.1,
+      skinColor: 0xf3d2b8,
+      shirtColor: 0x111827,
+      pantsColor: 0x1e293b,
+      shoeColor: 0x27272a,
+      hairStyle: "long",
+      hairColor: 0x1c140d,
+    },
+    {
+      id: "kaio",
+      name: "Kaio Wendell",
+      roleSub: "Lab Enfermagem • Adubo",
+      pos: new THREE.Vector3(7.6, 0, 2.8), // Lab Enfermagem (East Band 3)
+      yaw: -0.3,
+      skinColor: 0xf3d2b8,
+      shirtColor: 0x1e293b,
+      pantsColor: 0x334155,
+      shoeColor: 0x09090b,
+      hairStyle: "sparse",
+      hairColor: 0x292524,
+      trenchCoat: true,
+    },
+    {
+      id: "b_lab24",
+      name: "B******",
+      roleSub: "Lab Info 24 • +Insanidade",
+      pos: new THREE.Vector3(7.5, 0, -30.5), // Lab Info 24 (East Band 0)
+      yaw: -0.2,
+      skinColor: 0xf6dac4,
+      shirtColor: 0x4338ca,
+      pantsColor: 0x1e293b,
+      shoeColor: 0x18181b,
+      hairStyle: "wavy_medium",
+      hairColor: 0x3b2417,
+      squareGlasses: true,
+      slimBody: true,
+      bigHead: true,
+    },
+    {
+      id: "t_lab24",
+      name: "T*******",
+      roleSub: "Lab Info 24 • +Insanidade",
+      pos: new THREE.Vector3(12.2, 0, -30.5), // Lab Info 24 (East Band 0)
+      yaw: -0.35,
+      skinColor: 0x9c6438,
+      shirtColor: 0xbe123c,
+      pantsColor: 0x1d4ed8,
+      shoeColor: 0x27272a,
+      hairStyle: "curly_long",
+      hairColor: 0x1a120d,
+      slimBody: true,
+      bigHead: true,
+    },
+    {
       id: "marcelo",
       name: "Marcelo",
-      roleSub: "Careca • Contratar p/ Onça",
-      pos: new THREE.Vector3(1.8, 0, -6.2), // Corredor Principal da ETECAMP
+      roleSub: "Segurança & Vaselina",
+      pos: new THREE.Vector3(1.6, 0, 12.0), // Corredor Principal da ETECAMP
       yaw: -0.15,
       skinColor: 0xdca580,
-      shirtColor: 0x0f172a, // Colete/Polo escuro de segurança
+      shirtColor: 0x0f172a,
       pantsColor: 0x1e293b,
       shoeColor: 0x09090b,
-      hairStyle: "bald", // Totalmente careca!
+      hairStyle: "bald",
+      squareGlasses: true,
     },
   ];
 
@@ -3398,12 +4977,552 @@ function createMachoPlayerModel() {
     lPupil,
     rPupil,
     tongueGroup,
+    skinMat,
+    shirtMat,
+    pocketMat,
+    jeansMat,
+    bootsMat,
+    strawMat,
+    hatBandMat,
   };
   return group;
 }
 
-const playerMesh = createMachoPlayerModel();
+const playerBaseModel = createMachoPlayerModel();
+
+// Texturas procedurais para as Skins dos Títulos (PAC Minecraft, Airfryer, Homem Guloso Chad, Macho Peludo!)
+function createPacMcFaceTexture() {
+  const c = document.createElement("canvas");
+  c.width = 64;
+  c.height = 64;
+  const ctx = c.getContext("2d");
+  // Pele estilo Minecraft
+  ctx.fillStyle = "#f2c6a0";
+  ctx.fillRect(0, 0, 64, 64);
+  // Cabelo castanho escuro do PAC (franja pixelada clássica do TazerCraft!)
+  ctx.fillStyle = "#2b1910";
+  ctx.fillRect(0, 0, 64, 18);
+  ctx.fillRect(0, 18, 12, 12);
+  ctx.fillRect(52, 18, 12, 12);
+  ctx.fillRect(16, 16, 18, 7);
+  ctx.fillRect(38, 16, 10, 5);
+  // Olhos Minecraft (branco + azul-escuro do PAC)
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(8, 28, 16, 8);
+  ctx.fillRect(40, 28, 16, 8);
+  ctx.fillStyle = "#1d4ed8";
+  ctx.fillRect(16, 28, 8, 8);
+  ctx.fillRect(40, 28, 8, 8);
+  // Sorriso pixelado simpático
+  ctx.fillStyle = "#7c3f24";
+  ctx.fillRect(20, 46, 24, 6);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(24, 46, 16, 3);
+  const tex = new THREE.CanvasTexture(c);
+  tex.magFilter = THREE.NearestFilter;
+  if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+function createAirfryerPanelTexture() {
+  const c = document.createElement("canvas");
+  c.width = 256;
+  c.height = 128;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#090d16";
+  ctx.fillRect(0, 0, 256, 128);
+  ctx.strokeStyle = "#38bdf8";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(8, 8, 240, 112);
+  ctx.fillStyle = "#38bdf8";
+  ctx.font = "bold 44px monospace";
+  ctx.textAlign = "center";
+  ctx.fillText("200°C", 128, 58);
+  ctx.fillStyle = "#facc15";
+  ctx.font = "bold 22px sans-serif";
+  ctx.fillText("🍟 AIRFRYER • 15:00", 128, 98);
+  const tex = new THREE.CanvasTexture(c);
+  if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+function createChadFaceTexture() {
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 128;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#c98a63";
+  ctx.fillRect(0, 0, 128, 128);
+  // Sombreamento esculpido das maçãs do rosto e mandíbula de Chad
+  ctx.fillStyle = "rgba(80,40,18,0.34)";
+  ctx.beginPath();
+  ctx.moveTo(8, 62);
+  ctx.lineTo(36, 78);
+  ctx.lineTo(20, 108);
+  ctx.lineTo(4, 96);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(120, 62);
+  ctx.lineTo(92, 78);
+  ctx.lineTo(108, 108);
+  ctx.lineTo(124, 96);
+  ctx.fill();
+  // Sobrancelhas grossas e anguladas de Gigachad
+  ctx.fillStyle = "#181412";
+  ctx.fillRect(16, 30, 34, 8);
+  ctx.fillRect(78, 30, 34, 8);
+  // Olhos confiantes semicerrados
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(20, 42, 26, 10);
+  ctx.fillRect(82, 42, 26, 10);
+  ctx.fillStyle = "#1e293b";
+  ctx.fillRect(28, 43, 12, 9);
+  ctx.fillRect(88, 43, 12, 9);
+  // Nariz marcado
+  ctx.fillStyle = "#a66a46";
+  ctx.fillRect(58, 46, 12, 26);
+  // Sorriso de canto confiante (Chad smirk) + barba desenhada no queixo
+  ctx.strokeStyle = "#3f1d0b";
+  ctx.lineWidth = 4;
+  ctx.beginPath();
+  ctx.moveTo(42, 90);
+  ctx.quadraticCurveTo(66, 98, 88, 84);
+  ctx.stroke();
+  ctx.fillStyle = "rgba(24,20,18,0.45)";
+  ctx.fillRect(24, 104, 80, 22);
+  const tex = new THREE.CanvasTexture(c);
+  if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+function createHairyChestTexture() {
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 128;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#c98a63";
+  ctx.fillRect(0, 0, 128, 128);
+  // Definição muscular do peitoral e tanquinho
+  ctx.strokeStyle = "rgba(92, 46, 20, 0.45)";
+  ctx.lineWidth = 4;
+  ctx.strokeRect(12, 14, 48, 36);
+  ctx.strokeRect(68, 14, 48, 36);
+  ctx.strokeRect(28, 58, 32, 18);
+  ctx.strokeRect(68, 58, 32, 18);
+  ctx.strokeRect(28, 82, 32, 18);
+  ctx.strokeRect(68, 82, 32, 18);
+  // Pelos densos por todo o peito e abdômen (Macho Peludo!)
+  ctx.strokeStyle = "#1c1410";
+  ctx.lineWidth = 2.2;
+  for (let i = 0; i < 140; i++) {
+    const px = 14 + Math.random() * 100;
+    const py = 10 + Math.random() * 104;
+    if (py > 52 && (px < 36 || px > 92)) continue;
+    ctx.beginPath();
+    ctx.moveTo(px, py);
+    ctx.quadraticCurveTo(px + (Math.random() - 0.5) * 9, py + 4, px + (Math.random() - 0.5) * 8, py + 9);
+    ctx.stroke();
+  }
+  const tex = new THREE.CanvasTexture(c);
+  if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+function createMachoBeardFaceTexture() {
+  const c = document.createElement("canvas");
+  c.width = 128;
+  c.height = 128;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#c98a63";
+  ctx.fillRect(0, 0, 128, 128);
+  // Barba cheia e grossa
+  ctx.fillStyle = "#1c1410";
+  ctx.fillRect(10, 72, 108, 56);
+  ctx.fillRect(6, 56, 16, 40);
+  ctx.fillRect(106, 56, 16, 40);
+  // Bigode grosso
+  ctx.fillRect(34, 68, 60, 14);
+  // Boca firme
+  ctx.fillStyle = "#7c3f24";
+  ctx.fillRect(46, 86, 36, 7);
+  // Sobrancelhas fechadas de força
+  ctx.fillStyle = "#18120e";
+  ctx.fillRect(18, 28, 34, 9);
+  ctx.fillRect(76, 28, 34, 9);
+  // Olhos intensos
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(24, 42, 22, 10);
+  ctx.fillRect(82, 42, 22, 10);
+  ctx.fillStyle = "#111827";
+  ctx.fillRect(32, 43, 10, 9);
+  ctx.fillRect(86, 43, 10, 9);
+  const tex = new THREE.CanvasTexture(c);
+  if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+// 1) TÍTULO "PAC" — Skin do Minecraft do PAC do TazerCraft!
+function createPacMinecraftModel() {
+  const g = new THREE.Group();
+  const hoodieMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.72 });
+  const hoodieLightMat = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.7 });
+  const cordMat = new THREE.MeshStandardMaterial({ color: 0xfef08a, roughness: 0.6 });
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x2b1910, roughness: 0.85 });
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xf2c6a0, roughness: 0.7 });
+  const jeansMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.85 });
+  const shoeMat = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.65 });
+  const soleMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.7 });
+
+  const torso = new THREE.Mesh(new THREE.BoxGeometry(0.86, 1.08, 0.46), hoodieMat);
+  torso.position.y = 1.38;
+  torso.castShadow = true;
+  g.add(torso);
+  // Detalhe frontal do moletom azul do PAC + bolso canguru + cordões + capuz
+  const stripe = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.22, 0.48), hoodieLightMat);
+  stripe.position.set(0, 1.54, 0);
+  const pocket = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.28, 0.06), hoodieLightMat);
+  pocket.position.set(0, 1.04, 0.24);
+  const hoodBack = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.26, 0.34), hoodieMat);
+  hoodBack.position.set(0, 1.94, -0.22);
+  const cordL = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.34, 0.04), cordMat);
+  cordL.position.set(-0.14, 1.72, 0.25);
+  const cordR = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.34, 0.04), cordMat);
+  cordR.position.set(0.14, 1.72, 0.25);
+  g.add(stripe, pocket, hoodBack, cordL, cordR);
+
+  // Cabeça quadrada Minecraft com textura do PAC
+  const faceMat = new THREE.MeshStandardMaterial({ map: createPacMcFaceTexture(), roughness: 0.65 });
+  const headMats = [hairMat, hairMat, hairMat, skinMat, faceMat, hairMat];
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.74, 0.74), headMats);
+  head.position.y = 2.32;
+  head.castShadow = true;
+  g.add(head);
+
+  const makeArm = (sx) => {
+    const ag = new THREE.Group();
+    ag.position.set(sx * 0.6, 1.82, 0);
+    const sleeve = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.74, 0.34), hoodieMat);
+    sleeve.position.y = -0.37;
+    sleeve.castShadow = true;
+    const hand = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.24, 0.32), skinMat);
+    hand.position.y = -0.84;
+    ag.add(sleeve, hand);
+    return ag;
+  };
+  const leftArm = makeArm(-1);
+  const rightArm = makeArm(1);
+  g.add(leftArm, rightArm);
+
+  const makeLeg = (sx) => {
+    const lg = new THREE.Group();
+    lg.position.set(sx * 0.22, 0.84, 0);
+    const pant = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.68, 0.38), jeansMat);
+    pant.position.y = -0.34;
+    pant.castShadow = true;
+    const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.16, 0.44), shoeMat);
+    shoe.position.set(0, -0.74, 0.03);
+    const sole = new THREE.Mesh(new THREE.BoxGeometry(0.39, 0.05, 0.45), soleMat);
+    sole.position.set(0, -0.82, 0.03);
+    lg.add(pant, shoe, sole);
+    return lg;
+  };
+  const leftLeg = makeLeg(-1);
+  const rightLeg = makeLeg(1);
+  g.add(leftLeg, rightLeg);
+
+  g.visible = false;
+  g.userData = { leftArm, rightArm, leftForearm: null, rightForearm: null, leftLeg, rightLeg };
+  return g;
+}
+
+// 2) TÍTULO "AIRFRYER" — Vira uma Airfryer 3D e fica parada!
+function createAirfryerModel() {
+  const g = new THREE.Group();
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.28, metalness: 0.35 });
+  const silverMat = new THREE.MeshStandardMaterial({ color: 0xcbd5e1, roughness: 0.22, metalness: 0.85 });
+  const darkMat = new THREE.MeshStandardMaterial({ color: 0x090d14, roughness: 0.5 });
+
+  // 4 pés de borracha
+  [[-0.4, -0.4], [0.4, -0.4], [-0.4, 0.4], [0.4, 0.4]].forEach(([fx, fz]) => {
+    const foot = new THREE.Mesh(new THREE.CylinderGeometry(0.11, 0.12, 0.12, 10), darkMat);
+    foot.position.set(fx, 0.06, fz);
+    g.add(foot);
+  });
+
+  // Corpo principal arredondado preto brilhante
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.64, 1.52, 20), bodyMat);
+  body.position.y = 0.86;
+  body.castShadow = true;
+  g.add(body);
+
+  // Tampa superior arredondada + saída de ar
+  const topCap = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.68, 0.24, 20), bodyMat);
+  topCap.position.y = 1.72;
+  const silverRing = new THREE.Mesh(new THREE.TorusGeometry(0.66, 0.03, 8, 24), silverMat);
+  silverRing.rotation.x = Math.PI / 2;
+  silverRing.position.y = 1.6;
+  const vent = new THREE.Mesh(new THREE.CylinderGeometry(0.32, 0.32, 0.05, 16), darkMat);
+  vent.position.y = 1.85;
+  g.add(topCap, silverRing, vent);
+
+  // Gaveta inferior + puxador prateado na frente (+z)
+  const drawerSeam = new THREE.Mesh(new THREE.CylinderGeometry(0.67, 0.65, 0.04, 20), silverMat);
+  drawerSeam.position.y = 0.72;
+  const handleTop = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.09, 0.26), silverMat);
+  handleTop.position.set(0, 0.64, 0.72);
+  const handleBot = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.09, 0.26), silverMat);
+  handleBot.position.set(0, 0.28, 0.72);
+  const handleBar = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.46, 0.12), bodyMat);
+  handleBar.position.set(0, 0.46, 0.84);
+  const handleTrim = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.42, 0.04), silverMat);
+  handleTrim.position.set(0, 0.46, 0.91);
+  g.add(drawerSeam, handleTop, handleBot, handleBar, handleTrim);
+
+  // Painel digital LED frontal (200°C • 15:00)
+  const panel = new THREE.Mesh(
+    new THREE.PlaneGeometry(0.78, 0.4),
+    new THREE.MeshBasicMaterial({ map: createAirfryerPanelTexture() })
+  );
+  panel.position.set(0, 1.24, 0.68);
+  g.add(panel);
+
+  g.visible = false;
+  g.userData = { isStatic: true, leftArm: null, rightArm: null, leftForearm: null, rightForearm: null, leftLeg: null, rightLeg: null };
+  return g;
+}
+
+// 3) TÍTULO "HOMEM GULOSO" — Bombado, sem camisa, bumbum grande e cara de Chad!
+function createHomemGulosoModel() {
+  const g = new THREE.Group();
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xc98a63, roughness: 0.55 });
+  const skinShadeMat = new THREE.MeshStandardMaterial({ color: 0xb5754e, roughness: 0.6 });
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x161412, roughness: 0.7 });
+  const shortsMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.75 });
+  const bootMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6 });
+
+  // Torso bombado em V (sem camisa!)
+  const upperTorso = new THREE.Mesh(new THREE.BoxGeometry(1.26, 0.72, 0.6), skinMat);
+  upperTorso.position.y = 1.66;
+  upperTorso.castShadow = true;
+  const waist = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.48, 0.5), skinMat);
+  waist.position.y = 1.1;
+  g.add(upperTorso, waist);
+
+  // Peitorais esculpidos + 6-pack abs
+  [-0.29, 0.29].forEach((px) => {
+    const pec = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.36, 0.18), skinMat);
+    pec.position.set(px, 1.72, 0.3);
+    g.add(pec);
+  });
+  for (let row = 0; row < 3; row++) {
+    [-0.17, 0.17].forEach((ax) => {
+      const ab = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.14, 0.12), skinShadeMat);
+      ab.position.set(ax, 1.38 - row * 0.17, 0.26);
+      g.add(ab);
+    });
+  }
+
+  // Shorts + BUMBUM GRANDE esculpido atrás (-z)!
+  const hips = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.42, 0.56), shortsMat);
+  hips.position.y = 0.86;
+  g.add(hips);
+  [-0.26, 0.26].forEach((bx) => {
+    const cheek = new THREE.Mesh(new THREE.SphereGeometry(0.36, 14, 14), shortsMat);
+    cheek.scale.set(1.02, 1.08, 1.25);
+    cheek.position.set(bx, 0.84, -0.34);
+    cheek.castShadow = true;
+    g.add(cheek);
+  });
+
+  // Cabeça com CARA DE CHAD (mandíbula quadrada proeminente + cabelo penteado pra trás!)
+  const chadFaceMat = new THREE.MeshStandardMaterial({ map: createChadFaceTexture(), roughness: 0.55 });
+  const headMats = [skinMat, skinMat, hairMat, skinMat, chadFaceMat, hairMat];
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.72, 0.68), headMats);
+  head.position.y = 2.42;
+  head.castShadow = true;
+  const chadJaw = new THREE.Mesh(new THREE.BoxGeometry(0.66, 0.22, 0.24), skinMat);
+  chadJaw.position.set(0, 2.08, 0.28);
+  const chadHairTop = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.22, 0.76), hairMat);
+  chadHairTop.position.set(0, 2.84, -0.02);
+  const chadPompadour = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.16, 0.26), hairMat);
+  chadPompadour.position.set(0, 2.92, 0.26);
+  g.add(head, chadJaw, chadHairTop, chadPompadour);
+
+  // Braços gigantes bombados
+  const makeBuffArm = (sx) => {
+    const ag = new THREE.Group();
+    ag.position.set(sx * 0.82, 1.88, 0);
+    const delt = new THREE.Mesh(new THREE.SphereGeometry(0.28, 12, 12), skinMat);
+    const bicep = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.5, 0.36), skinMat);
+    bicep.position.y = -0.3;
+    bicep.castShadow = true;
+    const fg = new THREE.Group();
+    fg.position.y = -0.52;
+    const fore = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.46, 0.3), skinMat);
+    fore.position.y = -0.22;
+    fg.add(fore);
+    ag.add(delt, bicep, fg);
+    return { ag, fg };
+  };
+  const lA = makeBuffArm(-1);
+  const rA = makeBuffArm(1);
+  g.add(lA.ag, rA.ag);
+
+  const makeLeg = (sx) => {
+    const lg = new THREE.Group();
+    lg.position.set(sx * 0.26, 0.72, 0);
+    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.56, 0.4), skinMat);
+    thigh.position.y = -0.28;
+    const boot = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.22, 0.48), bootMat);
+    boot.position.set(0, -0.62, 0.05);
+    lg.add(thigh, boot);
+    return lg;
+  };
+  const leftLeg = makeLeg(-1);
+  const rightLeg = makeLeg(1);
+  g.add(leftLeg, rightLeg);
+
+  g.visible = false;
+  g.userData = { leftArm: lA.ag, rightArm: rA.ag, leftForearm: lA.fg, rightForearm: rA.fg, leftLeg, rightLeg };
+  return g;
+}
+
+// 4) TÍTULO "MACHO" — Sem camisa, PELUDO, BOMBADO e FORTE!
+function createMachoHairyBuffModel() {
+  const g = new THREE.Group();
+  const skinMat = new THREE.MeshStandardMaterial({ color: 0xc4825a, roughness: 0.62 });
+  const hairyChestMat = new THREE.MeshStandardMaterial({ map: createHairyChestTexture(), roughness: 0.75 });
+  const hairMat = new THREE.MeshStandardMaterial({ color: 0x1c1410, roughness: 0.92 });
+  const jeansMat = new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.85 });
+  const bootMat = new THREE.MeshStandardMaterial({ color: 0x451a03, roughness: 0.85 });
+
+  // Torso ultra-bombado e peludo sem camisa
+  const torsoMats = [skinMat, skinMat, skinMat, skinMat, hairyChestMat, skinMat];
+  const upperTorso = new THREE.Mesh(new THREE.BoxGeometry(1.38, 0.82, 0.66), torsoMats);
+  upperTorso.position.y = 1.66;
+  upperTorso.castShadow = true;
+  const traps = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.24, 0.54), skinMat);
+  traps.position.y = 2.12;
+  const lowerTorso = new THREE.Mesh(new THREE.BoxGeometry(0.96, 0.46, 0.56), torsoMats);
+  lowerTorso.position.y = 1.06;
+  g.add(upperTorso, traps, lowerTorso);
+
+  // Peitorais maciços + tufos de pelos 3D no peito!
+  [-0.33, 0.33].forEach((px) => {
+    const pec = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.4, 0.2), hairyChestMat);
+    pec.position.set(px, 1.72, 0.34);
+    g.add(pec);
+  });
+  [
+    [-0.3, 1.76, 0.45],
+    [0.3, 1.76, 0.45],
+    [0, 1.62, 0.42],
+    [-0.18, 1.56, 0.43],
+    [0.18, 1.56, 0.43],
+    [0, 1.32, 0.34],
+  ].forEach(([hx, hy, hz]) => {
+    const tuft = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.08, 0.05), hairMat);
+    tuft.position.set(hx, hy, hz);
+    g.add(tuft);
+  });
+
+  // Cabeça barbuda e forte do Macho
+  const beardFaceMat = new THREE.MeshStandardMaterial({ map: createMachoBeardFaceTexture(), roughness: 0.65 });
+  const headMats = [skinMat, skinMat, hairMat, hairMat, beardFaceMat, hairMat];
+  const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.72, 0.7), headMats);
+  head.position.y = 2.52;
+  head.castShadow = true;
+  const hairTop = new THREE.Mesh(new THREE.BoxGeometry(0.74, 0.2, 0.74), hairMat);
+  hairTop.position.y = 2.92;
+  g.add(head, hairTop);
+
+  // Braços gigantes bombados e peludos
+  const makePowerArm = (sx) => {
+    const ag = new THREE.Group();
+    ag.position.set(sx * 0.9, 1.9, 0);
+    const delt = new THREE.Mesh(new THREE.SphereGeometry(0.32, 12, 12), skinMat);
+    const bicep = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.54, 0.42), skinMat);
+    bicep.position.y = -0.32;
+    bicep.castShadow = true;
+    const armHair = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.24, 0.24), hairMat);
+    armHair.position.set(0, -0.32, 0.12);
+    const fg = new THREE.Group();
+    fg.position.y = -0.56;
+    const fore = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.5, 0.36), skinMat);
+    fore.position.y = -0.24;
+    const foreHair = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.22, 0.2), hairMat);
+    foreHair.position.set(0, -0.22, 0.11);
+    fg.add(fore, foreHair);
+    ag.add(delt, bicep, armHair, fg);
+    return { ag, fg };
+  };
+  const lA = makePowerArm(-1);
+  const rA = makePowerArm(1);
+  g.add(lA.ag, rA.ag);
+
+  const makeLeg = (sx) => {
+    const lg = new THREE.Group();
+    lg.position.set(sx * 0.28, 0.84, 0);
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.68, 0.44), jeansMat);
+    leg.position.y = -0.34;
+    leg.castShadow = true;
+    const boot = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.22, 0.52), bootMat);
+    boot.position.set(0, -0.74, 0.05);
+    lg.add(leg, boot);
+    return lg;
+  };
+  const leftLeg = makeLeg(-1);
+  const rightLeg = makeLeg(1);
+  g.add(leftLeg, rightLeg);
+
+  g.visible = false;
+  g.userData = { leftArm: lA.ag, rightArm: rA.ag, leftForearm: lA.fg, rightForearm: rA.fg, leftLeg, rightLeg };
+  return g;
+}
+
+const playerPacModel = createPacMinecraftModel();
+const playerAirfryerModel = createAirfryerModel();
+const playerGulosoModel = createHomemGulosoModel();
+const playerMachoModel = createMachoHairyBuffModel();
+
+const playerMesh = new THREE.Group();
+playerMesh.add(playerBaseModel, playerPacModel, playerAirfryerModel, playerGulosoModel, playerMachoModel);
+playerMesh.userData = {
+  ...playerBaseModel.userData,
+  titleModels: {
+    "Estudante ETEC": playerBaseModel,
+    PAC: playerPacModel,
+    Airfryer: playerAirfryerModel,
+    "Homem Guloso": playerGulosoModel,
+    Macho: playerMachoModel,
+  },
+  activeRig: playerBaseModel.userData,
+};
 scene.add(playerMesh);
+
+function syncPlayerTitleSkin() {
+  if (!playerMesh || !playerMesh.userData || !playerMesh.userData.titleModels) return;
+  const models = playerMesh.userData.titleModels;
+  const key = models[state.activeTitle] ? state.activeTitle : "Estudante ETEC";
+  Object.entries(models).forEach(([k, m]) => {
+    m.visible = k === key;
+  });
+  playerMesh.userData.activeRig = models[key].userData;
+  syncHeldToolVisibility();
+}
+
+function applyMachoSkin(skinId) {
+  const cfg = MACHO_ALTERNATIVES.find((c) => c.id === skinId) || MACHO_ALTERNATIVES.find((c) => c.id === "clone_classic");
+  if (!cfg || !playerMesh || !playerMesh.userData) return;
+  const u = playerMesh.userData;
+  if (u.shirtMat) u.shirtMat.color.setHex(cfg.shirt);
+  if (u.pocketMat) u.pocketMat.color.setHex(cfg.pocket);
+  if (u.jeansMat) u.jeansMat.color.setHex(cfg.pants);
+  if (u.bootsMat) u.bootsMat.color.setHex(cfg.boots);
+  if (u.strawMat) u.strawMat.color.setHex(cfg.hat);
+  if (u.hatBandMat) u.hatBandMat.color.setHex(cfg.band);
+  if (u.skinMat) u.skinMat.color.setHex(cfg.skin);
+}
 
 // Mãos em 1ª Pessoa fazendo o gesto "6-7" quando Coringando!
 const fpCrazyArmsGroup = new THREE.Group();
@@ -3582,22 +5701,23 @@ function createPlotMesh(index, x, z) {
   };
 }
 
-for (let r = 0; r < 4; r++) {
-  for (let c = 0; c < 4; c++) {
-    const idx = r * 4 + c;
-    const px = -7.8 + c * 3.1;
-    const pz = -2.4 + r * 3.1;
+// Horta principal ampliada: 6x6 = 36 canteiros base (índices 0..35)
+for (let r = 0; r < 6; r++) {
+  for (let c = 0; c < 6; c++) {
+    const idx = r * 6 + c;
+    const px = -8.25 + c * 3.1;
+    const pz = -6.5 + r * 3.1;
     const pl = createPlotMesh(idx, px, pz);
     pl.landReq = 0;
     plots.push(pl);
   }
 }
-// +8 Canteiros na Expansão Oeste (Terreno Nível 1: índices 16..23)
+// +12 Canteiros na Expansão Oeste (Terreno Nível 1: índices 36..47)
 for (let r = 0; r < 4; r++) {
-  for (let c = 0; c < 2; c++) {
-    const idx = 16 + r * 2 + c;
-    const px = -33.2 + c * 3.4;
-    const pz = -3.0 + r * 3.4;
+  for (let c = 0; c < 3; c++) {
+    const idx = 36 + r * 3 + c;
+    const px = -49.0 + c * 3.3;
+    const pz = -5.5 + r * 3.3;
     const pl = createPlotMesh(idx, px, pz);
     pl.landReq = 1;
     pl.unlocked = false;
@@ -3605,12 +5725,12 @@ for (let r = 0; r < 4; r++) {
     plots.push(pl);
   }
 }
-// +8 Canteiros na Expansão Leste (Terreno Nível 2: índices 24..31)
+// +12 Canteiros na Expansão Leste (Terreno Nível 2: índices 48..59)
 for (let r = 0; r < 4; r++) {
-  for (let c = 0; c < 2; c++) {
-    const idx = 24 + r * 2 + c;
-    const px = 25.5 + c * 3.4;
-    const pz = -3.0 + r * 3.4;
+  for (let c = 0; c < 3; c++) {
+    const idx = 48 + r * 3 + c;
+    const px = 39.5 + c * 3.3;
+    const pz = -5.5 + r * 3.3;
     const pl = createPlotMesh(idx, px, pz);
     pl.landReq = 2;
     pl.unlocked = false;
@@ -3768,6 +5888,9 @@ function rebuildLivestockMeshes() {
   livestockEntities.length = 0;
   state.animals.forEach((a) => {
     if (!a.alive) return;
+    const pen = getAnimalPenBounds(a.type);
+    a.x = THREE.MathUtils.clamp(a.x, pen.minX, pen.maxX);
+    a.z = THREE.MathUtils.clamp(a.z, pen.minZ, pen.maxZ);
     const ent = createLivestockMesh(a);
     ent.target = new THREE.Vector3(a.x, 0, a.z);
     ent.wait = Math.random() * 2;
@@ -3970,10 +6093,29 @@ function spawnParticles(pos, color = 0x4ade80, count = 10) {
   }
 }
 
+function createDefaultPhoneState() {
+  return {
+    unread: 3,
+    resenhaFollowers: 44, // Referência fiel ao @only_resenha_
+    resenhaPostsCount: 600, // Referência fiel aos 600 posts
+    likedIds: [],
+    userPosts: [],
+    postedFakeToday: false,
+    instaLikes: {},
+    userInstaPosts: [],
+    postedInstaToday: false,
+    zapReplies: {},
+    gameHighScore: 0,
+  };
+}
+
 // Game State
 const state = {
   mode: "start", // start | playing | paused | modal
-  location: "yard", // yard | room | terminal | etec | etec_inside
+  location: "yard", // yard | room | basement | terminal | etec | etec_inside
+  basementStep: 0,
+  basementUnlocked: false,
+  machoSkin: "clone_classic",
   money: 30,
   day: 1,
   dayMinutes: 7 * 60, // 07:00
@@ -3985,7 +6127,10 @@ const state = {
   coringaTimer: 0,
   currentCoringaLine: "",
   energyTimer: 0, // Speed boost from Pastel/Caldo de Cana or Coffee
+  vaselina: 0, // Frascos de Vaselina do Marcelo
+  vaselinaTimer: 0, // Boost turbinado de velocidade da Vaselina!
   npkDoneToday: false,
+  musicPlayedToday: false,
   compostDoneToday: false,
   coopEggs: 2, // Fresh eggs ready in the chicken coop
   felixStep: 0,
@@ -4058,6 +6203,7 @@ const state = {
   dailyMult: {},
   hotCropId: "alface_crespa",
   orders: [],
+  phone: createDefaultPhoneState(),
   camYaw: 0.2,
   camPitch: 0.48,
   camDist: 16.5,
@@ -4069,6 +6215,8 @@ const player = {
   pos: new THREE.Vector3(0, 0, -6.5),
   facingYaw: 0,
   radius: 0.45,
+  vy: 0,
+  jumpOffset: 0,
 };
 
 function getMaxWater() {
@@ -4092,22 +6240,31 @@ function getActiveHoe() {
 
 function getFarmBounds() {
   return {
-    minX: state.landLevel >= 1 ? -38.5 : -20.5,
-    maxX: state.landLevel >= 2 ? 36.5 : 20.5,
+    minX: state.landLevel >= 1 ? -52.5 : -32.5,
+    maxX: state.landLevel >= 2 ? 52.5 : 32.5,
   };
 }
 
-function getMaxAnimals() {
-  return state.landLevel >= 2 ? 10 : state.landLevel >= 1 ? 6 : 0;
+const ANIMAL_PENS = {
+  cow: { minX: 19.0, maxX: 29.8, minZ: -2.4, maxZ: 9.8 },
+  pig: { minX: -29.8, maxX: -19.0, minZ: 15.6, maxZ: 25.8 },
+  sheep: { minX: -11.4, maxX: 4.8, minZ: 17.2, maxZ: 25.8 },
+};
+
+function getAnimalPenBounds(type) {
+  return ANIMAL_PENS[type] || ANIMAL_PENS.cow;
 }
 
-function getAnimalSpawnPos() {
-  // Animais pastam nos terrenos comprados (Oeste e Leste)
-  const useEast = state.landLevel >= 2 && Math.random() < 0.5;
-  if (useEast) {
-    return { x: 31 + (Math.random() - 0.5) * 8, z: -13 + Math.random() * 6 };
-  }
-  return { x: -32 + (Math.random() - 0.5) * 9, z: 9 + Math.random() * 9 };
+function getMaxAnimals() {
+  return state.landLevel >= 2 ? 12 : state.landLevel >= 1 ? 8 : 4;
+}
+
+function getAnimalSpawnPos(type = "cow") {
+  const pen = getAnimalPenBounds(type);
+  return {
+    x: pen.minX + Math.random() * (pen.maxX - pen.minX),
+    z: pen.minZ + Math.random() * (pen.maxZ - pen.minZ),
+  };
 }
 
 function applyHoeVisual() {
@@ -4178,11 +6335,11 @@ function generateCityOrders() {
 }
 
 function getUnlockedPlotCount() {
-  return Math.min(16, 6 + state.upgrades.plotTier * 2) + (state.landLevel >= 1 ? 8 : 0) + (state.landLevel >= 2 ? 8 : 0);
+  return Math.min(36, 6 + state.upgrades.plotTier * 3) + (state.landLevel >= 1 ? 12 : 0) + (state.landLevel >= 2 ? 12 : 0);
 }
 
 function syncUnlockedPlots() {
-  const baseCount = Math.min(16, 6 + state.upgrades.plotTier * 2);
+  const baseCount = Math.min(36, 6 + state.upgrades.plotTier * 3);
   syncLandExpansion();
   plots.forEach((p, idx) => {
     if (p.landReq > 0) {
@@ -4209,6 +6366,7 @@ function saveGame() {
       visitedEtecToday: state.visitedEtecToday,
       coopEggs: state.coopEggs,
       npkDoneToday: state.npkDoneToday,
+      musicPlayedToday: state.musicPlayedToday,
       compostDoneToday: state.compostDoneToday,
       felixStep: state.felixStep,
       paoStep: state.paoStep,
@@ -4219,6 +6377,10 @@ function saveGame() {
       hasTamedJaguar: state.hasTamedJaguar,
       marceloHired: state.marceloHired,
       marceloDaysLeft: state.marceloDaysLeft,
+      basementStep: state.basementStep,
+      basementUnlocked: state.basementUnlocked,
+      machoSkin: state.machoSkin,
+      vaselina: state.vaselina,
       ownedHoes: state.ownedHoes,
       activeHoe: state.activeHoe,
       landLevel: state.landLevel,
@@ -4226,6 +6388,7 @@ function saveGame() {
       nextAnimalId: state.nextAnimalId,
       upgrades: state.upgrades,
       inventory: state.inventory,
+      phone: state.phone,
       plots: plots.map((p) => ({
         stage: p.stage,
         cropId: p.cropId,
@@ -4254,6 +6417,7 @@ function loadSavedGame() {
     if (typeof data.visitedEtecToday === "boolean") state.visitedEtecToday = data.visitedEtecToday;
     if (typeof data.coopEggs === "number") state.coopEggs = data.coopEggs;
     if (typeof data.npkDoneToday === "boolean") state.npkDoneToday = data.npkDoneToday;
+    if (typeof data.musicPlayedToday === "boolean") state.musicPlayedToday = data.musicPlayedToday;
     if (typeof data.compostDoneToday === "boolean") state.compostDoneToday = data.compostDoneToday;
     if (typeof data.felixStep === "number") state.felixStep = data.felixStep;
     if (typeof data.paoStep === "number") state.paoStep = data.paoStep;
@@ -4264,6 +6428,10 @@ function loadSavedGame() {
     if (typeof data.hasTamedJaguar === "boolean") state.hasTamedJaguar = data.hasTamedJaguar;
     if (typeof data.marceloHired === "boolean") state.marceloHired = data.marceloHired;
     if (typeof data.marceloDaysLeft === "number") state.marceloDaysLeft = data.marceloDaysLeft;
+    if (typeof data.basementStep === "number") state.basementStep = data.basementStep;
+    if (typeof data.basementUnlocked === "boolean") state.basementUnlocked = data.basementUnlocked;
+    if (typeof data.machoSkin === "string") state.machoSkin = data.machoSkin;
+    if (typeof data.vaselina === "number") state.vaselina = data.vaselina;
     if (Array.isArray(data.ownedHoes) && data.ownedHoes.length) {
       state.ownedHoes = data.ownedHoes.filter((h) => HOES[h]);
       if (!state.ownedHoes.includes("comum")) state.ownedHoes.unshift("comum");
@@ -4277,6 +6445,12 @@ function loadSavedGame() {
     if (data.upgrades) Object.assign(state.upgrades, data.upgrades);
     if (typeof state.upgrades.autoWaterLevel !== "number") state.upgrades.autoWaterLevel = 0;
     if (data.inventory) Object.assign(state.inventory, data.inventory);
+    if (data.phone && typeof data.phone === "object") {
+      state.phone = Object.assign(createDefaultPhoneState(), data.phone);
+      if (!Array.isArray(state.phone.likedIds)) state.phone.likedIds = [];
+      if (!Array.isArray(state.phone.userPosts)) state.phone.userPosts = [];
+      if (!Array.isArray(state.phone.userInstaPosts)) state.phone.userInstaPosts = [];
+    }
     if (Array.isArray(data.plots)) {
       data.plots.forEach((sp, idx) => {
         if (plots[idx]) {
@@ -4304,7 +6478,8 @@ function syncBusModelsVisibility() {
 }
 
 function syncHeldToolVisibility() {
-  const showTools = (state.location === "yard" || state.equippedTool === "hoe") && !state.isCrazy;
+  const isAirfryer = state.activeTitle === "Airfryer";
+  const showTools = (state.location === "yard" || state.equippedTool === "hoe") && !state.isCrazy && !isAirfryer;
   if (playerMesh.userData.canGroup) {
     playerMesh.userData.canGroup.visible = showTools && state.equippedTool === "water" && state.location === "yard";
   }
@@ -4316,6 +6491,7 @@ function syncHeldToolVisibility() {
 function setActiveSceneVisibility() {
   exteriorGroup.visible = state.location === "yard";
   interiorGroup.visible = state.location === "room";
+  basementGroup.visible = state.location === "basement";
   terminalGroup.visible = state.location === "terminal";
   etecGroup.visible = state.location === "etec";
   etecInsideGroup.visible = state.location === "etec_inside";
@@ -4329,9 +6505,17 @@ function setActiveSceneVisibility() {
   if (tamedJaguarEntity) {
     tamedJaguarEntity.mesh.visible = state.location === "yard" && state.hasTamedJaguar;
   }
+  if (termJaguarMesh) {
+    termJaguarMesh.visible = state.location === "terminal" && state.hasTamedJaguar;
+  }
+  if (secretTrapdoorMesh) {
+    secretTrapdoorMesh.visible = state.basementUnlocked || state.basementStep >= 2;
+  }
   if (marceloYardEntity) {
     marceloYardEntity.mesh.visible = state.location === "yard" && state.marceloHired;
   }
+  applyMachoSkin(state.machoSkin);
+  syncPlayerTitleSkin();
   syncLandExpansion();
   applyHoeVisual();
   if (maluquinhoEntity) {
@@ -4355,7 +6539,10 @@ function resetToNewFarm() {
   state.coringaTimer = 0;
   state.currentCoringaLine = "";
   state.energyTimer = 0;
+  state.vaselina = 0;
+  state.vaselinaTimer = 0;
   state.npkDoneToday = false;
+  state.musicPlayedToday = false;
   state.compostDoneToday = false;
   state.coopEggs = 2;
   state.felixStep = 0;
@@ -4375,6 +6562,9 @@ function resetToNewFarm() {
   state.hasTamedJaguar = false;
   state.marceloHired = false;
   state.marceloDaysLeft = 0;
+  state.basementStep = 0;
+  state.basementUnlocked = false;
+  state.machoSkin = "clone_classic";
   state.ownedHoes = ["comum"];
   state.activeHoe = "comum";
   state.landLevel = 0;
@@ -4388,6 +6578,7 @@ function resetToNewFarm() {
   state.autoWaterAccum = 0;
   state.firstPerson = false;
   state.fpPitch = 0;
+  state.phone = createDefaultPhoneState();
   state.upgrades = { plotTier: 0, canLevel: 1, fertLevel: 1, standLevel: 1, autoWaterLevel: 0 };
   state.water = getMaxWater();
   CROP_KEYS.forEach((k) => (state.inventory[k] = 0));
@@ -4404,7 +6595,7 @@ function resetToNewFarm() {
   syncUnlockedPlots();
   rollDailyMarket();
   generateCityOrders();
-  player.pos.set(0, 0, -6.5);
+  player.pos.set(0, 0, -11.5);
   player.facingYaw = 0;
   playerMesh.position.copy(player.pos);
   playerMesh.rotation.y = player.facingYaw;
@@ -4421,10 +6612,11 @@ function updateSeedHotbarUI() {
 
 const LOCATION_LABELS = {
   yard: "Pau Arcado",
-  room: "Quarto (Casa)",
+  room: "Casa do Alyffer",
+  basement: "Porão Secreto",
   terminal: "Terminal CLP",
   etec: "ETEC Botujuru",
-  etec_inside: "Dentro da ETEC",
+  etec_inside: "ETECAMP (Salas)",
 };
 
 function updateHUD() {
@@ -4502,7 +6694,24 @@ function updateHUD() {
     coringaBubble.classList.toggle("hidden", !(state.isCrazy && state.mode === "playing"));
   }
 
-  if (state.energyTimer > 0) {
+  if (phoneNotifDot) {
+    const unread = (state.phone && state.phone.unread) || 0;
+    phoneNotifDot.textContent = unread > 9 ? "9+" : String(unread);
+    phoneNotifDot.classList.toggle("hidden", unread <= 0);
+  }
+  if (phoneModal && !phoneModal.classList.contains("hidden") && typeof updatePhoneStatusBar === "function") {
+    updatePhoneStatusBar();
+  }
+
+  if (vaselinaHudBtn && vaselinaHudLabel) {
+    vaselinaHudBtn.classList.toggle("hidden", state.vaselina <= 0);
+    vaselinaHudLabel.textContent = `Vaselina (${state.vaselina})`;
+  }
+
+  if (state.vaselinaTimer > 0) {
+    buffBadge.classList.remove("hidden");
+    buffText.textContent = `🧴 Vaselina (${Math.ceil(state.vaselinaTimer)}s)`;
+  } else if (state.energyTimer > 0) {
     buffBadge.classList.remove("hidden");
     buffText.textContent = `⚡ Energia (${Math.ceil(state.energyTimer)}s)`;
   } else if (isAfterWorkHours()) {
@@ -4513,15 +6722,50 @@ function updateHUD() {
   }
 }
 
+function triggerJump() {
+  if (state.mode !== "playing" || state.isSleeping) return;
+  if (state.activeTitle === "Airfryer") {
+    showToast("🍟", "MODO AIRFRYER!", "Airfryer fica paradinha! Clique no título ou aperte G para trocar de título.");
+    return;
+  }
+  if (player.jumpOffset <= 0.02 && player.vy <= 0) {
+    player.vy = 9.0;
+    player.jumpOffset = 0.03;
+    sfx.play("plant");
+    spawnParticles(new THREE.Vector3(player.pos.x, player.pos.y + 0.12, player.pos.z), 0xe2e8f0, 6);
+  }
+}
+
+function drinkVaselina() {
+  if (state.mode !== "playing" || state.isSleeping) return;
+  if (state.vaselina <= 0) {
+    sfx.play("error");
+    showToast("🧴", "SEM VASELINA", "Compre Vaselina com o Marcelo no corredor da ETECAMP para ficar super rápido!");
+    return;
+  }
+  state.vaselina -= 1;
+  state.vaselinaTimer = 95;
+  sfx.play("upgrade");
+  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.5, 0)), 0x38bdf8, 22);
+  showToast("🧴", "TOMOU VASELINA DO MARCELO!", "+65% Velocidade turbinada por 95 segundos! Deslizando pela roça!");
+  updateHUD();
+  saveGame();
+}
+
 function cycleEquippedTitle() {
   if (state.titles.length <= 1) {
-    showToast("🏆", "TÍTULOS DA ETEC", "Cumpra as missões do Félix e do Pão na ETEC para ganhar novos títulos!");
+    showToast("🏆", "TÍTULOS DA ETEC", "Cumpra as missões do Félix e do Pão na ETEC para ganhar novos títulos e skins!");
     return;
   }
   const idx = state.titles.indexOf(state.activeTitle);
   state.activeTitle = state.titles[(idx + 1) % state.titles.length];
+  syncPlayerTitleSkin();
   sfx.play("plant");
-  showToast("🏆", "TÍTULO EQUIPADO", `Agora você exibe o título "${state.activeTitle}"!`);
+  if (state.activeTitle === "Airfryer") {
+    showToast("🍟", "TÍTULO AIRFRYER EQUIPADO!", "Você virou uma Airfryer parada! Clique no título ou aperte G para trocar.");
+  } else {
+    showToast("🏆", "TÍTULO & SKIN EQUIPADOS", `Agora você está com "${state.activeTitle}"!`);
+  }
   updateHUD();
   saveGame();
 }
@@ -4537,28 +6781,41 @@ function getCropSellPrice(cropId) {
 }
 
 // Interactables & Context Detection across all 5 locations
-const WELL_POS = new THREE.Vector3(-14.5, 0, 2);
-const COOP_POS = new THREE.Vector3(-14.5, 0, -4.0);
-const COMPOST_POS = new THREE.Vector3(-14.5, 0, 8.8);
-const STAND_POS = new THREE.Vector3(10.5, 0, 6.2);
-const DOOR_POS = new THREE.Vector3(0, 0, -7.2);
-const BUS_STOP_YARD_POS = new THREE.Vector3(10.2, 0, 17.8);
+const WELL_POS = new THREE.Vector3(-18.0, 0, -2.5);
+const COOP_POS = new THREE.Vector3(-24.0, 0, -18.8);
+const COMPOST_POS = new THREE.Vector3(-18.0, 0, 6.5);
+const STAND_POS = new THREE.Vector3(21.5, 0, -16.5);
+const DOOR_POS = new THREE.Vector3(0, 0, -13.2);
+const BUS_STOP_YARD_POS = new THREE.Vector3(22.2, 0, 42.0);
 
-const BED_POS = new THREE.Vector3(-3.2, 0, -0.4);
-const MANGA_POS = new THREE.Vector3(0, 0, -2.5);
-const ETEC_POS = new THREE.Vector3(3.2, 0, -1.6);
-const EXIT_POS = new THREE.Vector3(0, 0, 3.3);
+const BED_POS = new THREE.Vector3(-7.0, 0, -5.0);
+const MANGA_POS = new THREE.Vector3(-3.6, 0, -7.0);
+const ETEC_POS = new THREE.Vector3(-8.2, 0, -0.55);
+const COFFEE_POS = new THREE.Vector3(5.4, 0, -2.6);
+const TOILET_POS = new THREE.Vector3(9.1, 0, 2.5);
+const SECRET_SWITCH_1_POS = new THREE.Vector3(7.55, 0, -7.4);
+const SECRET_SWITCH_2_POS = new THREE.Vector3(9.1, 0, 7.1);
+const SECRET_HATCH_POS = new THREE.Vector3(-9.15, 0, -7.05);
+const EXIT_POS = new THREE.Vector3(0, 0, 7.2);
+
+const BASEMENT_EXIT_POS = new THREE.Vector3(0, 0, 7.8);
 
 const TERM_BUS_BACK_POS = new THREE.Vector3(-8.6, 0, -3.2);
+const TERM_JAGUAR_POS = new THREE.Vector3(-11.8, 0, -5.8);
 const TERM_SELL_POS = new THREE.Vector3(-1.6, 0, 4.4);
 const TERM_PASTEL_POS = new THREE.Vector3(-9.2, 0, 4.2);
 const TERM_TRAIN_POS = new THREE.Vector3(9.4, 0, 0);
 
-const ETEC_TRAIN_BACK_POS = new THREE.Vector3(-11.4, 0, 2.0);
-const ETEC_DOOR_IN_POS = new THREE.Vector3(2.5, 0, -4.6);
+const ETEC_TRAIN_BACK_POS = new THREE.Vector3(0, 0, 29.6);
+const ETEC_DOOR_IN_POS = new THREE.Vector3(0, 0, 9.2);
+const ETEC_PARKING_DOOR_POS = new THREE.Vector3(-12.2, 0, 1.0);
+const ETEC_BACK_DOOR_POS = new THREE.Vector3(0, 0, -17.6);
+const ETEC_INSTRUMENTS_POS = new THREE.Vector3(24.5, 0, -21.0);
 
-const ETEC_EXIT_POS = new THREE.Vector3(0, 0, 11.2);
-const CHEM_BENCH_POS = new THREE.Vector3(10.2, 0, -7.6);
+const ETEC_EXIT_POS = new THREE.Vector3(0, 0, 31.4);
+const ETEC_EXIT_BACK_POS = new THREE.Vector3(0, 0, -31.4);
+const ETEC_EXIT_PARKING_POS = new THREE.Vector3(-2.8, 0, 29.2);
+const CHEM_BENCH_POS = new THREE.Vector3(12.4, 0, 2.2);
 
 function distXZ(a, b) {
   return Math.hypot(a.x - b.x, a.z - b.z);
@@ -4572,10 +6829,12 @@ function getFloorYAt(x, z) {
     return 0;
   }
   if (state.location === "etec") {
-    if (x >= -16.1 && x <= -10.9 && z >= -12 && z <= 12) return 0.9;
-    if (x > -10.9 && x <= -7.0 && z >= 0.2 && z <= 3.8) return ((-7.0 - x) / 3.9) * 0.9;
-    if (x >= -10.0 && x <= 17.0 && z >= -8.5 && z <= 12.5) return 0.12;
-    return 0;
+    if (x >= 16.5 && x <= 32.5 && z >= -27.0 && z <= -14.5) return 0.22;
+    if (x >= -33.6 && x <= 33.6 && z >= -28.6 && z <= 19.6) return 0.12;
+    if (z > 19.6 && z <= 23.2) return 0.14;
+    if (x >= -2.8 && x <= 2.8 && z >= 28.3 && z <= 31.3) return ((z - 28.3) / 3.0) * 0.85;
+    if (z > 31.3) return 0.85;
+    return 0.04;
   }
   return 0;
 }
@@ -4586,6 +6845,8 @@ function switchLocation(loc, x, z, facingYaw, camYaw, camPitch, camDist) {
     state.visitedEtecToday = true;
   }
   setActiveSceneVisibility();
+  player.vy = 0;
+  player.jumpOffset = 0;
   player.pos.set(x, getFloorYAt(x, z), z);
   player.facingYaw = facingYaw;
   state.camYaw = state.firstPerson ? facingYaw + Math.PI : camYaw;
@@ -4625,7 +6886,7 @@ function toggleEquippedTool() {
     state.equippedTool === "hoe" ? "⛏️" : "🚿",
     state.equippedTool === "hoe" ? "ENXADA EQUIPADA!" : "REGADOR EQUIPADO!",
     state.equippedTool === "hoe"
-      ? "Segurando a Enxada! Ótima para arar a terra e enfrentar Onças (Espaço / E)."
+      ? "Segurando a Enxada! Ótima para arar a terra e enfrentar Onças (Tecla E)."
       : "Segurando o Regador! Pronto para molhar os canteiros."
   );
   updateHUD();
@@ -4654,7 +6915,7 @@ function triggerPlayerDeath(reason) {
     deathIcon.textContent = "🐆💀";
     deathTitle.textContent = "DERROTADO PELA ONÇA!";
     deathMsg.textContent =
-      "A Onça Pintada foi mais rápida! Na próxima vez, equipe a ENXADA (R) e mantenha distância golpeando com Espaço / E!";
+      "A Onça Pintada foi mais rápida! Na próxima vez, equipe a ENXADA (R) e mantenha distância golpeando com E!";
   } else {
     deathIcon.textContent = "💀";
     deathTitle.textContent = "VOCÊ MORREU!";
@@ -4681,7 +6942,7 @@ function respawnPlayer() {
   if (maluquinhoEntity) maluquinhoEntity.mesh.visible = false;
 
   state.mode = "playing";
-  switchLocation("yard", 0, -6.5, 0, 0.2, 0.48, 16.5);
+  switchLocation("yard", 0, -11.5, 0, 0.2, 0.48, 16.5);
   showToast("❤️", "DE VOLTA AO SÍTIO", "Você acordou bem em Pau Arcado! Respeite o Orelha e fique atento à Onça.");
 }
 
@@ -4700,10 +6961,10 @@ function spawnJaguar() {
   if (!jaguarEntity || state.jaguar.active || state.jaguarDefeated || state.location !== "yard") return;
   const b = getFarmBounds();
   const spawns = [
-    new THREE.Vector3(b.minX + 1.5, 0, 14.5),
-    new THREE.Vector3(b.maxX - 1.5, 0, -14.0),
-    new THREE.Vector3(b.minX + 1.5, 0, -14.0),
-    new THREE.Vector3(b.maxX - 1.5, 0, 12.0),
+    new THREE.Vector3(12.5, 0, 27.5),
+    new THREE.Vector3(b.maxX - 2.5, 0, -24.0),
+    new THREE.Vector3(-14.0, 0, -24.0),
+    new THREE.Vector3(b.maxX - 2.5, 0, 22.0),
   ];
   let best = spawns[0];
   let bestD = -1;
@@ -4735,8 +6996,8 @@ function spawnJaguar() {
     "🐆",
     "ONÇA NA FAZENDA!",
     state.marceloHired
-      ? "O Marcelo careca já está correndo para proteger os animais! Ajude com a ENXADA (R)!"
-      : "Aperte R para segurar a ENXADA e Espaço / E para lutar! (Contrate o Marcelo na ETECAMP)"
+      ? "O Marcelo já está correndo para proteger os animais! Ajude com a ENXADA (R)!"
+      : "Aperte R para segurar a ENXADA e E para lutar! (Contrate o Marcelo na ETECAMP)"
   );
   updateHUD();
 }
@@ -4768,13 +7029,13 @@ function defeatJaguar(byWho = "player") {
       "A ONÇA ESTÁ CAÍDA!",
       state.hasTamedJaguar
         ? "Você já tem uma Onça domada. Chegue perto para soltar esta na mata (+R$ 40)."
-        : "Chegue perto e aperte Espaço / E para DOMAR a Onça! Ela vai proteger sua fazenda!"
+        : "Chegue perto e aperte E para DOMAR a Onça! Ela vai proteger sua fazenda!"
     );
   } else {
     jaguarEntity.mesh.visible = false;
     state.money += 40;
     sfx.play("upgrade");
-    const who = byWho === "marcelo" ? "O Marcelo careca" : "Sua Onça domada";
+    const who = byWho === "marcelo" ? "O Marcelo" : "Sua Onça domada";
     showDayBanner(`🛡️ ${who.toUpperCase()} DERROTOU A ONÇA SELVAGEM! +R$ 40`);
     showToast("🛡️", "FAZENDA PROTEGIDA!", `${who} expulsou a Onça e protegeu os animais! +R$ 40,00`);
   }
@@ -4817,7 +7078,7 @@ function damageJaguar(amount, sourcePos, knockback = 2.8) {
   const klen = Math.hypot(kx, kz) || 1;
   const b = getFarmBounds();
   jaguarEntity.mesh.position.x = THREE.MathUtils.clamp(jaguarEntity.mesh.position.x + (kx / klen) * knockback, b.minX + 1, b.maxX - 1);
-  jaguarEntity.mesh.position.z = THREE.MathUtils.clamp(jaguarEntity.mesh.position.z + (kz / klen) * knockback, -18.5, 20.0);
+  jaguarEntity.mesh.position.z = THREE.MathUtils.clamp(jaguarEntity.mesh.position.z + (kz / klen) * knockback, -27.5, 28.0);
   spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 14);
   spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 0xef4444, 8);
 }
@@ -4874,15 +7135,11 @@ function attackJaguarWithHoe() {
 function buyAnimal(type) {
   const info = ANIMAL_TYPES[type];
   const aliveCount = state.animals.filter((a) => a.alive).length;
-  if (state.landLevel < 1) {
-    showToast("🏞️", "SEM PASTO!", "Compre o Terreno do Pasto Oeste na Cooperativa antes de comprar animais!");
-    return false;
-  }
   if (aliveCount >= getMaxAnimals()) {
-    showToast("🐄", "CURRAL LOTADO", `Máximo de ${getMaxAnimals()} animais! Compre mais terreno para expandir.`);
+    showToast("🐄", "CURRAL LOTADO", `Máximo de ${getMaxAnimals()} animais! Compre Pasto Oeste/Leste para expandir.`);
     return false;
   }
-  const pos = getAnimalSpawnPos();
+  const pos = getAnimalSpawnPos(type);
   const used = state.animals.filter((a) => a.type === type).length;
   const animal = {
     id: state.nextAnimalId++,
@@ -4953,7 +7210,7 @@ function startSleepTransition(fromBed = false) {
 
   // Deita o Alyffer na cama se estiver no quarto!
   if (fromBed && state.location === "room") {
-    playerMesh.position.set(-3.2, 0.9, -2.1);
+    playerMesh.position.set(-7.0, 0.9, -5.0);
     playerMesh.rotation.set(-Math.PI / 2, 0, 0);
   }
 
@@ -4999,12 +7256,45 @@ function startSleepTransition(fromBed = false) {
 }
 
 function enterRoom() {
-  switchLocation("room", 0, 2.2, Math.PI, 0, 0.36, 8.4);
-  showToast("🏠", "QUARTO DO ALYFFER", "Mangás, pôster do PAC (TazerCraft) e material da ETEC!");
+  switchLocation("room", 0, 5.8, Math.PI, 0, 0.4, 11.5);
+  showToast("🏠", "CASA DO ALYFFER", "Quarto, Sala, Cozinha e Banheiro em Pau Arcado!");
 }
 
 function exitRoom() {
-  switchLocation("yard", 0, -6.5, 0, 0.2, 0.48, 16.5);
+  switchLocation("yard", 0, -11.5, 0, 0.2, 0.48, 16.5);
+}
+
+function enterBasement() {
+  switchLocation("basement", 0, 6.2, Math.PI, 0, 0.42, 13.5);
+  sfx.play("upgrade");
+  showDayBanner("🌀 PORÃO SECRETO DESCOBERTO! O MULTIVERSO DOS MACHOS!");
+  showToast("🌀", "PORÃO SECRETO DO ALYFFER", "Fale com as cópias alternativas do Macho para vestir as roupas e cores delas!");
+}
+
+function exitBasement() {
+  switchLocation("room", -8.95, -5.2, 0, 0, 0.4, 11.5);
+  showToast("🪜", "DE VOLTA AO QUARTO", "Você subiu a escada do porão secreto.");
+}
+
+function rideJaguarToTerminal() {
+  if (!state.hasTamedJaguar) return;
+  sfx.play("roar");
+  switchLocation("terminal", -10.0, -4.6, Math.PI / 2, 0.2, 0.45, 16.5);
+  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 18);
+  showDayBanner("🐆 CHEGOU DE ONÇA NO TERMINAL DE CAMPO LIMPO PAULISTA! (SEM ESPERAR O 402!)");
+  showToast("🐆", "CARONA DE ONÇA!", "Sua Onça Domada te trouxe direto ao Terminal CLP, ignorando chuva e horários!");
+}
+
+function rideJaguarToYard() {
+  if (!state.hasTamedJaguar) return;
+  sfx.play("roar");
+  switchLocation("yard", 12.5, 25.0, Math.PI, 0.2, 0.48, 16.5);
+  if (tamedJaguarEntity) {
+    tamedJaguarEntity.mesh.position.set(15.0, 0, 25.2);
+    tamedJaguarEntity.target.set(15.0, 0, 25.2);
+  }
+  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 18);
+  showToast("🐆", "VOLTOU DE ONÇA P/ PAU ARCADO!", "A Onça Domada voou baixo na Estrada do Garcia!");
 }
 
 function takeBus402ToTerminal() {
@@ -5041,13 +7331,13 @@ function takeBus402ToYard() {
     showToast("🚌", "ÔNIBUS 402 FORA DE HORÁRIO", nextMsg);
     return;
   }
-  switchLocation("yard", 10.2, 16.0, Math.PI, 0.2, 0.48, 16.5);
-  showToast("🚌", "VOLTOU PRA PAU ARCADO", `Desceu do Ônibus 402 (${busInfo.activeTime}) na Estrada do Garcia!`);
+  switchLocation("yard", 21.8, 42.4, Math.PI, 0.2, 0.48, 16.5);
+  showToast("🚌", "VOLTOU PRA PAU ARCADO", `Desceu do Ônibus 402 (${busInfo.activeTime}) no ponto ao lado da Estrada do Garcia!`);
 }
 
 function takeTrainToEtec() {
-  switchLocation("etec", -6.4, 2.0, Math.PI / 2, 0.12, 0.46, 17.5);
-  showDayBanner("ETEC DE CAMPO LIMPO PAULISTA • BOTUJURU");
+  switchLocation("etec", 0, 27.6, Math.PI, 0, 0.44, 18.5);
+  showDayBanner("ETEC DE CAMPO LIMPO PAULISTA • ENTRADA PRINCIPAL");
 }
 
 function takeTrainToTerminal() {
@@ -5055,40 +7345,96 @@ function takeTrainToTerminal() {
   showToast("🚆", "LINHA 7-RUBI", "Desembarcou na Estação Campo Limpo Paulista!");
 }
 
-function enterEtecInside() {
-  switchLocation("etec_inside", 0, 9.2, Math.PI, 0, 0.46, 14.5);
-  showToast("🏫", "INTERIOR DA ETEC", "Corredor, Lab de Química, Lab de Info, Sala M-Tec e Cantina!");
+function enterEtecInside(entry = "front") {
+  if (entry === "back") {
+    switchLocation("etec_inside", 0, -29.2, 0, Math.PI, 0.46, 15.5);
+    showToast("🏫", "ENTRADA ABERTA (CORREDOR)", "Entrou no corredor pelos fundos da ETECAMP!");
+  } else if (entry === "parking") {
+    switchLocation("etec_inside", -1.6, 29.0, Math.PI / 2, 0, 0.46, 15.5);
+    showToast("🏫", "ACESSO DO ESTACIONAMENTO", "Entrou no corredor da ETECAMP pelo estacionamento!");
+  } else {
+    switchLocation("etec_inside", 0, 29.2, Math.PI, 0, 0.46, 15.5);
+    showToast("🏫", "ETECAMP EXPANDIDA", "Salas 3AI, 2AI, 1AI, 3A, 2A, 1A • Labs Info 24, 15, 7 e Lab Enfermagem!");
+  }
 }
 
-function exitEtecInside() {
-  switchLocation("etec", 2.5, -3.5, 0, 0.12, 0.46, 17.5);
+function exitEtecInside(exitPoint = "front") {
+  if (exitPoint === "back") {
+    switchLocation("etec", 0, -19.5, Math.PI, Math.PI, 0.44, 18.0);
+  } else if (exitPoint === "parking") {
+    switchLocation("etec", -13.4, 1.0, -Math.PI / 2, -Math.PI / 2, 0.44, 18.0);
+  } else {
+    switchLocation("etec", 0, 10.6, 0, 0, 0.44, 18.5);
+  }
 }
 
 function findCurrentContext() {
   plots.forEach((p) => (p.ring.visible = false));
 
   if (state.location === "room") {
-    if (distXZ(player.pos, EXIT_POS) < 1.7) {
-      return { type: "exit_room", key: "Espaço / E", text: "Sair para o Quintal (Pau Arcado)" };
+    if (distXZ(player.pos, EXIT_POS) < 1.8) {
+      return { type: "exit_room", key: "E", text: "Sair para o Quintal (Pau Arcado)" };
     }
-    if (distXZ(player.pos, BED_POS) < 2.2) {
-      return { type: "bed", key: "Espaço / E", text: "Dormir na Cama (Próximo Dia)" };
+    if (state.basementUnlocked && distXZ(player.pos, SECRET_HATCH_POS) < 1.35) {
+      return { type: "secret_hatch", key: "E", text: "Descer pelo Alçapão Secreto 🪜" };
+    }
+    if (!state.basementUnlocked && state.basementStep === 0 && distXZ(player.pos, SECRET_SWITCH_1_POS) < 1.05) {
+      return { type: "secret_sw1", key: "E", text: "Mexer no pino enferrujado na fresta da parede" };
+    }
+    if (!state.basementUnlocked && state.basementStep === 1 && distXZ(player.pos, SECRET_SWITCH_2_POS) < 1.15) {
+      return { type: "secret_sw2", key: "E", text: "Girar registro solto no ralo do box" };
+    }
+    if (distXZ(player.pos, BED_POS) < 2.5) {
+      return { type: "bed", key: "E", text: "Dormir na Cama (Próximo Dia)" };
     }
     if (distXZ(player.pos, MANGA_POS) < 1.9) {
-      return { type: "manga", key: "Espaço / E", text: "Ler Mangá & Ver Pôster do PAC (TazerCraft)" };
+      return { type: "manga", key: "E", text: "Ler Mangá & Ver Pôster do PAC (TazerCraft)" };
     }
-    if (distXZ(player.pos, ETEC_POS) < 2.0) {
-      return { type: "etec", key: "Espaço / E", text: "Revisar Cadernos da ETEC Campo Limpo Paulista" };
+    if (distXZ(player.pos, ETEC_POS) < 2.1) {
+      return { type: "etec", key: "E", text: "Revisar Cadernos da ETEC Campo Limpo Paulista" };
+    }
+    if (distXZ(player.pos, COFFEE_POS) < 2.3) {
+      return { type: "coffee", key: "E", text: "Tomar Café Coado na Cozinha (+Energia ⚡)" };
+    }
+    if (distXZ(player.pos, TOILET_POS) < 1.65) {
+      return { type: "toilet", key: "E", text: "Usar o Banheiro da Casa" };
+    }
+    return null;
+  }
+
+  if (state.location === "basement") {
+    if (distXZ(player.pos, BASEMENT_EXIT_POS) < 2.0) {
+      return { type: "exit_basement", key: "E", text: "Subir Escada de Volta para o Quarto" };
+    }
+    for (const clone of basementClones) {
+      if (distXZ(player.pos, clone.posVec) < 2.15) {
+        const equipped = state.machoSkin === clone.id;
+        return {
+          type: "macho_clone",
+          clone,
+          key: "E",
+          text: equipped
+            ? `Falar com ${clone.name} (Roupa Equipada ✓)`
+            : `Falar com ${clone.name} & Vestir Roupa Alternativa`,
+        };
+      }
     }
     return null;
   }
 
   if (state.location === "terminal") {
+    if (state.hasTamedJaguar && distXZ(player.pos, TERM_JAGUAR_POS) < 2.9) {
+      return {
+        type: "ride_jaguar_yard",
+        key: "E",
+        text: "🐆 Montar na Onça Domada → Voltar p/ Pau Arcado (Ignora chuva/402!)",
+      };
+    }
     if (distXZ(player.pos, TERM_SELL_POS) < 3.0) {
       const items = getTotalBasketCount();
       return {
         type: "term_sell",
-        key: "Espaço / E",
+        key: "E",
         text: isAfterWorkHours()
           ? "Bancas fechadas após 19:00 (ver encomendas)"
           : items > 0
@@ -5097,13 +7443,13 @@ function findCurrentContext() {
       };
     }
     if (distXZ(player.pos, TERM_PASTEL_POS) < 2.7) {
-      return { type: "pastel", key: "Espaço / E", text: "Comprar Pastel + Caldo de Cana (R$ 8 • +Energia)" };
+      return { type: "pastel", key: "E", text: "Comprar Pastel + Caldo de Cana (R$ 8 • +Energia)" };
     }
     if (distXZ(player.pos, TERM_BUS_BACK_POS) < 2.8) {
       const bus = getBus402Status("terminal");
       return {
         type: "bus_to_yard",
-        key: "Espaço / E",
+        key: "E",
         text: bus.available
           ? `Embarcar Ônibus 402 (${bus.activeTime}) → Pau Arcado`
           : bus.nextTime
@@ -5112,34 +7458,55 @@ function findCurrentContext() {
       };
     }
     if (distXZ(player.pos, TERM_TRAIN_POS) < 3.0) {
-      return { type: "train_to_etec", key: "Espaço / E", text: "Pegar Trem Linha 7-Rubi p/ ETEC (Botujuru)" };
+      return { type: "train_to_etec", key: "E", text: "Pegar Trem Linha 7-Rubi p/ ETEC (Botujuru)" };
     }
     return null;
   }
 
   if (state.location === "etec") {
-    if (distXZ(player.pos, ETEC_TRAIN_BACK_POS) < 2.8) {
-      return { type: "train_to_term", key: "Espaço / E", text: "Pegar Trem Linha 7-Rubi p/ Terminal CLP" };
+    if (distXZ(player.pos, ETEC_TRAIN_BACK_POS) < 3.0) {
+      return { type: "train_to_term", key: "E", text: "Pegar Trem Linha 7-Rubi p/ Terminal CLP" };
     }
-    if (distXZ(player.pos, ETEC_DOOR_IN_POS) < 2.6) {
-      return { type: "enter_etec", key: "Espaço / E", text: "Entrar na ETEC (Labs, Salas e Cantina)" };
+    if (distXZ(player.pos, ETEC_DOOR_IN_POS) < 2.8) {
+      return { type: "enter_etec", entry: "front", key: "E", text: "Entrar no Corredor com as Salas (Frente)" };
+    }
+    if (distXZ(player.pos, ETEC_PARKING_DOOR_POS) < 2.8) {
+      return { type: "enter_etec", entry: "parking", key: "E", text: "Entrar no Corredor pelo Estacionamento" };
+    }
+    if (distXZ(player.pos, ETEC_BACK_DOOR_POS) < 2.8) {
+      return { type: "enter_etec", entry: "back", key: "E", text: "Entrar no Corredor pela Entrada Aberta (Fundos)" };
+    }
+    if (distXZ(player.pos, ETEC_INSTRUMENTS_POS) < 4.5) {
+      return {
+        type: "play_instruments",
+        key: "E",
+        text: state.musicPlayedToday
+          ? "Tocar um som na Sala de Instrumentos 🎸"
+          : "Tocar na Sala de Instrumentos 🎸 (-15% Insanidade)",
+      };
     }
     return null;
   }
 
   if (state.location === "etec_inside") {
-    if (distXZ(player.pos, ETEC_EXIT_POS) < 2.2) {
-      return { type: "exit_etec", key: "Espaço / E", text: "Sair para o Pátio / Estação Botujuru" };
+    if (distXZ(player.pos, ETEC_EXIT_POS) < 2.4) {
+      return { type: "exit_etec", exitPoint: "front", key: "E", text: "Sair para a Área Aberta / Entrada Principal" };
     }
-    if (distXZ(player.pos, CHEM_BENCH_POS) < 2.4) {
+    if (distXZ(player.pos, ETEC_EXIT_BACK_POS) < 2.4) {
+      return { type: "exit_etec", exitPoint: "back", key: "E", text: "Sair pela Entrada Aberta (Parte Externa Fundos)" };
+    }
+    if (distXZ(player.pos, ETEC_EXIT_PARKING_POS) < 2.2) {
+      return { type: "exit_etec", exitPoint: "parking", key: "E", text: "Sair para o Estacionamento" };
+    }
+    if (distXZ(player.pos, CHEM_BENCH_POS) < 2.8) {
       return {
         type: "chem_bench",
-        key: "Espaço / E",
+        key: "E",
         text: isAfterWorkHours()
           ? "Lab fechado após 19:00 — Vá descansar!"
           : state.npkDoneToday
             ? "Fórmula NPK já sintetizada hoje ✓"
-            : "Sintetizar Super-Adubo NPK no Lab de Química!",
+            : "Sintetizar Super-Adubo NPK no Lab de Enfermagem!",
       };
     }
     for (const npc of etecNpcs) {
@@ -5147,12 +7514,12 @@ function findCurrentContext() {
         return {
           type: "npc",
           npcId: npc.id,
-          key: "Espaço / E",
+          key: "E",
           text:
             npc.id === "kaio"
               ? "Conversar / Comprar Adubo com Kaio Wendell"
               : npc.id === "marcelo"
-                ? "Contratar Marcelo Segurança (Careca da ETECAMP) 🛡️"
+                ? "Falar com Marcelo (Segurança & Vaselina) 🛡️"
                 : `Conversar com ${npc.name}`,
         };
       }
@@ -5165,19 +7532,19 @@ function findCurrentContext() {
   if (state.jaguarDefeated && jaguarEntity && jaguarEntity.mesh.visible && distXZ(player.pos, jaguarEntity.mesh.position) < 3.2) {
     return {
       type: "tame_jaguar",
-      key: "Espaço / E",
+      key: "E",
       text: state.hasTamedJaguar
         ? "Soltar Onça Atordoada na Mata (+R$ 40 do IBAMA) 🌳"
-        : "Domar a Onça Pintada! ❤️🐆 (Ela defenderá a fazenda!)",
+        : "Domar a Onça Pintada! ❤️🐆 (Defende a fazenda e leva ao Terminal!)",
     };
   }
 
-  // Onça domada seguindo ou patrulhando
-  if (state.hasTamedJaguar && tamedJaguarEntity && tamedJaguarEntity.mesh.visible && distXZ(player.pos, tamedJaguarEntity.mesh.position) < 2.5) {
+  // Onça domada seguindo ou patrulhando (agora também leva ao Terminal CLP!)
+  if (state.hasTamedJaguar && tamedJaguarEntity && tamedJaguarEntity.mesh.visible && distXZ(player.pos, tamedJaguarEntity.mesh.position) < 2.7) {
     return {
-      type: "pet_tamed_jaguar",
-      key: "Espaço / E",
-      text: "Fazer carinho na Onça Domada 🐆❤️ (Guardiã)",
+      type: "ride_jaguar_term",
+      key: "E",
+      text: "🐆 Montar na Onça Domada → Terminal CLP (Ignora chuva e 402!)",
     };
   }
 
@@ -5185,7 +7552,7 @@ function findCurrentContext() {
   if (state.marceloHired && marceloYardEntity && marceloYardEntity.mesh.visible && distXZ(player.pos, marceloYardEntity.mesh.position) < 2.5) {
     return {
       type: "talk_marcelo_yard",
-      key: "Espaço / E",
+      key: "E",
       text: `Falar com Marcelo Segurança (${state.marceloDaysLeft} dia(s) de vigia) 🛡️`,
     };
   }
@@ -5199,14 +7566,14 @@ function findCurrentContext() {
           return {
             type: "collect_animal",
             ent,
-            key: "Espaço / E",
+            key: "E",
             text: `${info.actionText} de ${ent.animal.name}`,
           };
         } else {
           return {
             type: "pet_animal",
             ent,
-            key: "Espaço / E",
+            key: "E",
             text: `Acariciar ${ent.animal.name} (${info.label}) ${info.emoji}`,
           };
         }
@@ -5217,18 +7584,18 @@ function findCurrentContext() {
   if (state.jaguar.active && jaguarEntity && distXZ(player.pos, jaguarEntity.mesh.position) < 4.3) {
     return {
       type: "fight_jaguar",
-      key: state.equippedTool === "hoe" ? "Espaço / E" : "Tecla R",
+      key: state.equippedTool === "hoe" ? "E" : "Tecla R",
       text:
         state.equippedTool === "hoe"
           ? `⛏️ Bater na Onça com a Enxada! (${state.jaguar.hp} HP)`
           : "⚠️ Aperte R para equipar a ENXADA e enfrentar a Onça!",
     };
   }
-  if (distXZ(player.pos, BUS_STOP_YARD_POS) < 3.2) {
+  if (distXZ(player.pos, BUS_STOP_YARD_POS) < 4.5) {
     const bus = getBus402Status("pauArcado");
     return {
       type: "bus_to_term",
-      key: "Espaço / E",
+      key: "E",
       text: state.isRainy
         ? "Ônibus 402 parado pela chuva! Espere amanhã"
         : bus.available
@@ -5241,7 +7608,7 @@ function findCurrentContext() {
   if (distXZ(player.pos, COOP_POS) < 2.8) {
     return {
       type: "coop",
-      key: "Espaço / E",
+      key: "E",
       text: isAfterWorkHours()
         ? "🌙 Após 19:00 — Sem trabalho! Vá dormir"
         : state.coopEggs > 0
@@ -5252,14 +7619,14 @@ function findCurrentContext() {
   if (distXZ(player.pos, WELL_POS) < 3.4) {
     return {
       type: "well",
-      key: "Espaço / E",
+      key: "E",
       text: isAfterWorkHours() ? "🌙 Após 19:00 — Expediente encerrado!" : "Encher Regador no Poço",
     };
   }
   if (distXZ(player.pos, COMPOST_POS) < 2.9) {
     return {
       type: "compost",
-      key: "Espaço / E",
+      key: "E",
       text: isAfterWorkHours()
         ? "🌙 Após 19:00 — Expediente encerrado!"
         : state.compostDoneToday
@@ -5268,13 +7635,13 @@ function findCurrentContext() {
     };
   }
   if (dogOrelha && distXZ(player.pos, dogOrelha.mesh.position) < 2.3) {
-    return { type: "dog", key: "Espaço / E", text: "Fazer carinho no Orelha 🐕" };
+    return { type: "dog", key: "E", text: "Fazer carinho no Orelha 🐕" };
   }
   if (distXZ(player.pos, STAND_POS) < 3.8) {
-    return { type: "shop", key: "Espaço / E", text: "Abrir Cooperativa Rural (Melhorias & Água Auto)" };
+    return { type: "shop", key: "E", text: "Abrir Cooperativa Rural (Melhorias & Água Auto)" };
   }
   if (distXZ(player.pos, DOOR_POS) < 2.3) {
-    return { type: "door", key: "Espaço / E", text: "Entrar em Casa (Quarto do Macho)" };
+    return { type: "door", key: "E", text: "Entrar em Casa (Quarto do Macho)" };
   }
 
   let bestPlot = null;
@@ -5301,14 +7668,14 @@ function findCurrentContext() {
       };
     }
     if (bestPlot.stage === "raw") {
-      return { type: "plot", plot: bestPlot, key: "Espaço / E", text: "Arar terra do canteiro" };
+      return { type: "plot", plot: bestPlot, key: "E", text: "Arar terra do canteiro" };
     }
     if (bestPlot.stage === "tilled") {
       const crop = CROPS[state.selectedCrop];
       return {
         type: "plot",
         plot: bestPlot,
-        key: "Espaço / E",
+        key: "E",
         text: `Plantar ${crop.emoji} ${crop.name} (${formatBRL(crop.seedCost)})`,
       };
     }
@@ -5320,7 +7687,7 @@ function findCurrentContext() {
         return {
           type: "plot",
           plot: bestPlot,
-          key: "Espaço / E",
+          key: "E",
           text: hasAnyFert ? `Regar ${crop.name} (${pct}%) • F: Adubo Kaio` : `Regar ${crop.name} (${pct}%)`,
         };
       }
@@ -5334,7 +7701,7 @@ function findCurrentContext() {
         return {
           type: "plot",
           plot: bestPlot,
-          key: "Espaço / F",
+          key: "E / F",
           text: `${crop.name} (${pct}%) — ${fertLabel}`,
         };
       }
@@ -5350,7 +7717,7 @@ function findCurrentContext() {
       return {
         type: "plot",
         plot: bestPlot,
-        key: "Espaço / E",
+        key: "E",
         text: `Colher ${crop.emoji} ${crop.name}!`,
       };
     }
@@ -5631,6 +7998,10 @@ function triggerContextAction() {
     saveGame();
   } else if (ctx.type === "tame_jaguar") {
     tameJaguar();
+  } else if (ctx.type === "ride_jaguar_term") {
+    rideJaguarToTerminal();
+  } else if (ctx.type === "ride_jaguar_yard") {
+    rideJaguarToYard();
   } else if (ctx.type === "pet_tamed_jaguar") {
     sfx.play("bark");
     spawnParticles(tamedJaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0x22c55e, 14);
@@ -5656,9 +8027,21 @@ function triggerContextAction() {
   } else if (ctx.type === "train_to_term") {
     takeTrainToTerminal();
   } else if (ctx.type === "enter_etec") {
-    enterEtecInside();
+    enterEtecInside(ctx.entry || "front");
   } else if (ctx.type === "exit_etec") {
-    exitEtecInside();
+    exitEtecInside(ctx.exitPoint || "front");
+  } else if (ctx.type === "play_instruments") {
+    sfx.play("upgrade");
+    spawnParticles(new THREE.Vector3(26.2, 1.8, -21.0), 0xc084fc, 16);
+    if (!state.musicPlayedToday) {
+      state.musicPlayedToday = true;
+      state.insanity = Math.max(0, state.insanity - 15);
+      showToast("🎸", "SALA DE INSTRUMENTOS!", "Mandou um som na bateria e na guitarra! Insanidade -15%!");
+      updateHUD();
+      saveGame();
+    } else {
+      showToast("🥁", "SALA DE INSTRUMENTOS!", "Alyffer puxou mais um solo de guitarra e bateria nos fundos da ETEC!");
+    }
   } else if (ctx.type === "chem_bench") {
     if (blockAfterWorkHours()) return;
     if (state.npkDoneToday) {
@@ -5668,10 +8051,10 @@ function triggerContextAction() {
     state.npkDoneToday = true;
     const boosted = boostAllGrowingPlots(0.45);
     sfx.play("upgrade");
-    spawnParticles(new THREE.Vector3(10.2, 1.5, -9.2), 0x38bdf8, 18);
+    spawnParticles(new THREE.Vector3(12.4, 1.5, 2.2), 0x38bdf8, 18);
     showToast(
       "🧪",
-      "SÍNTESE NPK NA ETEC!",
+      "SÍNTESE NPK NO LAB DE ENFERMAGEM!",
       `Reação química perfeita! ${boosted} canteiro(s) em Pau Arcado avançaram +45%!`
     );
     saveGame();
@@ -5710,7 +8093,44 @@ function triggerContextAction() {
     saveGame();
   } else if (ctx.type === "etec") {
     sfx.play("plant");
-    showToast("🎒", "ETEC CAMPO LIMPO PAULISTA", "Cadernos em dia! Pegue o 402 e o trem 7-Rubi até Botujuru.");
+    showToast("🎒", "ETEC CAMPO LIMPO PAULISTA", "Cadernos em dia! Pegue o 402 (ou a Onça domada!) e o trem 7-Rubi até Botujuru.");
+  } else if (ctx.type === "coffee") {
+    state.energyTimer = Math.max(state.energyTimer, 35);
+    sfx.play("upgrade");
+    spawnParticles(new THREE.Vector3(COFFEE_POS.x, 1.25, COFFEE_POS.z), 0xd97706, 12);
+    showToast("☕", "CAFÉ COADO DE PAU ARCADO!", "Quentinho na cozinha! +32% Velocidade por 35s!");
+    updateHUD();
+  } else if (ctx.type === "toilet") {
+    sfx.play("water");
+    showToast("🚽", "BANHEIRO DA CASA", "Alívio garantido! Tudo limpinho no banheiro do sítio.");
+  } else if (ctx.type === "secret_sw1") {
+    state.basementStep = 1;
+    sfx.play("dig");
+    spawnParticles(new THREE.Vector3(7.55, 0.72, -7.85), 0xf97316, 10);
+    showToast("⚙️", "*CLIQUE METÁLICO*", "Você apertou um pino oculto atrás da geladeira... Um barulho estranho ecoou no encanamento do banheiro!");
+    saveGame();
+  } else if (ctx.type === "secret_sw2") {
+    state.basementStep = 2;
+    state.basementUnlocked = true;
+    if (secretTrapdoorMesh) secretTrapdoorMesh.visible = true;
+    sfx.play("upgrade");
+    spawnParticles(new THREE.Vector3(9.1, 0.35, 7.1), 0x38bdf8, 18);
+    showToast("🔧", "*ESTRONDOS SOB O PISO*", "O registro do ralo girou! Algo pesado deslizou no assoalho do quarto, atrás da cama...");
+    saveGame();
+  } else if (ctx.type === "secret_hatch") {
+    enterBasement();
+  } else if (ctx.type === "exit_basement") {
+    exitBasement();
+  } else if (ctx.type === "macho_clone" && ctx.clone) {
+    state.machoSkin = ctx.clone.id;
+    state.activeTitle = "Estudante ETEC";
+    applyMachoSkin(ctx.clone.id);
+    syncPlayerTitleSkin();
+    sfx.play("upgrade");
+    spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.6, 0)), ctx.clone.shirt, 20);
+    showToast("🌀", `${ctx.clone.name.toUpperCase()} (${ctx.clone.sub})`, `"${ctx.clone.quote}" • Roupa equipada!`);
+    updateHUD();
+    saveGame();
   } else if (ctx.type === "plot" || ctx.type === "locked_plot") {
     interactWithPlot(ctx.plot);
   }
@@ -5773,7 +8193,7 @@ function advanceToNextDay() {
   // Se dormiu fora do sítio (ex: menu de pausa), acorda no quintal de Pau Arcado
   if (state.location !== "yard" && state.location !== "room") {
     state.location = "yard";
-    player.pos.set(0, 0, -6.5);
+    player.pos.set(0, 0, -11.5);
     player.facingYaw = 0;
     state.camYaw = state.firstPerson ? Math.PI : 0.2;
     state.camPitch = 0.48;
@@ -5784,8 +8204,14 @@ function advanceToNextDay() {
   }
 
   state.npkDoneToday = false;
+  state.musicPlayedToday = false;
   state.compostDoneToday = false;
   state.coopEggs = Math.min(3, 2 + Math.floor(Math.random() * 2));
+  if (state.phone) {
+    state.phone.postedFakeToday = false;
+    state.phone.postedInstaToday = false;
+    state.phone.unread = Math.min(9, (state.phone.unread || 0) + 1);
+  }
 
   plots.forEach((p) => {
     if (p.unlocked && p.stage === "growing") {
@@ -6028,6 +8454,20 @@ const ALYFFER_CORINGA_LINES = [
   "O FÉLIX COMEU ATÉ O SEMÁFORO DA AV. ALFRIED KRUPP! HAHAHAHA!",
 ];
 
+const B_LAB24_LINES = [
+  "B******: 'Pessoal do 3AI, parem de instalar joguinho nos PCs do Lab 24! Eu tô de olho em vocês!'",
+  "B******: 'Alyffer, fecha esse @only_resenha_ aí no monitor do Lab 24 e termina o código antes do sinal!'",
+  "B******: 'Quem mexeu no cabo de rede da máquina 12?! O Lab 24 é sagrado na ETECAMP!'",
+  "B******: 'Não adianta esconder a tela que eu enxergo tudo daqui do Lab de Informática 24!'",
+];
+
+const T_LAB24_LINES = [
+  "T*******: 'Oxe, Marcelo, cuida dos mininos direito aí no corredor, viu home!'",
+  "T*******: 'Vixe Maria! Marcelo, cuida dos mininos que esse povo do 3AI tá fazendo uma zoada danada no Lab 24!'",
+  "T*******: 'Ô meu fi, Alyffer, larga de leseira e vai estudar! E ô Marcelo, cuida dos mininos aí fora, visse!'",
+  "T*******: 'Arre égua! Todo dia é a mesma resenha nessa ETECAMP! Marcelo, cuida dos mininos antes que eu dê um grito!'",
+];
+
 let currentNpcId = null;
 
 function canFulfillReq(req) {
@@ -6045,6 +8485,10 @@ function awardTitle(titleName) {
     state.titles.push(titleName);
   }
   state.activeTitle = titleName;
+  syncPlayerTitleSkin();
+  if (titleName === "Airfryer") {
+    showToast("🍟", "SKIN AIRFRYER ATIVADA!", "Você virou uma Airfryer parada! Clique no título ou aperte G para voltar a andar.");
+  }
 }
 
 function triggerCoringaBurst(playFullLaugh = false) {
@@ -6103,6 +8547,10 @@ function closeNpcModal() {
 
 function renderNpcModal() {
   npcMissionBox.classList.add("hidden");
+  if (npcAppearance) {
+    npcAppearance.textContent = "";
+    npcAppearance.classList.add("hidden");
+  }
   if (kaioShopBox) {
     kaioShopBox.classList.add("hidden");
     kaioShopBox.innerHTML = "";
@@ -6110,16 +8558,15 @@ function renderNpcModal() {
   npcActionBtn.disabled = false;
 
   if (currentNpcId === "muzzonline") {
-    npcTag.textContent = "LAB DE INFORMÁTICA • ETEC CLP";
+    npcTag.textContent = "SALA 3AI • ETECAMP";
     npcName.textContent = "Muzzonline";
-    npcAppearance.textContent = "Blusa cinza, calça cinza, tênis vermelho, cabelo bagunçado e óculos vermelho.";
     const muzzQuote = MUZZ_LINES[Math.floor(Math.random() * MUZZ_LINES.length)];
     npcDialogue.textContent = state.isCrazy
       ? `${muzzQuote}\n\n🤡 Alyffer Coringando: "${state.currentCoringaLine}"`
       : muzzQuote;
     npcActionBtn.textContent = state.isCrazy
       ? "Coringar Junto com Muzzonline (100% 🤡)"
-      : "Ouvir Besteira Aleatória (+25% Sanidade/Coringa)";
+      : "Ouvir Besteira Aleatória (+25% Insanidade)";
     npcActionBtn.onclick = () => {
       const wasCrazy = state.isCrazy;
       addInsanity(25);
@@ -6131,9 +8578,8 @@ function renderNpcModal() {
       renderNpcModal();
     };
   } else if (currentNpcId === "kaio") {
-    npcTag.textContent = "LAB DE QUÍMICA • LOJA DE ADUBO DO KAIO";
+    npcTag.textContent = "LAB. DE ENFERMAGEM • LOJA DE ADUBO DO KAIO";
     npcName.textContent = "Kaio Wendell (Cientista & Vendedor de Adubo)";
-    npcAppearance.textContent = "Sobretudo estiloso, cabelo de cientista, calça social e sapato social. Vende adubo químico p/ acelerar sua horta!";
     const kaioQuote = KAIO_LINES[Math.floor(Math.random() * KAIO_LINES.length)];
     npcDialogue.textContent = state.isCrazy
       ? `${kaioQuote}\n\n🤡 Alyffer Coringando: "${state.currentCoringaLine}"`
@@ -6182,7 +8628,7 @@ function renderNpcModal() {
           state.money -= prod.price;
           prod.buy();
           sfx.play("sell");
-          showToast(prod.emoji, "ADUBO COMPRADO DO KAIO!", `Use com F ou Espaço em qualquer planta crescendo na horta!`);
+          showToast(prod.emoji, "ADUBO COMPRADO DO KAIO!", `Use com F ou E em qualquer planta crescendo na horta!`);
           updateHUD();
           saveGame();
           renderNpcModal();
@@ -6205,9 +8651,8 @@ function renderNpcModal() {
       renderNpcModal();
     };
   } else if (currentNpcId === "felix") {
-    npcTag.textContent = "CANTINA DA ETEC • MISSÕES DE TÍTULO";
+    npcTag.textContent = "SALA 1AI • MISSÕES DE TÍTULO";
     npcName.textContent = "Félix";
-    npcAppearance.textContent = "Cabelo grande e blusa de frio preta.";
     if (state.felixStep >= FELIX_QUESTS.length) {
       npcDialogue.textContent = "Félix: 'Valeu pelos rangos da horta, Homem Guloso! Você é lenda na ETEC!'";
       npcActionBtn.textContent = "Missões do Félix Concluídas ✓";
@@ -6239,9 +8684,8 @@ function renderNpcModal() {
       };
     }
   } else if (currentNpcId === "pao") {
-    npcTag.textContent = "CANTINA DA ETEC • MISSÕES DE TÍTULO";
+    npcTag.textContent = "SALA 3AI • MISSÕES DE TÍTULO";
     npcName.textContent = "Pão";
-    npcAppearance.textContent = "Moreno, camisa vermelha da ETEC e calça jeans.";
     if (state.paoStep >= PAO_QUESTS.length) {
       npcDialogue.textContent = "Pão: 'É isso aí, Macho! Respeito máximo pelo rei da alface de Pau Arcado!'";
       npcActionBtn.textContent = "Missões do Pão Concluídas ✓";
@@ -6273,33 +8717,69 @@ function renderNpcModal() {
       };
     }
   } else if (currentNpcId === "marcelo") {
-    npcTag.textContent = "ETECAMP • SEGURANÇA PARTICULAR & CAÇADOR";
-    npcName.textContent = "Marcelo (O Careca da ETECAMP)";
-    npcAppearance.textContent = "Careca, forte, polo escura de segurança e taco de madeira pesado. Especialista em caçar onças e proteger animais da fazenda!";
+    npcTag.textContent = "ETECAMP • SEGURANÇA & VASELINA";
+    npcName.textContent = "Marcelo (Segurança da ETECAMP)";
     npcDialogue.textContent = state.marceloHired
-      ? `Marcelo: "E aí, Macho! Faltam ${state.marceloDaysLeft} dia(s) de serviço no seu sítio. Meu taco tá pronto e a Onça não passa nem perto das suas vacas e ovelhas!"`
-      : `Marcelo: "Fala, Alyffer! Fiquei sabendo que tem uma Onça Pintada atacando os animais no seu sítio em Pau Arcado. Eu sou segurança particular e desço a madeira nela se tentar atacar você ou seu rebanho! Me contrata que eu fico de vigia dia e noite!"`;
+      ? `Marcelo: "E aí, Macho! Faltam ${state.marceloDaysLeft} dia(s) de vigia no seu sítio. E se quiser correr igual foguete, tenho Vaselina fresquinha pra vender aqui!"`
+      : `Marcelo: "Fala, Alyffer! Posso vigiar sua fazenda contra a Onça Pintada, e também vendo Vaselina turbinada — tomou, ficou muito mais rápido!"`;
 
     if (kaioShopBox) {
       kaioShopBox.classList.remove("hidden");
-      kaioShopBox.innerHTML = `<div class="kaio-shop-header">🛡️ Contrato de Segurança Marcelo • Seu Caixa: ${formatBRL(state.money)}</div>`;
-      const marceloPlans = [
+      kaioShopBox.innerHTML = `<div class="kaio-shop-header">🛡️ Loja do Marcelo (Vaselina &amp; Segurança) • Seu Caixa: ${formatBRL(state.money)}</div>`;
+      const marceloItems = [
+        {
+          emoji: "🧴",
+          name: `Vaselina do Marcelo (1 Frasco • Você tem: ${state.vaselina})`,
+          sub: "Guarda na mochila! Aperte Z ou clique no botão p/ tomar e ganhar +65% velocidade por 95s!",
+          price: 15,
+          buy: () => {
+            state.vaselina += 1;
+            sfx.play("sell");
+            showToast("🧴", "VASELINA COMPRADA!", `Você tem ${state.vaselina} frasco(s). Aperte Z para tomar e correr muito mais rápido!`);
+          },
+        },
+        {
+          emoji: "⚡",
+          name: "Tomar Vaselina Agora (Na Hora!)",
+          sub: "Bebe na hora no corredor da ETECAMP e já sai voando (+65% velocidade por 95s)!",
+          price: 18,
+          buy: () => {
+            state.vaselinaTimer = 95;
+            sfx.play("upgrade");
+            spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.5, 0)), 0x38bdf8, 22);
+            showToast("🧴", "TOMOU VASELINA NA HORA!", "+65% Velocidade turbinada por 95s!");
+          },
+        },
         {
           emoji: "🛡️",
           name: "Contratar Marcelo (3 Dias)",
           sub: "Patrulha o sítio com taco pesado (30 dano por golpe) e protege vacas, ovelhas e porcos!",
-          days: 3,
           price: 50,
+          buy: () => {
+            state.marceloHired = true;
+            state.marceloDaysLeft = (state.marceloDaysLeft || 0) + 3;
+            if (marceloYardEntity) marceloYardEntity.mesh.visible = state.location === "yard";
+            sfx.play("upgrade");
+            showDayBanner("🛡️ MARCELO CONTRATADO POR +3 DIAS! SEUS ANIMAIS ESTÃO PROTEGIDOS!");
+            showToast("🛡️", "MARCELO CONTRATADO!", `Ele já foi para Pau Arcado vigiar seu sítio! (${state.marceloDaysLeft} dias restantes).`);
+          },
         },
         {
           emoji: "⭐",
           name: "Contrato Semanal (7 Dias • Desconto!)",
           sub: "Proteção estendida por 7 dias seguidos contra qualquer ataque de onça!",
-          days: 7,
           price: 90,
+          buy: () => {
+            state.marceloHired = true;
+            state.marceloDaysLeft = (state.marceloDaysLeft || 0) + 7;
+            if (marceloYardEntity) marceloYardEntity.mesh.visible = state.location === "yard";
+            sfx.play("upgrade");
+            showDayBanner("🛡️ MARCELO CONTRATADO POR +7 DIAS! SEUS ANIMAIS ESTÃO PROTEGIDOS!");
+            showToast("🛡️", "MARCELO CONTRATADO!", `Ele já foi para Pau Arcado vigiar seu sítio! (${state.marceloDaysLeft} dias restantes).`);
+          },
         },
       ];
-      marceloPlans.forEach((plan) => {
+      marceloItems.forEach((plan) => {
         const row = document.createElement("div");
         row.className = "row-card";
         const canAfford = state.money >= plan.price;
@@ -6312,18 +8792,13 @@ function renderNpcModal() {
             </div>
           </div>
           <button class="mini-btn green" type="button" ${canAfford ? "" : "disabled"}>
-            Contratar ${formatBRL(plan.price)}
+            Comprar ${formatBRL(plan.price)}
           </button>
         `;
         row.querySelector("button").addEventListener("click", () => {
           if (state.money < plan.price) return;
           state.money -= plan.price;
-          state.marceloHired = true;
-          state.marceloDaysLeft = (state.marceloDaysLeft || 0) + plan.days;
-          if (marceloYardEntity) marceloYardEntity.mesh.visible = state.location === "yard";
-          sfx.play("upgrade");
-          showDayBanner(`🛡️ MARCELO CONTRATADO POR +${plan.days} DIAS! SEUS ANIMAIS ESTÃO PROTEGIDOS!`);
-          showToast("🛡️", "MARCELO CONTRATADO!", `Ele já foi para Pau Arcado vigiar seu sítio! (${state.marceloDaysLeft} dias restantes).`);
+          plan.buy();
           updateHUD();
           saveGame();
           renderNpcModal();
@@ -6332,21 +8807,65 @@ function renderNpcModal() {
       });
     }
 
-    npcActionBtn.textContent = state.marceloHired
-      ? `Marcelo de Vigia (${state.marceloDaysLeft}d restantes) ✓`
-      : "Contratar Marcelo por 3 Dias (R$ 50)";
-    npcActionBtn.disabled = state.money < 50;
+    npcActionBtn.textContent =
+      state.vaselina > 0
+        ? `🧴 Tomar Vaselina da Mochila (${state.vaselina}) — +65% Vel.`
+        : "🧴 Comprar & Tomar Vaselina Agora (R$ 18)";
+    npcActionBtn.disabled = state.vaselina <= 0 && state.money < 18;
     npcActionBtn.onclick = () => {
-      if (state.money < 50) return;
-      state.money -= 50;
-      state.marceloHired = true;
-      state.marceloDaysLeft = (state.marceloDaysLeft || 0) + 3;
-      if (marceloYardEntity) marceloYardEntity.mesh.visible = state.location === "yard";
-      sfx.play("upgrade");
-      showDayBanner("🛡️ MARCELO CONTRATADO POR 3 DIAS! SEUS ANIMAIS ESTÃO PROTEGIDOS!");
-      showToast("🛡️", "MARCELO CONTRATADO!", "Ele já está em Pau Arcado vigiando com o taco!");
+      if (state.vaselina > 0) {
+        state.vaselina -= 1;
+        state.vaselinaTimer = 95;
+        sfx.play("upgrade");
+        showToast("🧴", "TOMOU VASELINA DO MARCELO!", "+65% Velocidade por 95s!");
+      } else if (state.money >= 18) {
+        state.money -= 18;
+        state.vaselinaTimer = 95;
+        sfx.play("upgrade");
+        showToast("🧴", "TOMOU VASELINA NA HORA!", "+65% Velocidade por 95s!");
+      }
       updateHUD();
       saveGame();
+      renderNpcModal();
+    };
+  } else if (currentNpcId === "b_lab24") {
+    npcTag.textContent = "LAB. DE INFORMÁTICA 24 • ETECAMP";
+    npcName.textContent = "B******";
+    const quote = B_LAB24_LINES[Math.floor(Math.random() * B_LAB24_LINES.length)];
+    npcDialogue.textContent = state.isCrazy
+      ? `${quote}\n\n🤡 Alyffer Coringando: "${state.currentCoringaLine}"`
+      : quote;
+    npcActionBtn.textContent = state.isCrazy
+      ? "Coringar no Lab 24 com B****** (100% 🤡)"
+      : "Conversar com B****** (+25% Insanidade)";
+    npcActionBtn.onclick = () => {
+      const wasCrazy = state.isCrazy;
+      addInsanity(25);
+      if (!state.isCrazy) {
+        showToast("💻", "B****** (LAB 24)", `+25% Insanidade (${state.insanity}%)!`);
+      } else if (wasCrazy) {
+        showToast("🤡", "ALYFFER CORINGANDO!", state.currentCoringaLine);
+      }
+      renderNpcModal();
+    };
+  } else if (currentNpcId === "t_lab24") {
+    npcTag.textContent = "LAB. DE INFORMÁTICA 24 • ETECAMP";
+    npcName.textContent = "T*******";
+    const quote = T_LAB24_LINES[Math.floor(Math.random() * T_LAB24_LINES.length)];
+    npcDialogue.textContent = state.isCrazy
+      ? `${quote}\n\n🤡 Alyffer Coringando: "${state.currentCoringaLine}"`
+      : quote;
+    npcActionBtn.textContent = state.isCrazy
+      ? "Coringar no Lab 24 com T******* (100% 🤡)"
+      : "Ouvir Recado pro Marcelo (+25% Insanidade)";
+    npcActionBtn.onclick = () => {
+      const wasCrazy = state.isCrazy;
+      addInsanity(25);
+      if (!state.isCrazy) {
+        showToast("🗣️", "T******* (LAB 24)", `+25% Insanidade (${state.insanity}%)! Oxe, Marcelo, cuida dos mininos!`);
+      } else if (wasCrazy) {
+        showToast("🤡", "ALYFFER CORINGANDO!", state.currentCoringaLine);
+      }
       renderNpcModal();
     };
   }
@@ -6468,7 +8987,13 @@ function renderGuideModal() {
     btn.addEventListener("click", () => {
       if (!unlocked) return;
       state.activeTitle = t;
+      syncPlayerTitleSkin();
       sfx.play("plant");
+      if (t === "Airfryer") {
+        showToast("🍟", "SKIN AIRFRYER EQUIPADA!", "Você virou uma Airfryer parada! Clique no título ou aperte G para trocar.");
+      } else {
+        showToast("🏆", "TÍTULO & SKIN EQUIPADOS", `Agora você está com "${t}"!`);
+      }
       updateHUD();
       renderGuideModal();
       saveGame();
@@ -6479,13 +9004,13 @@ function renderGuideModal() {
   guideQuestsList.innerHTML = "";
   const questSummaries = [
     {
-      npc: "Félix (Cantina ETEC)",
+      npc: "Félix (Sala 1AI • ETECAMP)",
       done: state.felixStep >= FELIX_QUESTS.length,
       current: FELIX_QUESTS[Math.min(state.felixStep, FELIX_QUESTS.length - 1)],
       stepText: `${state.felixStep}/${FELIX_QUESTS.length}`,
     },
     {
-      npc: "Pão (Cantina ETEC)",
+      npc: "Pão (Sala 3AI • ETECAMP)",
       done: state.paoStep >= PAO_QUESTS.length,
       current: PAO_QUESTS[Math.min(state.paoStep, PAO_QUESTS.length - 1)],
       stepText: `${state.paoStep}/${PAO_QUESTS.length}`,
@@ -6509,6 +9034,1013 @@ function renderGuideModal() {
     `;
     guideQuestsList.appendChild(row);
   });
+}
+
+// ============================================================================
+// CELULAR DO MACHO • REDES SOCIAIS & APP ONLY-RESENHA (@only_resenha_ / alfinetation)
+// ============================================================================
+let phoneCurrentApp = "home"; // home | only_resenha | zap | insta | minigame
+let onlyResenhaTab = "feed"; // feed | create
+let activeZapChatId = null;
+let miniArcadeTimer = null;
+
+function escapeHtml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function getPhoneSignalLabel() {
+  if (state.location === "basement") return "📵 Porão 0G (Multiverso)";
+  if (state.location === "terminal" && state.maluquinho.active) return "📵 Panela 0G";
+  if (state.location === "etec" || state.location === "etec_inside") return "📶 ETECAMP Wi-Fi";
+  if (state.location === "terminal") return "📶 Terminal CLP 5G";
+  if (state.location === "room") return "📶 Sítio_2.4G";
+  return "📶 Pau Arcado 4G";
+}
+
+function updatePhoneStatusBar() {
+  if (!phoneTimeBar) return;
+  const hh = String(Math.floor(state.dayMinutes / 60)).padStart(2, "0");
+  const mm = String(Math.floor(state.dayMinutes % 60)).padStart(2, "0");
+  phoneTimeBar.textContent = `${hh}:${mm}`;
+  if (phoneSignalBar) phoneSignalBar.textContent = getPhoneSignalLabel();
+  if (phoneBatteryBar) {
+    const bat = Math.max(12, Math.min(99, Math.round(98 - ((state.dayMinutes - 390) / 800) * 58)));
+    phoneBatteryBar.textContent = `${state.isCrazy ? "🤡" : "🔋"} ${bat}%`;
+  }
+}
+
+function stopMiniArcade() {
+  if (miniArcadeTimer) {
+    clearInterval(miniArcadeTimer);
+    miniArcadeTimer = null;
+  }
+}
+
+function openPhoneModal(initialApp = "home") {
+  clearActiveInputs();
+  stopMiniArcade();
+  state.mode = "modal";
+  phoneCurrentApp = initialApp;
+  activeZapChatId = null;
+  if (state.phone) state.phone.unread = 0;
+  sfx.play("phone_notif");
+  updateHUD();
+  renderPhoneApp();
+  if (phoneModal) phoneModal.classList.remove("hidden");
+  saveGame();
+}
+
+function closePhoneModal() {
+  stopMiniArcade();
+  if (phoneModal) phoneModal.classList.add("hidden");
+  state.mode = "playing";
+  updateHUD();
+}
+
+function navigatePhoneBack() {
+  stopMiniArcade();
+  sfx.play("phone_tap");
+  if (phoneCurrentApp === "zap" && activeZapChatId) {
+    activeZapChatId = null;
+    renderPhoneApp();
+    return;
+  }
+  if (phoneCurrentApp !== "home") {
+    phoneCurrentApp = "home";
+    renderPhoneApp();
+    return;
+  }
+  closePhoneModal();
+}
+
+function buildOnlyResenhaFeed() {
+  const posts = [];
+
+  if (state.phone && Array.isArray(state.phone.userPosts)) {
+    state.phone.userPosts.forEach((up) => posts.push(up));
+  }
+
+  // Posts reativos às loucuras reais acontecendo agora no jogo!
+  if (state.isCrazy) {
+    posts.push({
+      id: "dyn_crazy",
+      kicker: "🚨 PLANTÃO URGENTE • PF26🏅",
+      emoji: "🤡🥬",
+      bg: "linear-gradient(135deg, #be123c, #7e22ce)",
+      headline: "JOVEM DE PAU ARCADO CORINGA 100% E DIZ QUE A ALFACE CRESPA TEM WI-FI 6G",
+      caption: `Segundo nossas fontes inventadas agora na ETECAMP, ${state.activeTitle} Alyffer fez o sinal do 6-7 e saiu rindo de olho vermelho rumo à Linha 7-Rubi. Propaganda da desinformação feita com muito amor e carinho 🇧🇷🖕`,
+      time: "Agora mesmo",
+      likes: 184,
+      comments: [
+        { user: "@muzzonline.exe", text: "MANO O MACHO CORINGOU DE VERDADE KKKKKK 144 FPS" },
+        { user: "@kaio.wendell", text: "Excesso de reagente + besteira aleatória no Lab!" },
+      ],
+    });
+  }
+  if (state.hasTamedJaguar) {
+    posts.push({
+      id: "dyn_tamed",
+      kicker: "🐆 EXCLUSIVO PAU ARCADO",
+      emoji: "🐆❤️",
+      bg: "linear-gradient(135deg, #b45309, #991b1b)",
+      headline: "MORADOR DOMA ONÇA PINTADA NA ENXADA E COLOCA ELA DE PORTEIRA DO SÍTIO",
+      caption: "Moradores juram que a Onça só deixa entrar quem traz Alface Crespa ou ovo caipira pro Macho. O Jornal Nacional tentou checar e tomou block do @only_resenha_!",
+      time: "Hoje",
+      likes: 152,
+      comments: [
+        { user: "@marcelo.seguranca", text: "E mesmo assim me contrataram só pra tomar café perto das vacas 😎" },
+        { user: "@orelha.dog", text: "au au (tenta chutar agora pra ver)" },
+      ],
+    });
+  }
+  if (state.marceloHired) {
+    posts.push({
+      id: "dyn_marcelo",
+      kicker: "🛡️ PLANTÃO SEGURANÇA • ETECAMP",
+      emoji: "🛡️🏏",
+      bg: "linear-gradient(135deg, #1e293b, #0f766e)",
+      headline: "SEGURANÇA MARCELO É CONTRATADO EM PAU ARCADO E ASSUSTA ATÉ O ÔNIBUS 402",
+      caption: `Com ${state.marceloDaysLeft} dia(s) de contrato e seu taco lendário, Marcelo prometeu zerar ataque de onça com muito amor e carinho.`,
+      time: "Hoje",
+      likes: 98,
+      comments: [
+        { user: "@felix_guloso", text: "Segurança mais respeitado de Campo Limpo Paulista 🔥" },
+      ],
+    });
+  }
+  if (state.dayMinutes >= 18.5 * 60 || state.location === "terminal") {
+    posts.push({
+      id: "dyn_maluquinho",
+      kicker: "🍲 ALERTA TERMINAL CLP",
+      emoji: "🍲📱",
+      bg: "linear-gradient(135deg, #1d4ed8, #0f172a)",
+      headline: "MENINO COM PANELA NA CABEÇA INTERCEPTA PASSAGEIROS PERGUNTANDO: 'TEM JOGUINHO NO CELULAR?!'",
+      caption: "Câmeras do Terminal Campo Limpo Paulista flagraram correria às 18:30 na Av. Alfried Krupp. Autoridades garantem que a panela amplifica o 5G.",
+      time: "Plantão Noite",
+      likes: 131,
+      comments: [
+        { user: "@menino_maluquinho", text: "EI MOÇO DEIXA EU JOGAR PEGA-ALFACE NO SEU CELULAR!! KKKKK" },
+      ],
+    });
+  }
+  if (state.isRainy) {
+    posts.push({
+      id: "dyn_rain",
+      kicker: "🌧️ ÚLTIMA HORA • JUNDMOB",
+      emoji: "🚌💦",
+      bg: "linear-gradient(135deg, #334155, #1e3a8a)",
+      headline: "CHOVE EM PAU ARCADO E MOTORISTA DO ÔNIBUS 402 DECIDE TIRAR COCHILO OFICIAL NO PONTO FINAL",
+      caption: "Passageiros reclamam mas as alfaces comemoram: ninguém trabalha na chuva e os canteiros ficam regados sozinhos!",
+      time: "Hoje",
+      likes: 87,
+      comments: [
+        { user: "@pao_airfryer", text: "Dia de botar salgado na Airfryer e faltar na aula né Alyffer 😂" },
+      ],
+    });
+  }
+
+  // Posts oficiais inspirados na página @only_resenha_ (alfinetation) adaptados pro universo do jogo!
+  const staticPosts = [
+    {
+      id: "or_pf26",
+      kicker: "🏅 PRÊMIO PF26 • OFICIAL",
+      emoji: "🏅🇧🇷",
+      bg: "linear-gradient(135deg, #be185d, #ca8a04)",
+      headline: "ALFINETATION (@only_resenha_) GANHA O PF26🏅 PELA 29ª VEZ PROPAGANDO DESINFORMAÇÃO COM CARINHO",
+      caption: "Lar da maior fabricante de inverdades do Brasil — agora com sucursal oficial entre Pau Arcado, Terminal CLP e ETECAMP! Curtiu? Já virou verdade absoluta.",
+      time: "Fixado 📌",
+      likes: 600,
+      comments: [
+        { user: "@only_resenha_", text: "29 anos fabricando inverdades com muito amor e carinho 🇧🇷🖕" },
+        { user: "@muzzonline.exe", text: "Fonte: eu sonhei ontem na aula do Centro Paula Souza" },
+      ],
+    },
+    {
+      id: "or_402",
+      kicker: "🚌 INVERDADE VERIFICADA",
+      emoji: "🚌💨",
+      bg: "linear-gradient(135deg, #1d4ed8, #7c3aed)",
+      headline: "CONFIRMADO: ÔNIBUS 402 DA ESTRADA DO GARCIA AGORA VOA POR CIMA DO RIO JUNDIAÍ",
+      caption: "Motorista garante que se o passageiro piscar na hora errada o 402 passa em 17 minutos antes ou só semana que vem. Confira no app JundMob 402!",
+      time: "Há 2h",
+      likes: 112,
+      comments: [
+        { user: "@macho.pauarcado", text: "Perdi o das 08:25 comprando adubo com o Kaio 😭" },
+        { user: "@felix_guloso", text: "Se chegar atrasado não traz meu lanche na cantina não hein" },
+      ],
+    },
+    {
+      id: "or_kaio",
+      kicker: "🧪 BOMBA NA ETECAMP",
+      emoji: "🧪✨",
+      bg: "linear-gradient(135deg, #047857, #0284c7)",
+      headline: "CIENTISTA KAIO WENDELL INVENTA ADUBO QUE FAZ ALFACE CRESCER MAIS RÁPIDO QUE A NOTA DO BOLETIM",
+      caption: "No Lab de Enfermagem de Botujuru, Kaio estaria vendendo Béquer Turbinado que transforma brotinho em Alface Dourado na hora!",
+      time: "Há 4h",
+      likes: 94,
+      comments: [
+        { user: "@kaio.wendell", text: "É pura estequiometria de íons K⁺ com Fenolftaleína, confia!" },
+        { user: "@muzzonline.exe", text: "Eu bebi um gole achando que era Guaraná e fiquei em 4K" },
+      ],
+    },
+    {
+      id: "or_pac",
+      kicker: "🎮 EXCLUSIVO TAURUS/PAC",
+      emoji: "💙🌾",
+      bg: "linear-gradient(135deg, #0369a1, #15803d)",
+      headline: "PAC DO TAZERCRAFT TERIA AVALIADO A HORTA DO ALYFFER COM NOTA 1000 EM PAU ARCADO",
+      caption: "Fontes do quarto do Macho afirmam que o pôster na parede piscou quando ele colheu o primeiro Alface Guloso. Fica a dica pro Félix!",
+      time: "Ontem",
+      likes: 164,
+      comments: [
+        { user: "@felix_guloso", text: "Traz 3 Alfaces Crespas pra mim que você ganha o título PAC na hora!" },
+      ],
+    },
+    {
+      id: "or_orelha",
+      kicker: "🐶 POLÊMICA RURAL",
+      emoji: "🐕💀",
+      bg: "linear-gradient(135deg, #991b1b, #451a03)",
+      headline: "CACHORRO ORELHA DÁ ENTREVISTA AO ONLY-RESENHA E AVISA: 'NEM TENTA DAR O CHUTE'",
+      caption: "O animal mais respeitado de Campo Limpo Paulista afirmou que só aceita carinho. Quem apertar X perto dele descobre o atalho mais rápido pro Respawn.",
+      time: "Ontem",
+      likes: 219,
+      comments: [
+        { user: "@pao_airfryer", text: "O Orelha tem mais moral que a diretoria inteira KKKKK" },
+        { user: "@only_resenha_", text: "Fato checado e inventado com sucesso 🏅" },
+      ],
+    },
+    {
+      id: "or_cantina",
+      kicker: "🍗 CPI DA CANTINA",
+      emoji: "🍗🔥",
+      bg: "linear-gradient(135deg, #c2410c, #991b1b)",
+      headline: "PÃO E FÉLIX ABREM CPI NA CANTINA DA ETEC PARA ACHAR QUEM ASSOU CENOURA NA AIRFRYER DA ESCOLA",
+      caption: "Acusado pode levar o título de 'Airfryer' ou 'Homem Guloso'. Próximo capítulo sai assim que tocar o sinal em Botujuru!",
+      time: "Há 2 dias",
+      likes: 147,
+      comments: [
+        { user: "@pao_airfryer", text: "Se tiver Alface Americana crocante eu perdoo na hora!" },
+      ],
+    },
+  ];
+
+  return posts.concat(staticPosts);
+}
+
+function getDynamicZapChats() {
+  const hotCrop = CROPS[state.hotCropId] || CROPS.alface_crespa;
+  const userReplies = (state.phone && state.phone.zapReplies) || {};
+  const appendExtra = (chatId, baseMsgs) => {
+    const extra = Array.isArray(userReplies[chatId]) ? userReplies[chatId] : [];
+    return baseMsgs.concat(extra);
+  };
+
+  return [
+    {
+      id: "etecamp",
+      avatar: "🏫",
+      name: "Resenha ETECAMP 3º Ano",
+      status: "Muzzonline, Kaio, Félix, Pão, Você",
+      preview: state.isCrazy ? "Muzz: ALYFFER CORINGOU KKKKK" : "Félix: Traz alface pra cantina!",
+      messages: appendExtra("etecamp", [
+        { sender: "Félix", text: `E aí Macho! Hoje o Terminal tá pagando bem por ${hotCrop.emoji} ${hotCrop.name} (${getCropSellPrice(hotCrop.id) ? formatBRL(getCropSellPrice(hotCrop.id)) : "em alta"})!` },
+        { sender: "Muzzonline", text: "Mano, acabei de instalar TikTok no micro-ondas da ETECAMP e meu tênis vermelho tá rodando em 144 FPS 🕶️" },
+        { sender: "Pão", text: "Bota essa energia na Airfryer aí Muzz 😭 Alyffer passa na cantina pegar missão!" },
+        state.isCrazy
+          ? { sender: "Kaio Wendell", text: "ALÔ @only_resenha_!! O Alyffer bateu 100% e começou a fazer 6-7 com o olho vermelho!" }
+          : { sender: "Kaio Wendell", text: `Se precisar acelerar as plantas em Pau Arcado, tenho Adubo NPK (R$ 15) aqui no Lab de Química 🧪` },
+      ]),
+      replies: [
+        { text: "Bora pra resenha na cantina! 😂", bot: "Pão", reply: "Fechou Macho! Desce na Estação Botujuru e passa aqui!" },
+        { text: "Tô colhendo alface aqui em Pau Arcado 🥬", bot: "Félix", reply: "Boa Homem Guloso! Quero minha remessa fresquinha!" },
+      ],
+    },
+    {
+      id: "terminal402",
+      avatar: "🚌",
+      name: "Pau Arcado & Linha 402",
+      status: "Ponto da Estrada do Garcia • Terminal CLP",
+      preview: state.isRainy ? "Chuva: Ônibus 402 parado!" : "Próximo 402 ativo no ponto",
+      messages: appendExtra("terminal402", [
+        { sender: "Fiscal JundMob", text: state.isRainy ? "🌧️ Atenção Pau Arcado: chuva forte hoje, ônibus 402 fora de circulação!" : "🚌 Linha 402 operando! Lembre de conferir os horários no Calendário (K) antes de ir pro ponto." },
+        { sender: "Feirante Av. Alfried Krupp", text: `Compramos ovos caipiras, leite, lã e muita ${hotCrop.name}! Pastel com caldo de cana saindo a R$ 8!` },
+        { sender: "Menino Maluquinho", text: "EI MOÇO!! TEM JOGUINHO NO SEU CELULAR?! HEHEHE 🍲📱" },
+      ]),
+      replies: [
+        { text: "Tem o Pega-Alface no celular sim kkkk 🎮", bot: "Menino Maluquinho", reply: "AEEEE!! VOU TE ESPERAR NA ESTAÇÃO LINHA 7-RUBI DE NOITE!!" },
+        { text: "Passa um pastel de carne com caldo! 🥟", bot: "Feirante CLP", reply: "Saindo no capricho, só chegar na banca amarela do Terminal!" },
+      ],
+    },
+    {
+      id: "kaio_pv",
+      avatar: "🧪",
+      name: "Kaio Wendell (Lab Química)",
+      status: "ETECAMP • Cientista Louco",
+      preview: "Fórmula NPK pronta!",
+      messages: appendExtra("kaio_pv", [
+        { sender: "Kaio Wendell", text: `Macho, você tem ${state.kaioAdubo} Adubo NPK e ${state.kaioSuperAdubo} Super-Adubo na mochila.` },
+        { sender: "Kaio Wendell", text: "Aperte F perto de qualquer canteiro crescendo pra aplicar direto na raiz! E não esqueça da bancada NPK grátis 1x/dia no Lab." },
+      ]),
+      replies: [
+        { text: "Qual o pH ideal da alface hoje? 🧪", bot: "Kaio Wendell", reply: "Entre 6,0 e 6,5! Senão as moléculas entram em greve estequiométrica!" },
+      ],
+    },
+    {
+      id: "marcelo_pv",
+      avatar: "🛡️",
+      name: "Marcelo (Segurança)",
+      status: state.marceloHired ? `Em serviço (${state.marceloDaysLeft}d)` : "Disponível na ETECAMP",
+      preview: state.marceloHired ? "Taco pronto contra a Onça!" : "Contrate p/ vigiar seus animais!",
+      messages: appendExtra("marcelo_pv", [
+        state.marceloHired
+          ? { sender: "Marcelo", text: `Patrulha em dia aqui em Pau Arcado! Faltam ${state.marceloDaysLeft} dia(s) de vigia. Nenhuma onça encosta nos seus bichos.` }
+          : { sender: "Marcelo", text: "Se comprar vacas, ovelhas ou porcos no sítio, passa lá no corredor da ETECAMP e me contrata antes que a Onça apareça!" },
+      ]),
+      replies: [
+        { text: "Valeu pela proteção, Marcelo! 🛡️", bot: "Marcelo", reply: "Tamo junto Macho! Qualquer rugido eu desço o taco!" },
+      ],
+    },
+  ];
+}
+
+function getInstaFeedPosts() {
+  const userPosts = (state.phone && Array.isArray(state.phone.userInstaPosts)) ? state.phone.userInstaPosts : [];
+  const staticInsta = [
+    {
+      id: "insta_1",
+      user: "@only_resenha_",
+      badge: "alfinetation PF26🏅",
+      emoji: "📸🚨",
+      bg: "linear-gradient(135deg, #be123c, #f59e0b)",
+      title: "Bastidores da Fábrica de Inverdades",
+      caption: "Dia tranquilo em Campo Limpo Paulista inventando 12 notícias antes do Ônibus 402 das 08:25. Segue nois 🇧🇷🖕 #PF26 #Resenha",
+      baseLikes: 44,
+    },
+    {
+      id: "insta_2",
+      user: "@muzzonline.exe",
+      badge: "Lab Info • ETECAMP",
+      emoji: "🕶️👟",
+      bg: "linear-gradient(135deg, #334155, #dc2626)",
+      title: "Setup Gamer de Tênis Vermelho",
+      caption: "Rodei o jogo do Macho no PC da aula de informática enquanto o professor não olhava 😎🔥",
+      baseLikes: 29,
+    },
+    {
+      id: "insta_3",
+      user: "@pao_airfryer",
+      badge: "Cantina ETEC",
+      emoji: "🥗🍟",
+      bg: "linear-gradient(135deg, #b91c1c, #1d4ed8)",
+      title: "Alface na Airfryer (Teste Cientifico)",
+      caption: "Ficou crocante igual o Félix prometeu! Só falta o Alyffer trazer mais Alface Americana de Pau Arcado.",
+      baseLikes: 37,
+    },
+    {
+      id: "insta_4",
+      user: "@macho.pauarcado",
+      badge: "Quarto do Sítio",
+      emoji: "💙📖",
+      bg: "linear-gradient(135deg, #15803d, #0284c7)",
+      title: "Cantinho do PAC & Mangás",
+      caption: "Olhando o pôster do PAC (TazerCraft) antes de ir dormir às 19:00 pra acordar cedo regar alface 🌾",
+      baseLikes: 53,
+    },
+  ];
+  return userPosts.concat(staticInsta);
+}
+
+function renderPhoneHome() {
+  phoneAppTitle.textContent = "MachoOS • Celular do Alyffer";
+  if (phoneBackBtn) phoneBackBtn.classList.add("hidden");
+  const hh = String(Math.floor(state.dayMinutes / 60)).padStart(2, "0");
+  const mm = String(Math.floor(state.dayMinutes % 60)).padStart(2, "0");
+  const cal = getCalendarInfo(state.day);
+  const hotCrop = CROPS[state.hotCropId] || CROPS.alface_crespa;
+  const topPost = buildOnlyResenhaFeed()[0];
+
+  phoneBody.innerHTML = `
+    <div class="phone-clock-widget">
+      <div class="phone-big-time">${hh}:${mm}</div>
+      <div class="phone-date-sub">${cal.weekdayFull}, ${String(cal.dayOfMonth).padStart(2, "0")}/${cal.monthShort} • ${state.isRainy ? "🌧️ Chuvoso (402 Parado)" : "☀️ Dia Bom na Roça"}</div>
+      <div class="phone-date-sub" style="color:#fde047;margin-top:5px">🔥 Em alta no Terminal: ${hotCrop.emoji} ${hotCrop.name} (${formatBRL(getCropSellPrice(hotCrop.id))})</div>
+    </div>
+
+    <div id="homeBreakingWidget" class="phone-breaking-widget">
+      <div class="phone-breaking-tag">🚨 AGORA NO ONLY-RESENHA (@only_resenha_) • PF26🏅</div>
+      <div class="phone-breaking-headline">${escapeHtml(topPost.headline)}</div>
+    </div>
+
+    <div class="phone-app-grid">
+      <button class="phone-app-tile" data-app="only_resenha" type="button">
+        <div class="phone-app-icon app-bg-resenha">
+          🔥
+          <span class="app-mini-pill">PF26</span>
+        </div>
+        <span class="phone-app-name">Only-Resenha</span>
+      </button>
+
+      <button class="phone-app-tile" data-app="zap" type="button">
+        <div class="phone-app-icon app-bg-zap">💬</div>
+        <span class="phone-app-name">Zap da Roça</span>
+      </button>
+
+      <button class="phone-app-tile" data-app="insta" type="button">
+        <div class="phone-app-icon app-bg-insta">📸</div>
+        <span class="phone-app-name">InstaRoça</span>
+      </button>
+
+      <button class="phone-app-tile" data-app="minigame" type="button">
+        <div class="phone-app-icon app-bg-game">🥬</div>
+        <span class="phone-app-name">Pega-Alface</span>
+      </button>
+
+      <button class="phone-app-tile" data-app="bus402" type="button">
+        <div class="phone-app-icon app-bg-bus">🚌</div>
+        <span class="phone-app-name">JundMob 402</span>
+      </button>
+
+      <button class="phone-app-tile" data-app="guide" type="button">
+        <div class="phone-app-icon app-bg-guide">🏆</div>
+        <span class="phone-app-name">Títulos &amp; Mapa</span>
+      </button>
+    </div>
+
+    <div class="row-sub" style="text-align:center;font-size:0.72rem;opacity:0.8">
+      Seguidores no Only-Resenha: <strong>${state.phone.resenhaFollowers}</strong> • Recorde Pega-Alface: <strong>${state.phone.gameHighScore}</strong>
+    </div>
+  `;
+
+  const bw = document.getElementById("homeBreakingWidget");
+  if (bw) {
+    bw.addEventListener("click", () => {
+      sfx.play("phone_tap");
+      phoneCurrentApp = "only_resenha";
+      onlyResenhaTab = "feed";
+      renderPhoneApp();
+    });
+  }
+
+  phoneBody.querySelectorAll(".phone-app-tile").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const target = btn.dataset.app;
+      sfx.play("phone_tap");
+      if (target === "bus402") {
+        closePhoneModal();
+        openCalendarModal();
+        return;
+      }
+      if (target === "guide") {
+        closePhoneModal();
+        openGuideModal();
+        return;
+      }
+      phoneCurrentApp = target;
+      renderPhoneApp();
+    });
+  });
+}
+
+function renderOnlyResenhaApp() {
+  phoneAppTitle.textContent = "only-resenha • @only_resenha_";
+  if (phoneBackBtn) phoneBackBtn.classList.remove("hidden");
+
+  const feedPosts = buildOnlyResenhaFeed();
+  const templates = [
+    {
+      kicker: "🚨 URGENTE PAU ARCADO",
+      emoji: "🥬💸",
+      bg: "linear-gradient(135deg, #16a34a, #ca8a04)",
+      headline: "ÔNIBUS 402 PASSA A ACEITAR ALFACE CRESPA COMO PAGAMENTO DE PASSAGEM",
+      caption: "Motorista teria pedido 2 pés de alface e um ovo caipira na Estrada do Garcia. Empresa nega, @only_resenha_ confirma!",
+    },
+    {
+      kicker: "🧪 BOMBA ETECAMP",
+      emoji: "🧪🎸",
+      bg: "linear-gradient(135deg, #7e22ce, #db2777)",
+      headline: "ADUBO DO KAIO WENDELL FAZ PÉ DE MORANGO CANTAR FUNK DE MADRUGADA",
+      caption: "Vizinhos de Pau Arcado dizem que a horta do Macho virou baile funk após síntese NPK no Lab de Química.",
+    },
+    {
+      kicker: "🍲 PLANTÃO TERMINAL CLP",
+      emoji: "🍲👑",
+      bg: "linear-gradient(135deg, #0284c7, #4f46e5)",
+      headline: "MENINO MALUQUINHO É ELEITO SÍNDICO DA ESTAÇÃO CAMPO LIMPO PAULISTA",
+      caption: "Prometeu Wi-Fi grátis dentro da panela e liberação do joguinho no celular na fila da Linha 7-Rubi!",
+    },
+    {
+      kicker: "🏅 EXCLUSIVO PF26",
+      emoji: "🐆☕",
+      bg: "linear-gradient(135deg, #b45309, #dc2626)",
+      headline: "ONÇA PINTADA ABRE BARRACA DE PASTEL COM CALDO DE CANA AO LADO DO FÉLIX",
+      caption: "Com muito amor e carinho, garantimos que essa inverdade já ganhou mais curtida que a nota da prova da ETEC!",
+    },
+  ];
+
+  const profileHtml = `
+    <div class="or-profile-card">
+      <div class="or-profile-top">
+        <div class="or-avatar-ring">
+          <div class="or-avatar-inner">🔥</div>
+        </div>
+        <div class="or-stats-row">
+          <div class="or-stat"><strong>${state.phone.resenhaPostsCount}</strong><span>posts</span></div>
+          <div class="or-stat"><strong>${state.phone.resenhaFollowers}</strong><span>seguidores</span></div>
+          <div class="or-stat"><strong>174</strong><span>seguindo</span></div>
+        </div>
+      </div>
+      <div class="or-name-row">
+        <span>alfinetation</span>
+        <span class="or-verified" title="Verificado pela Resenha">☑️</span>
+        <span class="or-pf26-badge">Ganhou PF26🏅</span>
+      </div>
+      <div class="or-handle">@only_resenha_ • Instagram Oficial Adaptado</div>
+      <div class="or-bio">
+        Lar da maior fabricante de inverdades do Brasil (e de Pau Arcado!), há 29 anos propagando a desinformação com muito amor e carinho 🇧🇷🖕<br/>
+        Página de notícias que ganhou PF26🏅 • Correspondentes na ETECAMP &amp; Terminal CLP
+      </div>
+    </div>
+
+    <div class="or-tabs">
+      <button class="or-tab-btn ${onlyResenhaTab === "feed" ? "active" : ""}" data-tab="feed" type="button">📰 Feed (${feedPosts.length})</button>
+      <button class="or-tab-btn ${onlyResenhaTab === "create" ? "active" : ""}" data-tab="create" type="button">🎙️ Fabricar Inverdade</button>
+    </div>
+  `;
+
+  if (onlyResenhaTab === "create") {
+    const canPost = !state.phone.postedFakeToday;
+    phoneBody.innerHTML =
+      profileHtml +
+      `
+      <div class="or-composer-box">
+        <h3 style="margin-bottom:6px;color:#fde047">🎙️ Redação alfinetation (@only_resenha_)</h3>
+        <p class="row-sub" style="margin-bottom:10px">
+          ${canPost ? "Mande uma inverdade fresca hoje! Ganha <strong>seguidores no @only_resenha_</strong> e <strong>+1 Reputação</strong>!" : "Você já fabricou a manchete bombástica de hoje! Volte amanhã para mais desinformação."}
+        </p>
+        <input id="orCustomInput" class="or-input" type="text" maxlength="95" placeholder="Ou escreva sua própria manchete bombástica..." ${canPost ? "" : "disabled"} />
+        <button id="orPublishCustomBtn" class="mini-btn green" style="width:100%;margin-bottom:10px" type="button" ${canPost ? "" : "disabled"}>
+          🚀 Publicar Manchete Própria no @only_resenha_
+        </button>
+        <div class="row-sub" style="margin-bottom:6px">Ou escolha uma pauta pronta da ETECAMP:</div>
+        <div class="or-template-list">
+          ${templates
+            .map(
+              (t, idx) => `
+            <button class="or-template-btn" data-tpl="${idx}" type="button" ${canPost ? "" : "disabled"}>
+              <strong>${t.emoji} ${t.headline}</strong>
+            </button>
+          `
+            )
+            .join("")}
+        </div>
+      </div>
+    `;
+
+    const publishFakeNews = (postObj) => {
+      if (state.phone.postedFakeToday) return;
+      const gainFollowers = 4 + Math.floor(Math.random() * 5);
+      state.phone.postedFakeToday = true;
+      state.phone.resenhaPostsCount += 1;
+      state.phone.resenhaFollowers += gainFollowers;
+      state.reputation += 1;
+      state.phone.userPosts.unshift({
+        id: `user_${Date.now()}`,
+        kicker: postObj.kicker,
+        emoji: postObj.emoji,
+        bg: postObj.bg,
+        headline: postObj.headline.toUpperCase(),
+        caption: postObj.caption,
+        time: "Publicado agora",
+        likes: 18 + Math.floor(Math.random() * 25),
+        comments: [
+          { user: "@only_resenha_", text: "Aprovado pelo conselho PF26🏅 com muito amor e carinho!" },
+          { user: "@muzzonline.exe", text: "EU TAVA LÁ EU ERA A ENXADA KKKKKK" },
+        ],
+      });
+      sfx.play("upgrade");
+      onlyResenhaTab = "feed";
+      showToast("🔥", "@ONLY_RESENHA_", `Inverdade viralizou! +${gainFollowers} seguidores e +1 ⭐ Reputação!`);
+      updateHUD();
+      saveGame();
+      renderPhoneApp();
+    };
+
+    const customBtn = document.getElementById("orPublishCustomBtn");
+    const customInput = document.getElementById("orCustomInput");
+    if (customBtn && customInput) {
+      customBtn.addEventListener("click", () => {
+        const txt = customInput.value.trim();
+        if (txt.length < 6) {
+          sfx.play("error");
+          showToast("✍️", "MANCHETE CURTA", "Escreva pelo menos 6 letras para fabricar uma boa inverdade!");
+          return;
+        }
+        publishFakeNews({
+          kicker: "🔥 EXPOSIÇÃO DO MACHO • PF26🏅",
+          emoji: "📰🤡",
+          bg: "linear-gradient(135deg, #be123c, #4f46e5)",
+          headline: txt,
+          caption: `Furo enviado por ${state.activeTitle} Alyffer direto de Pau Arcado! Checagem: inventada na hora com muito amor e carinho 🇧🇷`,
+        });
+      });
+    }
+
+    phoneBody.querySelectorAll(".or-template-btn").forEach((b) => {
+      b.addEventListener("click", () => {
+        const tpl = templates[Number(b.dataset.tpl)];
+        if (tpl) publishFakeNews(tpl);
+      });
+    });
+  } else {
+    phoneBody.innerHTML =
+      profileHtml +
+      feedPosts
+        .map((p) => {
+          const liked = state.phone.likedIds.includes(p.id);
+          const displayLikes = p.likes + (liked ? 1 : 0);
+          return `
+          <article class="or-post">
+            <div class="or-post-head">
+              <strong>🔥 alfinetation (@only_resenha_)</strong>
+              <span style="color:#94a3b8">${escapeHtml(p.time)}</span>
+            </div>
+            <div class="or-post-poster" style="background:${p.bg}">
+              <div class="or-poster-kicker">${escapeHtml(p.kicker)}</div>
+              <div class="or-poster-emoji">${p.emoji}</div>
+              <div class="or-poster-headline">${escapeHtml(p.headline)}</div>
+              <div class="or-poster-watermark">alfinetation • @only_resenha_ • Ganhou PF26🏅</div>
+            </div>
+            <div class="or-post-body">
+              <div class="or-post-caption">${escapeHtml(p.caption)}</div>
+              <div class="or-post-actions">
+                <button class="or-act-btn ${liked ? "liked" : ""}" data-like="${escapeHtml(p.id)}" type="button">
+                  ${liked ? "❤️ Curtiu" : "🤍 Curtir"} (${displayLikes})
+                </button>
+                <button class="or-act-btn" data-laugh="${escapeHtml(p.id)}" type="button">
+                  😂 Rir da Resenha
+                </button>
+              </div>
+              <div class="or-comments">
+                ${p.comments
+                  .map((c) => `<div class="or-comment"><strong>${escapeHtml(c.user)}:</strong> ${escapeHtml(c.text)}</div>`)
+                  .join("")}
+              </div>
+            </div>
+          </article>
+        `;
+        })
+        .join("");
+
+    phoneBody.querySelectorAll("[data-like]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.like;
+        const idx = state.phone.likedIds.indexOf(id);
+        if (idx >= 0) {
+          state.phone.likedIds.splice(idx, 1);
+        } else {
+          state.phone.likedIds.push(id);
+          sfx.play("phone_tap");
+        }
+        saveGame();
+        renderPhoneApp();
+      });
+    });
+
+    phoneBody.querySelectorAll("[data-laugh]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        sfx.play("chuckle");
+        showToast("😂", "ONLY-RESENHA", "Propagando a desinformação em Pau Arcado com muito amor e carinho 🇧🇷");
+      });
+    });
+  }
+
+  phoneBody.querySelectorAll(".or-tab-btn").forEach((tab) => {
+    tab.addEventListener("click", () => {
+      sfx.play("phone_tap");
+      onlyResenhaTab = tab.dataset.tab;
+      renderPhoneApp();
+    });
+  });
+}
+
+function renderZapApp() {
+  if (phoneBackBtn) phoneBackBtn.classList.remove("hidden");
+  const chats = getDynamicZapChats();
+
+  if (!activeZapChatId) {
+    phoneAppTitle.textContent = "Zap da Roça & ETECAMP";
+    phoneBody.innerHTML = chats
+      .map(
+        (c) => `
+      <button class="zap-chat-item" data-chat="${c.id}" type="button">
+        <div class="zap-chat-avatar">${c.avatar}</div>
+        <div style="flex:1;min-width:0">
+          <div class="row-title">${escapeHtml(c.name)}</div>
+          <div class="row-sub" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${escapeHtml(c.preview)}</div>
+        </div>
+        <span style="color:#4ade80;font-size:0.8rem">▶</span>
+      </button>
+    `
+      )
+      .join("");
+    phoneBody.querySelectorAll("[data-chat]").forEach((b) => {
+      b.addEventListener("click", () => {
+        sfx.play("phone_tap");
+        activeZapChatId = b.dataset.chat;
+        renderPhoneApp();
+      });
+    });
+    return;
+  }
+
+  const chat = chats.find((c) => c.id === activeZapChatId) || chats[0];
+  phoneAppTitle.textContent = `${chat.avatar} ${chat.name}`;
+  phoneBody.innerHTML = `
+    <div class="row-sub" style="text-align:center;margin-bottom:8px">${escapeHtml(chat.status)}</div>
+    <div class="zap-messages">
+      ${chat.messages
+        .map(
+          (m) => `
+        <div class="zap-bubble ${m.me ? "me" : ""}">
+          ${m.me ? "" : `<div class="zap-sender">${escapeHtml(m.sender)}</div>`}
+          <div>${escapeHtml(m.text)}</div>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+    <div class="zap-quick-replies">
+      ${chat.replies
+        .map(
+          (r, idx) => `
+        <button class="or-template-btn" data-reply="${idx}" type="button">💬 Responder: "${escapeHtml(r.text)}"</button>
+      `
+        )
+        .join("")}
+    </div>
+  `;
+
+  phoneBody.querySelectorAll("[data-reply]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const r = chat.replies[Number(btn.dataset.reply)];
+      if (!r) return;
+      if (!state.phone.zapReplies[chat.id]) state.phone.zapReplies[chat.id] = [];
+      state.phone.zapReplies[chat.id].push({ sender: "Você", text: r.text, me: true });
+      state.phone.zapReplies[chat.id].push({ sender: r.bot, text: r.reply, me: false });
+      if (state.phone.zapReplies[chat.id].length > 8) {
+        state.phone.zapReplies[chat.id] = state.phone.zapReplies[chat.id].slice(-8);
+      }
+      sfx.play("phone_notif");
+      saveGame();
+      renderPhoneApp();
+      phoneBody.scrollTop = phoneBody.scrollHeight;
+    });
+  });
+}
+
+function renderInstaApp() {
+  phoneAppTitle.textContent = "InstaRoça • Campo Limpo Paulista";
+  if (phoneBackBtn) phoneBackBtn.classList.remove("hidden");
+
+  const stories = [
+    { icon: "🔥", label: "@only_resenha_" },
+    { icon: "🌾", label: "@macho" },
+    { icon: "🕶️", label: "@muzzonline" },
+    { icon: "🧪", label: "@kaio.lab" },
+    { icon: "😋", label: "@felix.pac" },
+    { icon: "🍟", label: "@pao.etec" },
+    { icon: "🛡️", label: "@marcelo" },
+    { icon: "🐶", label: "@orelha" },
+  ];
+  const feed = getInstaFeedPosts();
+  const canPostPhoto = !state.phone.postedInstaToday;
+
+  phoneBody.innerHTML = `
+    <div class="insta-stories">
+      ${stories
+        .map(
+          (s) => `
+        <div class="insta-story">
+          <div class="insta-story-ring"><div class="insta-story-core">${s.icon}</div></div>
+          <span>${s.label}</span>
+        </div>
+      `
+        )
+        .join("")}
+    </div>
+
+    <button id="postInstaPhotoBtn" class="mini-btn green" style="width:100%;margin-bottom:10px" type="button" ${canPostPhoto ? "" : "disabled"}>
+      ${canPostPhoto ? "📸 Postar Foto do Momento (+1 ⭐ Reputação)" : "📸 Foto de hoje já postada ✓"}
+    </button>
+
+    ${feed
+      .map((p) => {
+        const liked = !!state.phone.instaLikes[p.id];
+        const likes = (p.baseLikes || 12) + (liked ? 1 : 0);
+        return `
+        <article class="or-post">
+          <div class="or-post-head">
+            <strong>${escapeHtml(p.user)}</strong>
+            <span style="color:#94a3b8">${escapeHtml(p.badge)}</span>
+          </div>
+          <div class="or-post-poster" style="background:${p.bg}">
+            <div class="or-poster-emoji">${p.emoji}</div>
+            <div class="or-poster-headline">${escapeHtml(p.title)}</div>
+          </div>
+          <div class="or-post-body">
+            <div class="or-post-caption">${escapeHtml(p.caption)}</div>
+            <button class="or-act-btn ${liked ? "liked" : ""}" data-ilike="${escapeHtml(p.id)}" type="button">
+              ${liked ? "❤️" : "🤍"} ${likes} curtidas
+            </button>
+          </div>
+        </article>
+      `;
+      })
+      .join("")}
+  `;
+
+  const postBtn = document.getElementById("postInstaPhotoBtn");
+  if (postBtn) {
+    postBtn.addEventListener("click", () => {
+      if (state.phone.postedInstaToday) return;
+      state.phone.postedInstaToday = true;
+      state.reputation += 1;
+      const locText = LOCATION_LABELS[state.location] || "Pau Arcado";
+      const emoji = state.hasTamedJaguar ? "🐆🥬" : state.animals.length > 0 ? "🐄🐖" : "🥬🚜";
+      state.phone.userInstaPosts.unshift({
+        id: `uinsta_${Date.now()}`,
+        user: "@macho.pauarcado",
+        badge: locText,
+        emoji,
+        bg: "linear-gradient(135deg, #16a34a, #0284c7)",
+        title: `Selfie do ${state.activeTitle} em ${locText}`,
+        caption: `Colhendo alface e fechando a resenha com ${getTotalBasketCount()} item(ns) na cesta! 🔥 #PauArcado #ETECAMP`,
+        baseLikes: 35 + Math.floor(Math.random() * 40),
+      });
+      sfx.play("upgrade");
+      showToast("📸", "POSTADO NO INSTAROÇA!", "A galera da ETECAMP curtiu! (+1 ⭐ Reputação)");
+      updateHUD();
+      saveGame();
+      renderPhoneApp();
+    });
+  }
+
+  phoneBody.querySelectorAll("[data-ilike]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.ilike;
+      state.phone.instaLikes[id] = !state.phone.instaLikes[id];
+      sfx.play("phone_tap");
+      saveGame();
+      renderPhoneApp();
+    });
+  });
+}
+
+function renderMiniGameApp() {
+  phoneAppTitle.textContent = "🥬 Pega-Alface • Arcade";
+  if (phoneBackBtn) phoneBackBtn.classList.remove("hidden");
+
+  phoneBody.innerHTML = `
+    <div class="row-sub" style="margin-bottom:8px;text-align:center;color:#bae6fd">
+      🍲 O Menino Maluquinho perguntou: <strong>"Tem joguinho no celular?"</strong> Tem sim! Pegue 🥬/✨ e desvie de 💣/🐆!
+    </div>
+    <div class="mini-hud-row">
+      <span id="miniScoreLabel">Pontos: 0</span>
+      <span id="miniTimeLabel">Tempo: 15s</span>
+      <span>Recorde: ${state.phone.gameHighScore}</span>
+    </div>
+    <div id="miniStage" class="mini-arcade-stage">
+      <div id="miniBasket" class="mini-basket" style="left:50%">🧺</div>
+    </div>
+    <div style="display:flex;gap:8px;margin-bottom:8px">
+      <button id="miniLeftBtn" class="mini-btn" style="flex:1" type="button">◀ Esquerda</button>
+      <button id="miniRightBtn" class="mini-btn" style="flex:1" type="button">Direita ▶</button>
+    </div>
+    <button id="miniStartBtn" class="mini-btn green" style="width:100%" type="button">▶️ Jogar Rodada (15s)</button>
+  `;
+
+  const stage = document.getElementById("miniStage");
+  const basket = document.getElementById("miniBasket");
+  const scoreEl = document.getElementById("miniScoreLabel");
+  const timeEl = document.getElementById("miniTimeLabel");
+  const startMiniBtn = document.getElementById("miniStartBtn");
+  const leftBtn = document.getElementById("miniLeftBtn");
+  const rightBtn = document.getElementById("miniRightBtn");
+
+  let basketX = 50;
+  const setBasket = (nx) => {
+    basketX = Math.max(10, Math.min(90, nx));
+    if (basket) basket.style.left = `${basketX}%`;
+  };
+
+  if (stage) {
+    stage.addEventListener("pointermove", (e) => {
+      if (!miniArcadeTimer) return;
+      const rect = stage.getBoundingClientRect();
+      setBasket(((e.clientX - rect.left) / rect.width) * 100);
+    });
+    stage.addEventListener("pointerdown", (e) => {
+      const rect = stage.getBoundingClientRect();
+      setBasket(((e.clientX - rect.left) / rect.width) * 100);
+    });
+  }
+  if (leftBtn) leftBtn.addEventListener("click", () => setBasket(basketX - 12));
+  if (rightBtn) rightBtn.addEventListener("click", () => setBasket(basketX + 12));
+
+  if (startMiniBtn) {
+    startMiniBtn.addEventListener("click", () => {
+      stopMiniArcade();
+      startMiniBtn.disabled = true;
+      let score = 0;
+      let timeLeft = 15;
+      let drops = [];
+      let spawnTick = 0;
+
+      const clearDrops = () => {
+        drops.forEach((d) => d.el.remove());
+        drops = [];
+      };
+
+      miniArcadeTimer = setInterval(() => {
+        if (!document.getElementById("miniStage")) {
+          stopMiniArcade();
+          return;
+        }
+        timeLeft -= 0.05;
+        spawnTick += 0.05;
+        if (spawnTick >= 0.42) {
+          spawnTick = 0;
+          const r = Math.random();
+          const item =
+            r < 0.14
+              ? { icon: "✨", pts: 3, speed: 3.1 }
+              : r < 0.78
+                ? { icon: "🥬", pts: 1, speed: 2.3 }
+                : { icon: "💣", pts: -3, speed: 2.8 };
+          const el = document.createElement("div");
+          el.className = "mini-drop";
+          el.textContent = item.icon;
+          const x = 10 + Math.random() * 80;
+          el.style.left = `${x}%`;
+          el.style.top = "0%";
+          stage.appendChild(el);
+          drops.push({ el, x, y: 0, ...item });
+        }
+
+        for (let i = drops.length - 1; i >= 0; i--) {
+          const d = drops[i];
+          d.y += d.speed;
+          d.el.style.top = `${d.y}%`;
+          if (d.y >= 83 && d.y <= 96 && Math.abs(d.x - basketX) < 13) {
+            score = Math.max(0, score + d.pts);
+            sfx.play(d.pts > 0 ? "harvest" : "error");
+            d.el.remove();
+            drops.splice(i, 1);
+          } else if (d.y > 102) {
+            d.el.remove();
+            drops.splice(i, 1);
+          }
+        }
+
+        if (scoreEl) scoreEl.textContent = `Pontos: ${score}`;
+        if (timeEl) timeEl.textContent = `Tempo: ${Math.max(0, Math.ceil(timeLeft))}s`;
+
+        if (timeLeft <= 0) {
+          stopMiniArcade();
+          clearDrops();
+          const newRecord = score > state.phone.gameHighScore;
+          if (newRecord) state.phone.gameHighScore = score;
+          if (score >= 8) {
+            state.money += 6;
+            sfx.play("sell");
+            showToast("🎮", "CAMPEÃO DO PEGA-ALFACE!", `${score} pontos! Ganhou +R$ 6,00 na resenha!`);
+          } else {
+            sfx.play("phone_notif");
+            showToast("🎮", "FIM DE JOGO!", `Fez ${score} pontos! Faça 8+ para ganhar R$ 6,00!`);
+          }
+          updateHUD();
+          saveGame();
+          renderPhoneApp();
+        }
+      }, 50);
+    });
+  }
+}
+
+function renderPhoneApp() {
+  if (!phoneBody) return;
+  updatePhoneStatusBar();
+  stopMiniArcade();
+  if (phoneCurrentApp === "only_resenha") renderOnlyResenhaApp();
+  else if (phoneCurrentApp === "zap") renderZapApp();
+  else if (phoneCurrentApp === "insta") renderInstaApp();
+  else if (phoneCurrentApp === "minigame") renderMiniGameApp();
+  else renderPhoneHome();
 }
 
 // Shop Modal Logic
@@ -6540,34 +10072,34 @@ function renderShopModal() {
   const landItems = [
     {
       emoji: "🌾",
-      title: "Pasto Oeste (+8 Canteiros & Curral)",
+      title: "Pasto Oeste (+12 Canteiros & +4 Animais)",
       sub: state.landLevel >= 1
-        ? "Terreno Oeste desbloqueado! Curral e +8 canteiros (16 a 23) ativos."
-        : "Expande a cerca oeste, libera espaço p/ até 6 animais e +8 canteiros de plantio!",
+        ? "Terreno Oeste desbloqueado! +12 canteiros e limite para 8 animais ativos."
+        : "Expande a cerca oeste, aumenta limite p/ 8 animais e libera +12 canteiros de plantio!",
       cost: 120,
       owned: state.landLevel >= 1,
       available: true,
       buy: () => {
         state.landLevel = 1;
         syncUnlockedPlots();
-        showDayBanner("🏞️ PASTO OESTE ADQUIRIDO! CURRAL & +8 CANTEIROS LIBERADOS!");
+        showDayBanner("🏞️ PASTO OESTE ADQUIRIDO! +12 CANTEIROS & MAIS ESPAÇO NO CURRAL!");
       },
     },
     {
       emoji: "🚜",
-      title: "Fazenda Leste (+8 Canteiros & Pasto Grande)",
+      title: "Fazenda Leste (+12 Canteiros & +4 Animais)",
       sub: state.landLevel >= 2
-        ? "Fazenda Leste desbloqueada! Pasto amplo e +8 canteiros (24 a 31) ativos."
+        ? "Fazenda Leste desbloqueada! +12 canteiros e limite máximo de 12 animais ativos."
         : state.landLevel < 1
-          ? "Requer Pasto Oeste primeiro! Aumenta capacidade p/ 10 animais e +8 canteiros."
-          : "Expande a cerca leste! Espaço p/ até 10 animais e +8 canteiros na horta!",
+          ? "Requer Pasto Oeste primeiro! Aumenta limite p/ 12 animais e +12 canteiros."
+          : "Expande a cerca leste! Limite p/ 12 animais e +12 canteiros na horta (60 totais)!",
       cost: 220,
       owned: state.landLevel >= 2,
       available: state.landLevel >= 1,
       buy: () => {
         state.landLevel = 2;
         syncUnlockedPlots();
-        showDayBanner("🚜 FAZENDA LESTE ADQUIRIDA! CAPACIDADE MÁXIMA & 32 CANTEIROS TOTAIS!");
+        showDayBanner("🚜 FAZENDA LESTE ADQUIRIDA! 60 CANTEIROS TOTAIS & CURRAL MÁXIMO!");
       },
     },
   ];
@@ -6609,21 +10141,21 @@ function renderShopModal() {
       type: "cow",
       emoji: "🐄",
       title: "Vaca Leiteira Caipira",
-      sub: "Produz Leite Fresco diário (R$ 28 na venda) • Requer Pasto Oeste",
+      sub: "Produz Leite Fresco diário (R$ 28 na venda) • Fica no Curral das Vacas",
       cost: 85,
     },
     {
       type: "sheep",
       emoji: "🐑",
       title: "Ovelha da Mantiqueira",
-      sub: "Produz Lã Macia diária (R$ 22 na venda) • Requer Pasto Oeste",
+      sub: "Produz Lã Macia diária (R$ 22 na venda) • Fica no Cercado das Ovelhas",
       cost: 70,
     },
     {
       type: "pig",
       emoji: "🐷",
       title: "Porco Caipira Raro",
-      sub: "Encontra Trufas Nobres diárias (R$ 38 na venda) • Requer Pasto Oeste",
+      sub: "Encontra Trufas Nobres diárias (R$ 38 na venda) • Fica no Chiqueiro dos Porcos",
       cost: 95,
     },
   ];
@@ -6632,13 +10164,11 @@ function renderShopModal() {
     const row = document.createElement("div");
     row.className = "row-card";
     const count = state.animals.filter((a) => a.alive && a.type === an.type).length;
-    const canAfford = state.landLevel >= 1 && aliveAnimals < maxAn && state.money >= an.cost;
+    const canAfford = aliveAnimals < maxAn && state.money >= an.cost;
     const btnText =
-      state.landLevel < 1
-        ? "Sem Pasto"
-        : aliveAnimals >= maxAn
-          ? "Curral Lotado"
-          : `Comprar ${formatBRL(an.cost)}`;
+      aliveAnimals >= maxAn
+        ? "Curral Lotado"
+        : `Comprar ${formatBRL(an.cost)}`;
     row.innerHTML = `
       <div class="row-info">
         <span class="row-emoji">${an.emoji}</span>
@@ -6714,19 +10244,20 @@ function renderShopModal() {
 
   // 4. MELHORIAS GERAIS & IRRIGAÇÃO
   addHeader("💧 MELHORIAS DO SÍTIO & IRRIGAÇÃO");
-  const plotCost = 35 + state.upgrades.plotTier * 45;
+  const plotCost = 35 + state.upgrades.plotTier * 30;
   const canCost = 30 * state.upgrades.canLevel;
   const autoWaterCost = state.upgrades.autoWaterLevel === 0 ? 90 : 180;
   const fertCost = 40 * state.upgrades.fertLevel;
   const standCost = 45 * state.upgrades.standLevel;
 
+  const basePlotsUnlocked = Math.min(36, 6 + state.upgrades.plotTier * 3);
   const items = [
     {
       emoji: "🌱",
-      title: `Expandir Quintal Base (+2 Canteiros)`,
-      sub: `Desbloqueados: ${getUnlockedPlotCount()}/16 canteiros base`,
+      title: `Expandir Horta Principal (+3 Canteiros)`,
+      sub: `Horta base: ${basePlotsUnlocked}/36 canteiros • Total na fazenda: ${getUnlockedPlotCount()}/60`,
       cost: plotCost,
-      maxed: state.upgrades.plotTier >= 5,
+      maxed: state.upgrades.plotTier >= 10,
       buy: () => {
         state.upgrades.plotTier += 1;
         syncUnlockedPlots();
@@ -6821,11 +10352,22 @@ function renderShopModal() {
 const keys = {};
 
 window.addEventListener("keydown", (e) => {
+  if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) {
+    if (e.code === "Escape" && phoneModal && !phoneModal.classList.contains("hidden")) {
+      closePhoneModal();
+    }
+    return;
+  }
+
   if (["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.code)) {
     if (state.mode === "playing") e.preventDefault();
   }
 
   if (e.code === "Escape") {
+    if (phoneModal && !phoneModal.classList.contains("hidden")) {
+      closePhoneModal();
+      return;
+    }
     if (!calendarModal.classList.contains("hidden")) {
       closeCalendarModal();
       return;
@@ -6858,8 +10400,14 @@ window.addEventListener("keydown", (e) => {
   }
 
   if (!keys[e.code]) {
-    if (e.code === "Space" || e.code === "KeyE") {
+    if (e.code === "Space") {
+      triggerJump();
+    } else if (e.code === "KeyE") {
       triggerContextAction();
+    } else if (e.code === "KeyZ") {
+      drinkVaselina();
+    } else if (e.code === "KeyT") {
+      openPhoneModal("home");
     } else if (e.code === "KeyF") {
       const ctx = findCurrentContext();
       if (ctx && ctx.plot) {
@@ -7050,6 +10598,7 @@ const joystickBase = document.getElementById("joystickBase");
 const joystickKnob = document.getElementById("joystickKnob");
 const touchActionBtn = document.getElementById("touchAction");
 const touchActionEmoji = document.getElementById("touchActionEmoji");
+const touchJumpBtn = document.getElementById("touchJump");
 const joyVec = new THREE.Vector2(0, 0);
 let joystickPointerId = null;
 
@@ -7119,6 +10668,14 @@ if (touchActionBtn) {
   });
 }
 
+if (touchJumpBtn) {
+  touchJumpBtn.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (state.mode === "playing") triggerJump();
+  });
+}
+
 function clearActiveInputs() {
   canvasPointers.clear();
   orbitPointerId = null;
@@ -7143,6 +10700,7 @@ function enterFarm() {
   npcModal.classList.add("hidden");
   guideModal.classList.add("hidden");
   calendarModal.classList.add("hidden");
+  if (phoneModal) phoneModal.classList.add("hidden");
   if (deathModal) deathModal.classList.add("hidden");
   hud.classList.remove("hidden");
   state.mode = "playing";
@@ -7190,6 +10748,7 @@ restartPauseBtn.addEventListener("click", () => {
 pauseBtn.addEventListener("click", togglePause);
 muteBtn.addEventListener("click", toggleMute);
 if (toolModeBtn) toolModeBtn.addEventListener("click", toggleEquippedTool);
+if (vaselinaHudBtn) vaselinaHudBtn.addEventListener("click", drinkVaselina);
 if (kickDogBtn) kickDogBtn.addEventListener("click", kickOrelha);
 if (respawnBtn) respawnBtn.addEventListener("click", respawnPlayer);
 if (camModeBtn) camModeBtn.addEventListener("click", toggleFirstPerson);
@@ -7203,6 +10762,19 @@ closeSellBtn.addEventListener("click", closeSellModal);
 closeShopBtn.addEventListener("click", closeShopModal);
 closeNpcBtn.addEventListener("click", closeNpcModal);
 closeGuideBtn.addEventListener("click", closeGuideModal);
+if (phoneHudBtn) phoneHudBtn.addEventListener("click", () => openPhoneModal("home"));
+if (closePhoneBtn) closePhoneBtn.addEventListener("click", closePhoneModal);
+if (phoneNavClose) phoneNavClose.addEventListener("click", closePhoneModal);
+if (phoneBackBtn) phoneBackBtn.addEventListener("click", navigatePhoneBack);
+if (phoneNavBack) phoneNavBack.addEventListener("click", navigatePhoneBack);
+if (phoneNavHome) {
+  phoneNavHome.addEventListener("click", () => {
+    sfx.play("phone_tap");
+    phoneCurrentApp = "home";
+    activeZapChatId = null;
+    renderPhoneApp();
+  });
+}
 
 // Update Day/Night Sky & Lighting
 const indoorBgColor = new THREE.Color(0x181420);
@@ -7221,16 +10793,16 @@ function updateSkyAndTime(dt) {
   }
   syncBusModelsVisibility();
 
-  rainGroup.visible = state.isRainy && state.location !== "room" && state.location !== "etec_inside";
+  rainGroup.visible = state.isRainy && state.location !== "room" && state.location !== "etec_inside" && state.location !== "basement";
   if (rainGroup.visible) {
     rainGroup.position.set(player.pos.x, 0, player.pos.z);
   }
 
-  if (state.location === "room" || state.location === "etec_inside") {
+  if (state.location === "room" || state.location === "etec_inside" || state.location === "basement") {
     scene.background = indoorBgColor;
     scene.fog.color.copy(indoorBgColor);
-    sunLight.intensity = 0.65;
-    hemiLight.intensity = 0.72;
+    sunLight.intensity = state.location === "basement" ? 0.35 : 0.65;
+    hemiLight.intensity = state.location === "basement" ? 0.45 : 0.72;
     return;
   }
 
@@ -7293,6 +10865,7 @@ const CONTEXT_ICONS = {
   train_to_term: "🚆",
   enter_etec: "🏫",
   exit_etec: "🚪",
+  play_instruments: "🎸",
   chem_bench: "🧪",
   pastel: "🥟",
   term_sell: "💰",
@@ -7303,16 +10876,33 @@ const CONTEXT_ICONS = {
   manga: "📚",
   etec: "🎒",
   tame_jaguar: "❤️",
+  ride_jaguar_term: "🐆",
+  ride_jaguar_yard: "🐆",
   pet_tamed_jaguar: "🐆",
   talk_marcelo_yard: "🛡️",
   collect_animal: "🥛",
   pet_animal: "🐄",
+  coffee: "☕",
+  toilet: "🚽",
+  secret_sw1: "⚙️",
+  secret_sw2: "🔧",
+  secret_hatch: "🪜",
+  exit_basement: "🪜",
+  macho_clone: "🌀",
 };
+
+let airfryerHintCd = 0;
 
 function updateGame(dt) {
   state.animTime += dt;
   if (state.energyTimer > 0) {
     state.energyTimer = Math.max(0, state.energyTimer - dt);
+  }
+  if (state.vaselinaTimer > 0) {
+    state.vaselinaTimer = Math.max(0, state.vaselinaTimer - dt);
+  }
+  if (airfryerHintCd > 0) {
+    airfryerHintCd = Math.max(0, airfryerHintCd - dt);
   }
   if (state.location === "etec" || state.location === "etec_inside") {
     state.visitedEtecToday = true;
@@ -7337,7 +10927,12 @@ function updateGame(dt) {
 
   const inputVec = new THREE.Vector2(moveX, moveZ);
   const inputLen = inputVec.length();
-  const moving = inputLen > 0.01;
+  const isAirfryerStatic = state.activeTitle === "Airfryer";
+  if (isAirfryerStatic && inputLen > 0.01 && airfryerHintCd <= 0) {
+    airfryerHintCd = 4.5;
+    showToast("🍟", "MODO AIRFRYER PARADA!", "Com o título Airfryer você fica parado! Clique no título ou aperte G para trocar.");
+  }
+  const moving = !isAirfryerStatic && inputLen > 0.01;
   if (moving) {
     const analogScale = hasKb ? 1 : Math.min(1, inputLen);
     inputVec.normalize();
@@ -7352,22 +10947,29 @@ function updateGame(dt) {
     const activeHoeData = HOES[state.activeHoe] || HOES.comum;
     const hoeSpeed = state.equippedTool === "hoe" ? (activeHoeData.speedBoost || 1.0) : 1.0;
     const baseSpeed = state.location === "room" ? 5.2 : 7.6;
-    const boostMult = (state.isCrazy ? 1.25 : 1.0) * (state.energyTimer > 0 ? 1.32 : 1.0) * hoeSpeed;
+    const vaselinaBoost = state.vaselinaTimer > 0 ? 1.65 : 1.0;
+    const boostMult = (state.isCrazy ? 1.25 : 1.0) * (state.energyTimer > 0 ? 1.32 : 1.0) * vaselinaBoost * hoeSpeed;
     const walkSpeed = baseSpeed * boostMult * analogScale;
 
     const farmBounds = getFarmBounds();
     let minX = farmBounds.minX;
     let maxX = farmBounds.maxX;
-    let minZ = -19.5;
-    let maxZ = 22.5;
+    let minZ = -28.5;
+    let maxZ = 48.5;
     let activeObstacles = obstacles;
 
     if (state.location === "room") {
-      minX = -4.6;
-      maxX = 4.6;
-      minZ = -3.4;
-      maxZ = 3.6;
+      minX = -9.4;
+      maxX = 9.4;
+      minZ = -7.4;
+      maxZ = 7.4;
       activeObstacles = interiorObstacles;
+    } else if (state.location === "basement") {
+      minX = -10.4;
+      maxX = 10.4;
+      minZ = -8.4;
+      maxZ = 8.4;
+      activeObstacles = basementObstacles;
     } else if (state.location === "terminal") {
       minX = -14.2;
       maxX = 10.6;
@@ -7375,16 +10977,16 @@ function updateGame(dt) {
       maxZ = 11.5;
       activeObstacles = terminalObstacles;
     } else if (state.location === "etec") {
-      minX = -12.4;
-      maxX = 16.0;
-      minZ = -5.0;
-      maxZ = 11.5;
+      minX = -33.2;
+      maxX = 33.2;
+      minZ = -28.2;
+      maxZ = 31.6;
       activeObstacles = etecObstacles;
     } else if (state.location === "etec_inside") {
-      minX = -15.3;
-      maxX = 15.3;
-      minZ = -12.2;
-      maxZ = 12.2;
+      minX = -15.4;
+      maxX = 15.4;
+      minZ = -32.3;
+      maxZ = 32.3;
       activeObstacles = etecInsideObstacles;
     }
 
@@ -7416,7 +11018,6 @@ function updateGame(dt) {
     }
     player.pos.x = finalX;
     player.pos.z = finalZ;
-    player.pos.y = getFloorYAt(finalX, finalZ);
 
     const targetYaw = Math.atan2(worldMove.x, worldMove.z);
     let diff = targetYaw - player.facingYaw;
@@ -7425,22 +11026,29 @@ function updateGame(dt) {
     player.facingYaw += diff * Math.min(1, 14 * dt);
   }
 
-  // Animate Macho Character (com gesto 6-7 nos braços, olhos esbugalhados vermelhos e língua p/ fora ao Coringar!)
+  // Física vertical do pulo (Espaço / botão Pular)
+  if (isAirfryerStatic) {
+    player.vy = 0;
+    player.jumpOffset = 0;
+  } else if (player.jumpOffset > 0 || player.vy !== 0) {
+    player.vy -= 24.0 * dt;
+    player.jumpOffset += player.vy * dt;
+    if (player.jumpOffset <= 0) {
+      player.jumpOffset = 0;
+      player.vy = 0;
+    }
+  }
+  player.pos.y = getFloorYAt(player.pos.x, player.pos.z) + player.jumpOffset;
+
+  // Animate Macho Character & Title Skins
   playerMesh.position.copy(player.pos);
   if (state.firstPerson) {
     player.facingYaw = state.camYaw + Math.PI;
   }
   playerMesh.rotation.y = player.facingYaw;
-  playerMesh.rotation.z = state.isCrazy ? Math.sin(state.animTime * 11) * 0.08 : 0;
+  playerMesh.rotation.z = state.isCrazy && !isAirfryerStatic ? Math.sin(state.animTime * 11) * 0.08 : 0;
 
   const {
-    leftArm,
-    rightArm,
-    leftForearm,
-    rightForearm,
-    leftLeg,
-    rightLeg,
-    canGroup,
     leftEye,
     rightEye,
     crazyFaceGroup,
@@ -7450,6 +11058,7 @@ function updateGame(dt) {
     rPupil,
     tongueGroup,
   } = playerMesh.userData;
+  const rig = playerMesh.userData.activeRig || playerMesh.userData;
 
   // Alterna rosto normal x rosto Coringando (olhos esbugalhados vermelhos + língua p/ fora!)
   if (leftEye && rightEye && crazyFaceGroup) {
@@ -7476,49 +11085,64 @@ function updateGame(dt) {
 
   if (state.swingTimer > 0) {
     state.swingTimer = Math.max(0, state.swingTimer - dt);
-    rightArm.rotation.x = -1.45 + Math.sin(state.swingTimer * 26) * 0.65;
-    if (leftForearm) leftForearm.rotation.x = 0;
-    if (rightForearm) rightForearm.rotation.x = -0.35;
-  } else if (state.isCrazy) {
-    // Gesto "6-7" (67): ambos braços dobrados pra frente com palmas p/ cima subindo e descendo alternadamente!
-    const pump67 = Math.sin(state.animTime * 9.5);
-    leftArm.rotation.x = -0.58 + pump67 * 0.36;
-    rightArm.rotation.x = -0.58 - pump67 * 0.36;
-    leftArm.rotation.z = 0.14;
-    rightArm.rotation.z = -0.14;
-    if (leftForearm) {
-      leftForearm.rotation.x = -1.35 + pump67 * 0.25;
-    }
-    if (rightForearm) {
-      rightForearm.rotation.x = -1.35 - pump67 * 0.25;
-    }
-    if (moving) {
-      const legSwing = Math.sin(state.animTime * 16) * 0.85;
-      leftLeg.rotation.x = -legSwing;
-      rightLeg.rotation.x = legSwing;
+  }
+  if (rig && !rig.isStatic && rig.leftArm && rig.rightArm && rig.leftLeg && rig.rightLeg) {
+    const { leftArm, rightArm, leftForearm, rightForearm, leftLeg, rightLeg } = rig;
+    if (state.swingTimer > 0) {
+      rightArm.rotation.x = -1.45 + Math.sin(state.swingTimer * 26) * 0.65;
+      if (leftForearm) leftForearm.rotation.x = 0;
+      if (rightForearm) rightForearm.rotation.x = -0.35;
+    } else if (state.isCrazy) {
+      // Gesto "6-7" (67): ambos braços dobrados pra frente com palmas p/ cima subindo e descendo alternadamente!
+      const pump67 = Math.sin(state.animTime * 9.5);
+      leftArm.rotation.x = -0.58 + pump67 * 0.36;
+      rightArm.rotation.x = -0.58 - pump67 * 0.36;
+      leftArm.rotation.z = 0.14;
+      rightArm.rotation.z = -0.14;
+      if (leftForearm) {
+        leftForearm.rotation.x = -1.35 + pump67 * 0.25;
+      }
+      if (rightForearm) {
+        rightForearm.rotation.x = -1.35 - pump67 * 0.25;
+      }
+      if (moving) {
+        const legSwing = Math.sin(state.animTime * 16) * 0.85;
+        leftLeg.rotation.x = -legSwing;
+        rightLeg.rotation.x = legSwing;
+      } else {
+        leftLeg.rotation.x = Math.sin(state.animTime * 9.5) * 0.16;
+        rightLeg.rotation.x = -Math.sin(state.animTime * 9.5) * 0.16;
+      }
+    } else if (player.jumpOffset > 0.08) {
+      leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -0.75, 14 * dt);
+      rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.75, 14 * dt);
+      leftArm.rotation.z = 0.22;
+      rightArm.rotation.z = -0.22;
+      if (leftForearm) leftForearm.rotation.x = -0.35;
+      if (rightForearm) rightForearm.rotation.x = -0.35;
+      leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0.32, 12 * dt);
+      rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, -0.28, 12 * dt);
+    } else if (moving) {
+      const swingSpeed = state.vaselinaTimer > 0 ? 17 : 12;
+      const swing = Math.sin(state.animTime * swingSpeed) * 0.65;
+      leftArm.rotation.x = swing;
+      rightArm.rotation.x = -swing * 0.7;
+      leftArm.rotation.z = 0;
+      rightArm.rotation.z = 0;
+      if (leftForearm) leftForearm.rotation.x = 0;
+      if (rightForearm) rightForearm.rotation.x = 0;
+      leftLeg.rotation.x = -swing;
+      rightLeg.rotation.x = swing;
     } else {
-      leftLeg.rotation.x = Math.sin(state.animTime * 9.5) * 0.16;
-      rightLeg.rotation.x = -Math.sin(state.animTime * 9.5) * 0.16;
+      leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, 10 * dt);
+      rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.2, 10 * dt);
+      leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0, 10 * dt);
+      rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, 0, 10 * dt);
+      if (leftForearm) leftForearm.rotation.x = THREE.MathUtils.lerp(leftForearm.rotation.x, 0, 10 * dt);
+      if (rightForearm) rightForearm.rotation.x = THREE.MathUtils.lerp(rightForearm.rotation.x, 0, 10 * dt);
+      leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, 10 * dt);
+      rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, 10 * dt);
     }
-  } else if (moving) {
-    const swing = Math.sin(state.animTime * 12) * 0.65;
-    leftArm.rotation.x = swing;
-    rightArm.rotation.x = -swing * 0.7;
-    leftArm.rotation.z = 0;
-    rightArm.rotation.z = 0;
-    if (leftForearm) leftForearm.rotation.x = 0;
-    if (rightForearm) rightForearm.rotation.x = 0;
-    leftLeg.rotation.x = -swing;
-    rightLeg.rotation.x = swing;
-  } else {
-    leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, 10 * dt);
-    rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.2, 10 * dt);
-    leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0, 10 * dt);
-    rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, 0, 10 * dt);
-    if (leftForearm) leftForearm.rotation.x = THREE.MathUtils.lerp(leftForearm.rotation.x, 0, 10 * dt);
-    if (rightForearm) rightForearm.rotation.x = THREE.MathUtils.lerp(rightForearm.rotation.x, 0, 10 * dt);
-    leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, 10 * dt);
-    rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, 10 * dt);
   }
 
   // Modo Coringando (100%): Fala frases cheias de besteiras acima da cabeça!
@@ -7605,9 +11229,9 @@ function updateGame(dt) {
         ch.mesh.rotation.x = Math.sin(state.animTime * 9) > 0.6 ? 0.25 : 0;
         if (ch.wait <= 0) {
           ch.target.set(
-            ch.home.x + (Math.random() - 0.5) * 5.5,
+            THREE.MathUtils.clamp(ch.home.x + (Math.random() - 0.5) * 6.5, -29.4, -18.6),
             0,
-            ch.home.z + (Math.random() - 0.5) * 5.5
+            THREE.MathUtils.clamp(ch.home.z + (Math.random() - 0.5) * 6.5, -25.4, -13.6)
           );
         }
       } else {
@@ -7725,7 +11349,7 @@ function updateGame(dt) {
       if (dist > 1.3) {
         const b = getFarmBounds();
         jpos.x = THREE.MathUtils.clamp(jpos.x + (dx / dist) * jagSpeed * dt, b.minX, b.maxX);
-        jpos.z = THREE.MathUtils.clamp(jpos.z + (dz / dist) * jagSpeed * dt, -19.5, 21);
+        jpos.z = THREE.MathUtils.clamp(jpos.z + (dz / dist) * jagSpeed * dt, -28.5, 28.5);
       }
       jaguarEntity.mesh.rotation.y = Math.atan2(dx, dz);
       // Animação de corrida e flash ao levar enxadada
@@ -7777,7 +11401,7 @@ function updateGame(dt) {
       }
     }
 
-    // Marcelo Careca: patrulha a fazenda e caça a Onça
+    // Marcelo Segurança: patrulha a fazenda e caça a Onça
     if (marceloYardEntity && state.marceloHired) {
       const mm = marceloYardEntity;
       mm.mesh.visible = true;
@@ -7792,9 +11416,9 @@ function updateGame(dt) {
           if (mm.wait <= 0) {
             const b = getFarmBounds();
             mm.target.set(
-              THREE.MathUtils.clamp(mm.home.x + (Math.random() - 0.5) * 16, b.minX + 1, b.maxX - 1),
+              THREE.MathUtils.clamp(mm.home.x + (Math.random() - 0.5) * 28, b.minX + 1, b.maxX - 1),
               0,
-              THREE.MathUtils.clamp(mm.home.z + (Math.random() - 0.5) * 16, -18, 18)
+              THREE.MathUtils.clamp(mm.home.z + (Math.random() - 0.5) * 28, -27, 27)
             );
           }
         }
@@ -7870,20 +11494,29 @@ function updateGame(dt) {
         ent.readyHalo.rotation.y += 2.4 * dt;
         ent.readyHalo.position.y = 2.25 + Math.sin(state.animTime * 3 + a.id) * 0.12;
       }
-      // Foge da Onça se ela estiver perto!
+      const pen = getAnimalPenBounds(a.type);
+      // Foge da Onça se ela estiver perto (dentro do próprio cercado)!
       let fleeing = false;
       if (state.jaguar.active && jaguarEntity && distXZ(ent.mesh.position, jaguarEntity.mesh.position) < 7) {
         fleeing = true;
         const fx = ent.mesh.position.x - jaguarEntity.mesh.position.x;
         const fz = ent.mesh.position.z - jaguarEntity.mesh.position.z;
         const fl = Math.hypot(fx, fz) || 1;
-        ent.target.set(ent.mesh.position.x + (fx / fl) * 4, 0, ent.mesh.position.z + (fz / fl) * 4);
+        ent.target.set(
+          THREE.MathUtils.clamp(ent.mesh.position.x + (fx / fl) * 4, pen.minX, pen.maxX),
+          0,
+          THREE.MathUtils.clamp(ent.mesh.position.z + (fz / fl) * 4, pen.minZ, pen.maxZ)
+        );
         ent.wait = 0;
       }
       if (ent.wait > 0) {
         ent.wait -= dt;
         if (ent.wait <= 0) {
-          ent.target.set(a.x + (Math.random() - 0.5) * 6, 0, a.z + (Math.random() - 0.5) * 6);
+          ent.target.set(
+            pen.minX + Math.random() * (pen.maxX - pen.minX),
+            0,
+            pen.minZ + Math.random() * (pen.maxZ - pen.minZ)
+          );
         }
       } else {
         const adx = ent.target.x - ent.mesh.position.x;
@@ -7893,9 +11526,10 @@ function updateGame(dt) {
           ent.wait = 2.5 + Math.random() * 4;
         } else {
           const sp = fleeing ? 3.4 : 1.1;
-          const b = getFarmBounds();
-          ent.mesh.position.x = THREE.MathUtils.clamp(ent.mesh.position.x + (adx / ad) * sp * dt, b.minX, b.maxX);
-          ent.mesh.position.z = THREE.MathUtils.clamp(ent.mesh.position.z + (adz / ad) * sp * dt, -19.5, 20);
+          ent.mesh.position.x = THREE.MathUtils.clamp(ent.mesh.position.x + (adx / ad) * sp * dt, pen.minX, pen.maxX);
+          ent.mesh.position.z = THREE.MathUtils.clamp(ent.mesh.position.z + (adz / ad) * sp * dt, pen.minZ, pen.maxZ);
+          a.x = ent.mesh.position.x;
+          a.z = ent.mesh.position.z;
           ent.mesh.rotation.y = Math.atan2(adx, adz);
           const lc = Math.sin(state.animTime * (fleeing ? 14 : 7)) * 0.4;
           ent.legs.forEach((leg, i) => (leg.rotation.x = i % 3 === 0 ? lc : -lc));
@@ -8040,6 +11674,35 @@ function updateAmbient(dt) {
     ceilingFanMesh.rotation.y += 3.2 * dt;
   }
 
+  if (state.location === "etec_inside" && classroomFans.length > 0) {
+    for (let i = 0; i < classroomFans.length; i++) {
+      classroomFans[i].rotation.x += 12 * dt;
+    }
+  }
+
+  // Portão automático do estacionamento da ETECAMP + teto da Sala de Instrumentos
+  if (state.location === "etec") {
+    if (etecAutoGateMesh && etecAutoGateCollider) {
+      const distGate = Math.hypot(player.pos.x - -24.0, player.pos.z - 20.0);
+      const targetOpen = distGate < 6.0 ? 1 : 0;
+      etecAutoGateOpen += (targetOpen - etecAutoGateOpen) * Math.min(1, dt * 4.5);
+      const gateX = -24.0 - etecAutoGateOpen * 7.2;
+      etecAutoGateMesh.position.x = gateX;
+      etecAutoGateCollider.minX = gateX - 4.0;
+      etecAutoGateCollider.maxX = gateX + 4.0;
+      if (etecAutoGateLightMat) {
+        const isOpen = etecAutoGateOpen > 0.25;
+        etecAutoGateLightMat.color.setHex(isOpen ? 0x22c55e : 0xef4444);
+        etecAutoGateLightMat.emissive.setHex(isOpen ? 0x22c55e : 0xef4444);
+      }
+    }
+    if (etecInstRoofGroup) {
+      const insideInst =
+        player.pos.x >= 16.2 && player.pos.x <= 32.8 && player.pos.z >= -27.2 && player.pos.z <= -14.2;
+      etecInstRoofGroup.visible = !insideInst;
+    }
+  }
+
   if (sprinklerGroup && sprinklerGroup.visible && state.location === "yard") {
     const spinSpeed = state.upgrades.autoWaterLevel >= 2 ? 7.0 : 4.2;
     sprinklerHeads.forEach((sh) => {
@@ -8079,7 +11742,8 @@ function updateCamera(dt, immediate = false) {
 
   if (state.firstPerson && state.mode !== "start") {
     playerMesh.visible = false;
-    const eyeY = player.pos.y + 2.25 + (state.isCrazy ? Math.sin(state.animTime * 14) * 0.04 : 0);
+    const baseEyeH = state.activeTitle === "Airfryer" ? 1.25 : 2.25;
+    const eyeY = player.pos.y + baseEyeH + (state.isCrazy && state.activeTitle !== "Airfryer" ? Math.sin(state.animTime * 14) * 0.04 : 0);
     const desiredPos = new THREE.Vector3(player.pos.x, eyeY, player.pos.z);
     if (immediate) {
       camera.position.copy(desiredPos);
@@ -8094,8 +11758,8 @@ function updateCamera(dt, immediate = false) {
     camera.lookAt(desiredPos.clone().add(lookDir));
 
     // Braços em 1ª pessoa fazendo o gesto "6-7" quando Coringando, ou ferramenta equipada (Enxada / Regador)!
-    fpCrazyArmsGroup.visible = state.isCrazy && state.mode === "playing";
-    fpToolGroup.visible = !state.isCrazy && state.mode === "playing" && (state.location === "yard" || state.equippedTool === "hoe");
+    fpCrazyArmsGroup.visible = state.isCrazy && state.activeTitle !== "Airfryer" && state.mode === "playing";
+    fpToolGroup.visible = !state.isCrazy && state.activeTitle !== "Airfryer" && state.mode === "playing" && (state.location === "yard" || state.equippedTool === "hoe");
     if (fpToolGroup.visible) {
       fpToolGroup.userData.fpCan.visible = state.equippedTool === "water" && state.location === "yard";
       fpToolGroup.userData.fpHoe.visible = state.equippedTool === "hoe";
@@ -8145,7 +11809,7 @@ if (!hasSave) {
   resetToNewFarm();
 } else {
   state.location = "yard";
-  player.pos.set(0, 0, -6.5);
+  player.pos.set(0, 0, -11.5);
   player.facingYaw = 0;
   setActiveSceneVisibility();
   syncUnlockedPlots();

@@ -20,6 +20,11 @@
   -webkit-tap-highlight-color: transparent;
 }
 
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
 html, body {
   margin: 0;
   padding: 0;
@@ -1369,6 +1374,28 @@ kbd {
   transform: scale(0.95);
 }
 
+.t-btn.action.jump {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.88), rgba(56, 189, 248, 0.88));
+  border: 2px solid rgba(255, 255, 255, 0.32);
+  color: #041926;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.38);
+  transition: transform 0.1s ease;
+}
+
+.t-btn.action.jump:active {
+  transform: scale(0.9);
+}
+
 .touch-action-emoji {
   font-size: 1.35rem;
   line-height: 1;
@@ -1673,5 +1700,709 @@ kbd {
   .btn-secondary {
     padding: 9px 14px;
     font-size: 0.88rem;
+  }
+}
+
+/* Botão do Celular no HUD */
+.phone-hud-btn {
+  position: relative;
+  border-color: rgba(236, 72, 153, 0.55) !important;
+}
+
+.phone-notif-dot {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.66rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #132215;
+  box-shadow: 0 2px 8px rgba(239, 68, 68, 0.55);
+}
+
+/* Chassi do Celular do Macho */
+.phone-chassis {
+  width: min(94vw, 412px);
+  height: min(90dvh, 760px);
+  margin: auto;
+  background: linear-gradient(160deg, #1b1f27, #0b0d12);
+  border: 3px solid #333a47;
+  border-radius: 34px;
+  padding: 10px 10px 12px;
+  box-shadow: 0 28px 70px rgba(0, 0, 0, 0.78), inset 0 0 0 2px rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.phone-speaker-notch {
+  width: 118px;
+  height: 18px;
+  margin: 0 auto 6px;
+  background: #06070a;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.phone-cam-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle, #38bdf8, #0f172a);
+}
+
+.phone-speaker-slot {
+  width: 42px;
+  height: 4px;
+  border-radius: 999px;
+  background: #1e293b;
+}
+
+.phone-statusbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 10px 6px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #cbd5e1;
+  flex-shrink: 0;
+}
+
+.phone-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 10px;
+  background: rgba(17, 24, 39, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px 14px 0 0;
+  flex-shrink: 0;
+}
+
+.phone-app-title {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #f8fafc;
+  text-align: center;
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.phone-top-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phone-screen-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: linear-gradient(180deg, #0f172a, #101d19);
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 12px;
+  color: #f1f5f9;
+}
+
+.phone-navbar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  padding: 7px 8px 4px;
+  background: #0b0f17;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 0 0 18px 18px;
+  flex-shrink: 0;
+}
+
+.phone-nav-btn {
+  padding: 7px 6px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.phone-nav-btn.home {
+  background: rgba(74, 222, 128, 0.14);
+  border-color: rgba(74, 222, 128, 0.35);
+  color: #86efac;
+}
+
+/* Home do Celular */
+.phone-clock-widget {
+  background: linear-gradient(135deg, rgba(22, 101, 52, 0.65), rgba(88, 28, 135, 0.55));
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 18px;
+  padding: 14px;
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.phone-big-time {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 2.15rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  color: #fff;
+  line-height: 1.05;
+}
+
+.phone-date-sub {
+  font-size: 0.78rem;
+  color: #dcfce7;
+  margin-top: 4px;
+}
+
+.phone-breaking-widget {
+  background: rgba(244, 63, 94, 0.14);
+  border: 1px solid rgba(244, 63, 94, 0.4);
+  border-radius: 14px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.phone-breaking-tag {
+  font-size: 0.64rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  color: #fda4af;
+  margin-bottom: 3px;
+}
+
+.phone-breaking-headline {
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.35;
+  color: #fff1f2;
+}
+
+.phone-app-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px 10px;
+  margin-bottom: 12px;
+}
+
+.phone-app-tile {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 4px 2px;
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.phone-app-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 17px;
+  display: grid;
+  place-items: center;
+  font-size: 1.65rem;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.4);
+  border: 1.5px solid rgba(255, 255, 255, 0.22);
+  position: relative;
+  transition: transform 0.14s ease;
+}
+
+.phone-app-tile:hover .phone-app-icon,
+.phone-app-tile:active .phone-app-icon {
+  transform: scale(1.06);
+}
+
+.app-bg-resenha { background: linear-gradient(135deg, #f43f5e, #f59e0b 65%, #a855f7); }
+.app-bg-zap { background: linear-gradient(135deg, #16a34a, #22c55e); }
+.app-bg-insta { background: linear-gradient(135deg, #833ab4, #fd1d1d 55%, #fcb045); }
+.app-bg-game { background: linear-gradient(135deg, #0ea5e9, #22c55e); }
+.app-bg-bus { background: linear-gradient(135deg, #1d4ed8, #38bdf8); }
+.app-bg-guide { background: linear-gradient(135deg, #334155, #eab308); }
+
+.app-mini-pill {
+  position: absolute;
+  bottom: -5px;
+  right: -6px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  font-size: 0.56rem;
+  font-weight: 800;
+  background: #facc15;
+  color: #18181b;
+  border: 1.5px solid #0f172a;
+}
+
+.phone-app-name {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.15;
+}
+
+/* Only-Resenha (@only_resenha_ / alfinetation) */
+.or-profile-card {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  border-radius: 16px;
+  padding: 12px;
+  margin-bottom: 10px;
+}
+
+.or-profile-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.or-avatar-ring {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  flex-shrink: 0;
+}
+
+.or-avatar-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.25rem;
+}
+
+.or-stats-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+  flex: 1;
+  text-align: center;
+}
+
+.or-stat strong {
+  display: block;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.or-stat span {
+  font-size: 0.65rem;
+  color: #94a3b8;
+}
+
+.or-name-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.94rem;
+  font-weight: 800;
+}
+
+.or-verified {
+  color: #38bdf8;
+  font-size: 0.84rem;
+}
+
+.or-pf26-badge {
+  font-size: 0.64rem;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.2);
+  border: 1px solid rgba(250, 204, 21, 0.55);
+  color: #fde047;
+}
+
+.or-handle {
+  font-size: 0.74rem;
+  color: #fda4af;
+  margin-bottom: 5px;
+}
+
+.or-bio {
+  font-size: 0.75rem;
+  line-height: 1.42;
+  color: #e2e8f0;
+}
+
+.or-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.or-tab-btn {
+  padding: 8px;
+  border-radius: 11px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.05);
+  color: #cbd5e1;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.or-tab-btn.active {
+  background: linear-gradient(135deg, rgba(244, 63, 94, 0.35), rgba(245, 158, 11, 0.3));
+  border-color: #fb7185;
+  color: #fff;
+}
+
+.or-post {
+  background: #0b1120;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.or-post-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 11px;
+  font-size: 0.74rem;
+}
+
+.or-post-poster {
+  padding: 12px;
+  text-align: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.or-poster-kicker {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: #ef4444;
+  color: #fff;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-bottom: 7px;
+}
+
+.or-poster-emoji {
+  font-size: 2.3rem;
+  line-height: 1.1;
+  margin-bottom: 6px;
+}
+
+.or-poster-headline {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  line-height: 1.3;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  margin-bottom: 7px;
+}
+
+.or-poster-watermark {
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.72);
+  font-weight: 700;
+}
+
+.or-post-body {
+  padding: 9px 11px;
+}
+
+.or-post-caption {
+  font-size: 0.78rem;
+  line-height: 1.42;
+  color: #e2e8f0;
+  margin-bottom: 8px;
+}
+
+.or-post-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-bottom: 7px;
+}
+
+.or-act-btn {
+  padding: 5px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  color: #f1f5f9;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.or-act-btn.liked {
+  border-color: #fb7185;
+  background: rgba(244, 63, 94, 0.22);
+  color: #fda4af;
+}
+
+.or-comments {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 7px 9px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.or-comment {
+  font-size: 0.72rem;
+  line-height: 1.35;
+  color: #cbd5e1;
+}
+
+.or-comment strong {
+  color: #fde047;
+}
+
+.or-composer-box {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+  border-radius: 15px;
+  padding: 12px;
+}
+
+.or-input {
+  width: 100%;
+  padding: 9px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  font-family: "Inter", sans-serif;
+  font-size: 0.82rem;
+  margin-bottom: 8px;
+}
+
+.or-template-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+.or-template-btn {
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+  color: #f1f5f9;
+  font-size: 0.76rem;
+  line-height: 1.32;
+  cursor: pointer;
+}
+
+.or-template-btn:hover {
+  border-color: var(--gold);
+}
+
+/* Zap da Roça & InstaRoça */
+.zap-chat-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  margin-bottom: 8px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  color: #f8fafc;
+}
+
+.zap-chat-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: rgba(34, 197, 94, 0.22);
+  border: 1.5px solid #4ade80;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.zap-messages {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin-bottom: 10px;
+}
+
+.zap-bubble {
+  max-width: 86%;
+  padding: 7px 10px;
+  border-radius: 12px;
+  font-size: 0.77rem;
+  line-height: 1.38;
+  background: #1e293b;
+  color: #f1f5f9;
+  align-self: flex-start;
+}
+
+.zap-bubble.me {
+  background: #14532d;
+  color: #ecfdf5;
+  align-self: flex-end;
+}
+
+.zap-sender {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: #86efac;
+  margin-bottom: 2px;
+}
+
+.zap-quick-replies {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.insta-stories {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  scrollbar-width: none;
+}
+
+.insta-story {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-width: 56px;
+  font-size: 0.64rem;
+  color: #cbd5e1;
+}
+
+.insta-story-ring {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  padding: 2.5px;
+  background: linear-gradient(45deg, #f09433, #dc2743, #bc1888);
+  display: grid;
+  place-items: center;
+}
+
+.insta-story-core {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #0f172a;
+  display: grid;
+  place-items: center;
+  font-size: 1.25rem;
+}
+
+/* Mini-Game Pega-Alface dentro do Celular */
+.mini-arcade-stage {
+  position: relative;
+  width: 100%;
+  height: 290px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: linear-gradient(180deg, #064e3b, #14532d 65%, #3f2718);
+  border: 2px solid #4ade80;
+  touch-action: none;
+  margin-bottom: 10px;
+}
+
+.mini-hud-row {
+  display: flex;
+  justify-content: space-between;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  color: #fef08a;
+}
+
+.mini-basket {
+  position: absolute;
+  bottom: 10px;
+  width: 54px;
+  height: 36px;
+  transform: translateX(-50%);
+  display: grid;
+  place-items: center;
+  font-size: 1.9rem;
+  pointer-events: none;
+}
+
+.mini-drop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  font-size: 1.55rem;
+  pointer-events: none;
+}
+
+@media (max-height: 560px) {
+  .phone-chassis {
+    height: 94dvh;
+    border-radius: 22px;
+    padding: 6px 8px 8px;
+  }
+  .phone-speaker-notch {
+    display: none;
   }
 }
