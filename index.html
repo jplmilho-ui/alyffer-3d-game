@@ -66,6 +66,15 @@
             <strong id="insanityText">0%</strong>
           </div>
         </div>
+        <div id="hpPill" class="hud-pill hp-pill hidden" title="Vida do Alyffer durante luta contra a Onça">
+          <span class="hud-label">VIDA DO MACHO</span>
+          <div class="water-mini-row">
+            <div class="water-bar-bg">
+              <div id="hpBar" class="hp-bar-fill"></div>
+            </div>
+            <strong id="hpText">100</strong>
+          </div>
+        </div>
         <div id="buffBadge" class="hud-pill buff-pill hidden">
           <span class="hud-label">EFEITO ATIVO</span>
           <strong id="buffText">⚡ Energia</strong>
@@ -73,6 +82,9 @@
       </div>
 
       <div class="hud-group">
+        <button id="toolModeBtn" class="hud-btn wide" type="button" title="Alternar entre Regador e Enxada (R)">
+          <span id="toolModeIcon">🚿</span> <span id="toolModeLabel" class="btn-label">Regador (R)</span>
+        </button>
         <button id="camModeBtn" class="hud-btn wide" type="button" title="Alternar 1ª / 3ª Pessoa (V)">
           👁️ <span id="camModeLabel" class="btn-label">1ª Pessoa</span>
         </button>
@@ -113,11 +125,35 @@
       <div id="coringaBubbleText" class="coringa-text">HAHAHAHA! A ALFACE ME CONTOU O SEGREDO DO 402!</div>
     </div>
 
+    <!-- Barra de Combate da Onça -->
+    <div id="jaguarHudBar" class="jaguar-hud-bar hidden" aria-live="assertive">
+      <div class="jaguar-hud-top">
+        <strong>🐆 ONÇA PINTADA INVADIU O SÍTIO!</strong>
+        <span id="jaguarHpText">100 / 100 HP</span>
+      </div>
+      <div class="jaguar-bar-bg">
+        <div id="jaguarHpFill" class="jaguar-bar-fill"></div>
+      </div>
+      <div class="jaguar-hud-hint">Equipe a <strong>ENXADA (R)</strong> e aperte <strong>Espaço / E</strong> para golpear a Onça!</div>
+    </div>
+
+    <!-- Balão do Menino Maluquinho (Terminal à Noite) -->
+    <div id="maluquinhoBubble" class="maluquinho-bubble hidden" aria-live="polite">
+      <div class="maluquinho-header">🍲 MENINO MALUQUINHO (TERMINAL À NOITE)</div>
+      <div id="maluquinhoBubbleText" class="coringa-text">EI MOÇO! TEM JOGUINHO NO SEU CELULAR?!</div>
+    </div>
+
     <!-- Controles & Prompt Inferior -->
     <div class="hud-bottom-wrap">
-      <div id="contextPrompt" class="context-prompt hidden">
-        <span id="contextKey" class="ctx-key">Espaço</span>
-        <span id="contextText">Arar canteiro</span>
+      <div class="context-prompt-row">
+        <div id="contextPrompt" class="context-prompt hidden">
+          <span id="contextKey" class="ctx-key">Espaço</span>
+          <span id="contextText">Arar canteiro</span>
+        </div>
+        <button id="kickDogBtn" class="context-prompt danger hidden" type="button" title="Chutar o Orelha (Tecla X)">
+          <span class="ctx-key danger">X</span>
+          <span>🦵 Chutar o Orelha</span>
+        </button>
       </div>
 
       <!-- Controles Touch para Celular (Joystick Analógico + Botão Agir) -->
@@ -179,7 +215,7 @@
         </div>
 
         <div class="hud-hint">
-          WASD: Andar • Espaço / E: Agir • F: Adubo • V: 1ª/3ª Pessoa • K: Calendário • 1–6: Semente • Arraste: Câmera
+          WASD: Andar • Espaço / E: Agir / Bater c/ Enxada • R: Enxada/Regador • F: Adubo • V: 1ª Pessoa • K: Calendário
         </div>
       </div>
     </div>
@@ -354,9 +390,9 @@
       <div class="modal-section">
         <h3>🗺️ Locais de Campo Limpo Paulista no Jogo</h3>
         <div class="row-sub" style="line-height:1.6">
-          • <strong>Sítio em Pau Arcado (Estrada do Garcia):</strong> Plante alfaces, tomate, cenoura e morango (trabalho permitido até as <strong>19:00</strong>!), colha ovos no galinheiro, instale <strong>Irrigação Automática</strong> na Cooperativa, use a composteira, faça carinho no Caramelo e pegue o <strong>Ônibus 402</strong> nos horários oficiais da JundMob (exceto em dias de chuva!).<br/>
-          • <strong>Quarto do Alyffer:</strong> Leia mangás, veja o pôster do PAC (TazerCraft) e durma na cama para avançar o dia no <strong>Calendário</strong>.<br/>
-          • <strong>Terminal Campo Limpo Paulista + Estação Linha 7-Rubi (Av. Alfried Krupp):</strong> Venda sua colheita nas bancas (até as 19:00), tome caldo de cana com pastel e pegue o trem da Linha 7-Rubi.<br/>
+          • <strong>Sítio em Pau Arcado (Estrada do Garcia):</strong> Plante alfaces, tomate, cenoura e morango (trabalho permitido até as <strong>19:00</strong>!), colha ovos no galinheiro, instale <strong>Irrigação Automática</strong> na Cooperativa, use a composteira, faça carinho no <strong>Orelha</strong> (mas NUNCA tente chutar ele!), alterne entre <strong>Regador e Enxada (R)</strong> para se defender caso apareça uma <strong>Onça</strong> e pegue o <strong>Ônibus 402</strong> nos horários oficiais da JundMob.<br/>
+          • <strong>Quarto do Alyffer:</strong> Leia mangás, veja o pôster do PAC (TazerCraft) e durma na cama (com animação de sono) para avançar o dia no <strong>Calendário</strong>.<br/>
+          • <strong>Terminal Campo Limpo Paulista + Estação Linha 7-Rubi (Av. Alfried Krupp):</strong> Venda sua colheita nas bancas (até as 19:00), tome caldo de cana com pastel e pegue o trem da Linha 7-Rubi. Cuidado: <strong>à noite o Menino Maluquinho aparece no Terminal para perseguir e atormentar o Alyffer!</strong><br/>
           • <strong>ETEC de Campo Limpo Paulista (Botujuru — Rua João Julião Moreira):</strong> Compre <strong>Adubo NPK e Super-Adubo</strong> com o <strong>Kaio Wendell</strong> no Lab de Química, converse com <strong>Muzzonline</strong>, e faça as missões do <strong>Félix</strong> e do <strong>Pão</strong>.<br/>
           • <strong>🤡 Modo Coringando (100%):</strong> Ao chegar em <strong>100%</strong> socializando na ETEC, o Alyffer começa a <strong>coringar</strong> — faz 6-7 com os braços, põe a língua para fora e fica com os olhos esbugalhados e vermelhos! Para a barra descer, fique dias inteiros longe da ETEC (-25%/dia).
         </div>
@@ -373,6 +409,30 @@
         <button id="resumeBtn" class="btn-primary" type="button">Voltar ao Quintal</button>
         <button id="sleepPauseBtn" class="btn-secondary" type="button">Dormir até Amanhã (06:00)</button>
         <button id="restartPauseBtn" class="btn-secondary danger-outline" type="button">Reiniciar Sítio do Zero</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Animação de Sono (Transição suave de noite) -->
+  <div id="sleepOverlay" class="sleep-overlay hidden" aria-live="polite">
+    <div class="sleep-card">
+      <div class="sleep-moon">🌙 <span class="sleep-zzz">Z z z</span></div>
+      <h2 id="sleepTitle">Alyffer está dormindo...</h2>
+      <p id="sleepSub" class="desc compact">Descansando em Pau Arcado até amanhecer...</p>
+      <div class="sleep-bar-bg">
+        <div id="sleepProgressFill" class="sleep-bar-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tela de Morte (Chutar o Orelha ou Derrotado pela Onça) -->
+  <div id="deathModal" class="overlay death-overlay hidden">
+    <div class="panel small death-panel">
+      <div id="deathIcon" class="death-icon">💀</div>
+      <h2 id="deathTitle">VOCÊ MORREU!</h2>
+      <p id="deathMsg" class="desc">Nunca tente chutar o Orelha!</p>
+      <div class="btn-stack">
+        <button id="respawnBtn" class="btn-primary" type="button">Acordar de Volta em Pau Arcado</button>
       </div>
     </div>
   </div>

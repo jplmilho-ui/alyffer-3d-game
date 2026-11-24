@@ -31,6 +31,27 @@ const insanityBar = document.getElementById("insanityBar");
 const insanityText = document.getElementById("insanityText");
 const buffBadge = document.getElementById("buffBadge");
 const buffText = document.getElementById("buffText");
+const hpPill = document.getElementById("hpPill");
+const hpBar = document.getElementById("hpBar");
+const hpText = document.getElementById("hpText");
+const toolModeBtn = document.getElementById("toolModeBtn");
+const toolModeIcon = document.getElementById("toolModeIcon");
+const toolModeLabel = document.getElementById("toolModeLabel");
+const jaguarHudBar = document.getElementById("jaguarHudBar");
+const jaguarHpText = document.getElementById("jaguarHpText");
+const jaguarHpFill = document.getElementById("jaguarHpFill");
+const maluquinhoBubble = document.getElementById("maluquinhoBubble");
+const maluquinhoBubbleText = document.getElementById("maluquinhoBubbleText");
+const kickDogBtn = document.getElementById("kickDogBtn");
+const sleepOverlay = document.getElementById("sleepOverlay");
+const sleepTitle = document.getElementById("sleepTitle");
+const sleepSub = document.getElementById("sleepSub");
+const sleepProgressFill = document.getElementById("sleepProgressFill");
+const deathModal = document.getElementById("deathModal");
+const deathIcon = document.getElementById("deathIcon");
+const deathTitle = document.getElementById("deathTitle");
+const deathMsg = document.getElementById("deathMsg");
+const respawnBtn = document.getElementById("respawnBtn");
 
 const fpCrosshair = document.getElementById("fpCrosshair");
 const crazyVignette = document.getElementById("crazyVignette");
@@ -409,6 +430,20 @@ class SoundFX {
       [620, 480, 740].forEach((f, i) => {
         playTone(f, f * 1.12, 0.07, "triangle", 0.08, i * 0.055);
       });
+    } else if (type === "roar") {
+      playTone(170, 62, 0.34, "sawtooth", 0.16, 0);
+      playTone(125, 48, 0.38, "square", 0.12, 0.06);
+    } else if (type === "hit") {
+      playTone(260, 95, 0.11, "sawtooth", 0.16, 0);
+      playTone(540, 220, 0.09, "triangle", 0.12, 0.03);
+    } else if (type === "death") {
+      [340, 280, 210, 120].forEach((f, i) => {
+        playTone(f, f * 0.78, 0.24, "sawtooth", 0.14, i * 0.13);
+      });
+    } else if (type === "maluquinho") {
+      [740, 980, 660, 1120].forEach((f, i) => {
+        playTone(f, f * 1.15, 0.08, "triangle", 0.1, i * 0.05);
+      });
     } else if (type === "error") {
       playTone(210, 140, 0.15, "sawtooth", 0.08);
     }
@@ -668,7 +703,9 @@ let wellWaterMesh;
 let bus402YardMesh;
 let bus402TermMesh;
 let ceilingFanMesh;
-let dogCaramelo;
+let dogOrelha;
+let jaguarEntity;
+let maluquinhoEntity;
 let coopEggVisuals = [];
 let sprinklerGroup;
 const sprinklerHeads = [];
@@ -1233,9 +1270,10 @@ function buildCountrysideEnvironment() {
   exteriorGroup.add(bus402YardMesh);
   addObstacleBox(13.2, 17.5, 2.7, 6.6);
 
-  // Cachorro Caramelo 3D ("Caramelo") in the yard!
+  // Cachorro Orelha 3D ("Orelha") no quintal — nunca tente chutar ele!
   const dog = new THREE.Group();
   const carameloMat = new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.75 });
+  const earMat = new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.8 });
   const dogBody = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.42, 0.82), carameloMat);
   dogBody.position.y = 0.46;
   dogBody.castShadow = true;
@@ -1243,6 +1281,14 @@ function buildCountrysideEnvironment() {
   const dogHead = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.36, 0.4), carameloMat);
   dogHead.position.set(0, 0.72, 0.42);
   dog.add(dogHead);
+  // Orelhas grandes e caídas do Orelha!
+  const leftEar = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.32, 0.22), earMat);
+  leftEar.position.set(-0.23, 0.68, 0.42);
+  leftEar.rotation.z = 0.18;
+  const rightEar = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.32, 0.22), earMat);
+  rightEar.position.set(0.23, 0.68, 0.42);
+  rightEar.rotation.z = -0.18;
+  dog.add(leftEar, rightEar);
   const dogSnout = new THREE.Mesh(
     new THREE.BoxGeometry(0.22, 0.18, 0.22),
     new THREE.MeshStandardMaterial({ color: 0x451a03 })
@@ -1264,23 +1310,117 @@ function buildCountrysideEnvironment() {
     dog.add(leg);
   });
   const dogTag = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.5, 0.42),
+    new THREE.PlaneGeometry(1.85, 0.48),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("CARAMELO 🐕", "Espaço / E: Carinho", "#78350f", "#fef08a"),
+      map: createWoodSignTexture("ORELHA 🐕", "E: Carinho • X: Chutar", "#78350f", "#fef08a"),
       transparent: true,
       side: THREE.DoubleSide,
     })
   );
-  dogTag.position.set(0, 1.35, 0);
+  dogTag.position.set(0, 1.38, 0);
   dog.add(dogTag);
   dog.position.set(4.2, 0, -3.5);
   exteriorGroup.add(dog);
-  dogCaramelo = {
+  dogOrelha = {
     mesh: dog,
     tail: dogTail,
+    leftEar,
+    rightEar,
     home: new THREE.Vector3(4.2, 0, -3.5),
     target: new THREE.Vector3(4.2, 0, -3.5),
     wait: 1.5,
+  };
+
+  // Onça Pintada 3D (Evento aleatório no quintal — Alyffer luta com a Enxada!)
+  const jagGroup = new THREE.Group();
+  const jagFurMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.72 });
+  const jagSpotMat = new THREE.MeshStandardMaterial({ color: 0x291509, roughness: 0.85 });
+  const jagBellyMat = new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.8 });
+  const jagEyeMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
+
+  const jagBody = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.66, 1.65), jagFurMat);
+  jagBody.position.set(0, 0.86, 0);
+  jagBody.castShadow = true;
+  jagGroup.add(jagBody);
+
+  const jagBelly = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.16, 1.4), jagBellyMat);
+  jagBelly.position.set(0, 0.56, 0);
+  jagGroup.add(jagBelly);
+
+  // Pintas da Onça Pintada
+  [
+    [-0.39, 0.96, 0.42],
+    [0.39, 0.84, 0.2],
+    [-0.39, 0.78, -0.25],
+    [0.39, 1.0, -0.45],
+    [0, 1.2, 0.35],
+    [-0.18, 1.2, -0.15],
+    [0.2, 1.2, -0.52],
+  ].forEach(([sx, sy, sz]) => {
+    const spot = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.18), jagSpotMat);
+    spot.position.set(sx, sy, sz);
+    jagGroup.add(spot);
+  });
+
+  const jagHead = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.54, 0.64), jagFurMat);
+  jagHead.position.set(0, 1.12, 0.98);
+  jagHead.castShadow = true;
+  jagGroup.add(jagHead);
+
+  const jagSnout = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.24, 0.3), jagBellyMat);
+  jagSnout.position.set(0, 0.98, 1.34);
+  jagGroup.add(jagSnout);
+
+  const jagNose = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.1, 0.08), jagSpotMat);
+  jagNose.position.set(0, 1.06, 1.49);
+  jagGroup.add(jagNose);
+
+  [-0.22, 0.22].forEach((ex) => {
+    const ear = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 0.1), jagFurMat);
+    ear.position.set(ex, 1.44, 0.9);
+    jagGroup.add(ear);
+    const eye = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.09, 0.06), jagEyeMat);
+    eye.position.set(ex * 0.75, 1.18, 1.31);
+    jagGroup.add(eye);
+  });
+
+  const jagLegs = [];
+  [
+    [-0.26, 0.36, 0.56],
+    [0.26, 0.36, 0.56],
+    [-0.26, 0.36, -0.56],
+    [0.26, 0.36, -0.56],
+  ].forEach(([lx, ly, lz]) => {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.72, 0.22), jagFurMat);
+    leg.position.set(lx, ly, lz);
+    leg.castShadow = true;
+    jagGroup.add(leg);
+    jagLegs.push(leg);
+  });
+
+  const jagTail = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 1.05), jagFurMat);
+  jagTail.position.set(0, 0.96, -1.25);
+  jagTail.rotation.x = 0.25;
+  jagGroup.add(jagTail);
+
+  const jagTag = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.3, 0.58),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("🐆 ONÇA PINTADA!", "Lute com a Enxada (R)", "#7f1d1d", "#fef08a"),
+      transparent: true,
+      side: THREE.DoubleSide,
+    })
+  );
+  jagTag.position.set(0, 2.05, 0.2);
+  jagGroup.add(jagTag);
+
+  jagGroup.visible = false;
+  exteriorGroup.add(jagGroup);
+  jaguarEntity = {
+    mesh: jagGroup,
+    legs: jagLegs,
+    tail: jagTail,
+    bodyMat: jagFurMat,
   };
 
   // Trees around the yard & distant countryside
@@ -1890,6 +2030,87 @@ function buildTerminalAndStation() {
   const trainTerm = createTrain7RubiModel("7-RUBI • BOTUJURU");
   trainTerm.position.set(13.4, 0.1, 0);
   terminalGroup.add(trainTerm);
+
+  // Menino Maluquinho 3D (aparece no Terminal à noite para perseguir e atormentar o Alyffer!)
+  const malu = new THREE.Group();
+  const mSkin = new THREE.MeshStandardMaterial({ color: 0xf4cfa8, roughness: 0.65 });
+  const mShirt = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.7 }); // Camisa amarela
+  const mShorts = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.75 }); // Bermudinha azul
+  const mShoe = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.55 });
+  const potMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.65, roughness: 0.25 }); // Panela icônica
+  const handleMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.8 });
+
+  const mTorso = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.84, 0.4), mShirt);
+  mTorso.position.y = 1.05;
+  mTorso.castShadow = true;
+  malu.add(mTorso);
+
+  const mHead = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.54, 0.56), mSkin);
+  mHead.position.y = 1.76;
+  mHead.castShadow = true;
+  malu.add(mHead);
+
+  // Olhos travessos + sorrisão
+  const mBlack = new THREE.MeshBasicMaterial({ color: 0x111111 });
+  const mLEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.05), mBlack);
+  mLEye.position.set(-0.12, 1.8, 0.29);
+  const mREye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.05), mBlack);
+  mREye.position.set(0.12, 1.8, 0.29);
+  const mSmile = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.07, 0.05), new THREE.MeshBasicMaterial({ color: 0x991b1b }));
+  mSmile.position.set(0, 1.62, 0.29);
+  malu.add(mLEye, mREye, mSmile);
+
+  // Panela icônica na cabeça com cabo pro lado!
+  const potGroup = new THREE.Group();
+  potGroup.position.set(0, 2.12, 0);
+  potGroup.rotation.z = -0.18;
+  const potBody = new THREE.Mesh(new THREE.CylinderGeometry(0.42, 0.44, 0.46, 16), potMat);
+  potBody.castShadow = true;
+  const potRim = new THREE.Mesh(new THREE.CylinderGeometry(0.47, 0.47, 0.06, 16), potMat);
+  potRim.position.y = -0.22;
+  const potHandle = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.08, 0.1), handleMat);
+  potHandle.position.set(0.58, 0.06, 0);
+  potHandle.rotation.z = 0.25;
+  potGroup.add(potBody, potRim, potHandle);
+  malu.add(potGroup);
+
+  const mLArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.64, 0.18), mSkin);
+  mLArm.position.set(-0.46, 1.12, 0);
+  const mRArm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.64, 0.18), mSkin);
+  mRArm.position.set(0.46, 1.12, 0);
+  malu.add(mLArm, mRArm);
+
+  const mLLeg = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), mShorts);
+  mLLeg.position.set(-0.18, 0.36, 0);
+  const mRLeg = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.56, 0.22), mShorts);
+  mRLeg.position.set(0.18, 0.36, 0);
+  const mLShoe = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.14, 0.34), mShoe);
+  mLShoe.position.set(-0.18, 0.07, 0.05);
+  const mRShoe = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.14, 0.34), mShoe);
+  mRShoe.position.set(0.18, 0.07, 0.05);
+  malu.add(mLLeg, mRLeg, mLShoe, mRShoe);
+
+  const maluTag = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.5, 0.56),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("MENINO MALUQUINHO 🍲", "Atormentando no Terminal!", "#1e3a8a", "#facc15"),
+      transparent: true,
+      side: THREE.DoubleSide,
+    })
+  );
+  maluTag.position.set(0, 2.95, 0);
+  malu.add(maluTag);
+
+  malu.visible = false;
+  terminalGroup.add(malu);
+  maluquinhoEntity = {
+    mesh: malu,
+    potGroup,
+    lArm: mLArm,
+    rArm: mRArm,
+    lLeg: mLLeg,
+    rLeg: mRLeg,
+  };
 }
 buildTerminalAndStation();
 
@@ -2701,6 +2922,33 @@ function createMachoPlayerModel() {
   canGroup.add(canSpout);
   rightForearmGroup.add(canGroup);
 
+  // Enxada 3D (arma do Alyffer contra a Onça e ferramenta da horta!)
+  const hoeGroup = new THREE.Group();
+  hoeGroup.position.set(0, -0.34, 0.16);
+  hoeGroup.rotation.x = 0.35;
+  const hoeHandle = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.04, 0.045, 1.65, 8),
+    new THREE.MeshStandardMaterial({ color: 0x7c4a21, roughness: 0.85 })
+  );
+  hoeHandle.rotation.x = Math.PI / 2;
+  hoeHandle.position.set(0, 0.04, 0.45);
+  hoeHandle.castShadow = true;
+  const hoeCollar = new THREE.Mesh(
+    new THREE.BoxGeometry(0.11, 0.12, 0.14),
+    new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.65, roughness: 0.35 })
+  );
+  hoeCollar.position.set(0, 0.04, 1.24);
+  const hoeBlade = new THREE.Mesh(
+    new THREE.BoxGeometry(0.36, 0.44, 0.045),
+    new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.72, roughness: 0.28 })
+  );
+  hoeBlade.position.set(0, -0.16, 1.28);
+  hoeBlade.rotation.x = 0.22;
+  hoeBlade.castShadow = true;
+  hoeGroup.add(hoeHandle, hoeCollar, hoeBlade);
+  hoeGroup.visible = false;
+  rightForearmGroup.add(hoeGroup);
+
   rightArmGroup.add(rightForearmGroup);
   group.add(rightArmGroup);
 
@@ -2734,6 +2982,7 @@ function createMachoPlayerModel() {
     leftBoot,
     rightBoot,
     canGroup,
+    hoeGroup,
     leftEye,
     rightEye,
     crazyFaceGroup,
@@ -2775,6 +3024,47 @@ fpCrazyArmsGroup.visible = false;
 }
 scene.add(camera);
 camera.add(fpCrazyArmsGroup);
+
+// Ferramenta em 1ª Pessoa (Regador ou Enxada na mão direita!)
+const fpToolGroup = new THREE.Group();
+fpToolGroup.visible = false;
+{
+  const fpCan = new THREE.Group();
+  fpCan.position.set(0.42, -0.34, -0.78);
+  fpCan.rotation.set(0.15, -0.35, 0);
+  const fpCanBody = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.12, 0.14, 0.24, 10),
+    new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.35, roughness: 0.4 })
+  );
+  const fpCanSpout = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.03, 0.045, 0.26, 8),
+    new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.4 })
+  );
+  fpCanSpout.position.set(0, 0.06, -0.16);
+  fpCanSpout.rotation.x = -0.85;
+  fpCan.add(fpCanBody, fpCanSpout);
+
+  const fpHoe = new THREE.Group();
+  fpHoe.position.set(0.42, -0.32, -0.72);
+  fpHoe.rotation.set(0.2, -0.18, -0.12);
+  const fpHoeHandle = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.028, 0.032, 1.05, 8),
+    new THREE.MeshStandardMaterial({ color: 0x7c4a21, roughness: 0.85 })
+  );
+  fpHoeHandle.rotation.x = Math.PI / 2;
+  fpHoeHandle.position.set(0, 0, -0.25);
+  const fpHoeBlade = new THREE.Mesh(
+    new THREE.BoxGeometry(0.24, 0.3, 0.035),
+    new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.72, roughness: 0.28 })
+  );
+  fpHoeBlade.position.set(0, -0.12, -0.76);
+  fpHoeBlade.rotation.x = -0.22;
+  fpHoe.add(fpHoeHandle, fpHoeBlade);
+
+  fpToolGroup.add(fpCan, fpHoe);
+  fpToolGroup.userData = { fpCan, fpHoe };
+}
+camera.add(fpToolGroup);
 
 // Optimized Shared Geometry & Material Cache for Garden Plots
 const plots = [];
@@ -3093,6 +3383,26 @@ const state = {
   titles: ["Estudante ETEC"],
   activeTitle: "Estudante ETEC",
   selectedCrop: "alface_crespa",
+  equippedTool: "water", // "water" (Regador) | "hoe" (Enxada)
+  playerHp: 100,
+  maxHp: 100,
+  isSleeping: false,
+  jaguar: {
+    active: false,
+    hp: 100,
+    maxHp: 100,
+    attackCd: 0,
+    hitFlash: 0,
+    spawnCooldown: 26,
+    checkAccum: 0,
+  },
+  maluquinho: {
+    active: false,
+    tormentCd: 0,
+    bubbleTimer: 0,
+    currentLine: "",
+    announced: false,
+  },
   water: 8,
   kaioAdubo: 0,
   kaioSuperAdubo: 0,
@@ -3294,15 +3604,31 @@ function syncBusModelsVisibility() {
   }
 }
 
+function syncHeldToolVisibility() {
+  const showTools = (state.location === "yard" || state.equippedTool === "hoe") && !state.isCrazy;
+  if (playerMesh.userData.canGroup) {
+    playerMesh.userData.canGroup.visible = showTools && state.equippedTool === "water" && state.location === "yard";
+  }
+  if (playerMesh.userData.hoeGroup) {
+    playerMesh.userData.hoeGroup.visible = showTools && state.equippedTool === "hoe";
+  }
+}
+
 function setActiveSceneVisibility() {
   exteriorGroup.visible = state.location === "yard";
   interiorGroup.visible = state.location === "room";
   terminalGroup.visible = state.location === "terminal";
   etecGroup.visible = state.location === "etec";
   etecInsideGroup.visible = state.location === "etec_inside";
-  playerMesh.userData.canGroup.visible = state.location === "yard" && !state.isCrazy;
+  syncHeldToolVisibility();
   if (sprinklerGroup) {
     sprinklerGroup.visible = state.upgrades.autoWaterLevel >= 1;
+  }
+  if (jaguarEntity) {
+    jaguarEntity.mesh.visible = state.location === "yard" && state.jaguar.active;
+  }
+  if (maluquinhoEntity) {
+    maluquinhoEntity.mesh.visible = state.location === "terminal" && state.maluquinho.active;
   }
   syncBusModelsVisibility();
   syncCoopEggsVisual();
@@ -3330,6 +3656,11 @@ function resetToNewFarm() {
   state.titles = ["Estudante ETEC"];
   state.activeTitle = "Estudante ETEC";
   state.selectedCrop = "alface_crespa";
+  state.equippedTool = "water";
+  state.playerHp = 100;
+  state.isSleeping = false;
+  state.jaguar = { active: false, hp: 100, maxHp: 100, attackCd: 0, hitFlash: 0, spawnCooldown: 26, checkAccum: 0 };
+  state.maluquinho = { active: false, tormentCd: 0, bubbleTimer: 0, currentLine: "", announced: false };
   state.kaioAdubo = 0;
   state.kaioSuperAdubo = 0;
   state.workEndNotifiedToday = false;
@@ -3415,6 +3746,29 @@ function updateHUD() {
   if (camModeBtn && camModeLabel) {
     camModeBtn.classList.toggle("active-mode", state.firstPerson);
     camModeLabel.textContent = state.firstPerson ? "3ª Pessoa" : "1ª Pessoa";
+  }
+  if (toolModeBtn && toolModeIcon && toolModeLabel) {
+    const isHoe = state.equippedTool === "hoe";
+    toolModeBtn.classList.toggle("active-mode", isHoe);
+    toolModeIcon.textContent = isHoe ? "⛏️" : "🚿";
+    toolModeLabel.textContent = isHoe ? "Enxada (R)" : "Regador (R)";
+  }
+  if (hpPill && hpBar && hpText) {
+    const showHp = state.jaguar.active || state.playerHp < state.maxHp;
+    hpPill.classList.toggle("hidden", !showHp);
+    hpText.textContent = `${Math.max(0, Math.round(state.playerHp))}`;
+    hpBar.style.width = `${Math.max(0, Math.min(100, (state.playerHp / state.maxHp) * 100))}%`;
+  }
+  if (jaguarHudBar && jaguarHpFill && jaguarHpText) {
+    const showJag = state.location === "yard" && state.jaguar.active && state.mode === "playing";
+    jaguarHudBar.classList.toggle("hidden", !showJag);
+    if (showJag) {
+      jaguarHpText.textContent = `${Math.max(0, Math.round(state.jaguar.hp))} / ${state.jaguar.maxHp} HP`;
+      jaguarHpFill.style.width = `${Math.max(0, (state.jaguar.hp / state.jaguar.maxHp) * 100)}%`;
+    }
+  }
+  if (maluquinhoBubble && !(state.location === "terminal" && state.maluquinho.active && state.mode === "playing")) {
+    maluquinhoBubble.classList.add("hidden");
   }
   if (fpCrosshair) {
     fpCrosshair.classList.toggle("hidden", !(state.firstPerson && state.mode === "playing"));
@@ -3540,6 +3894,214 @@ function toggleFirstPerson() {
   sfx.play("plant");
   updateHUD();
   updateCamera(0.016, true);
+}
+
+function toggleEquippedTool() {
+  state.equippedTool = state.equippedTool === "water" ? "hoe" : "water";
+  syncHeldToolVisibility();
+  sfx.play("dig");
+  showToast(
+    state.equippedTool === "hoe" ? "⛏️" : "🚿",
+    state.equippedTool === "hoe" ? "ENXADA EQUIPADA!" : "REGADOR EQUIPADO!",
+    state.equippedTool === "hoe"
+      ? "Segurando a Enxada! Ótima para arar a terra e enfrentar Onças (Espaço / E)."
+      : "Segurando o Regador! Pronto para molhar os canteiros."
+  );
+  updateHUD();
+}
+
+function triggerPlayerDeath(reason) {
+  if (state.mode === "dead") return;
+  clearActiveInputs();
+  state.mode = "dead";
+  state.isSleeping = false;
+  if (sleepOverlay) {
+    sleepOverlay.classList.remove("visible");
+    sleepOverlay.classList.add("hidden");
+  }
+  if (jaguarHudBar) jaguarHudBar.classList.add("hidden");
+  if (maluquinhoBubble) maluquinhoBubble.classList.add("hidden");
+  if (kickDogBtn) kickDogBtn.classList.add("hidden");
+
+  sfx.play("death");
+  if (reason === "orelha") {
+    deathIcon.textContent = "🐕💀";
+    deathTitle.textContent = "VOCÊ MORREU!";
+    deathMsg.textContent =
+      "NUNCA tente chutar o Orelha! O Orelha desviou com estilo e o karma instantâneo de Pau Arcado derrubou o Macho na hora!";
+  } else if (reason === "jaguar") {
+    deathIcon.textContent = "🐆💀";
+    deathTitle.textContent = "DERROTADO PELA ONÇA!";
+    deathMsg.textContent =
+      "A Onça Pintada foi mais rápida! Na próxima vez, equipe a ENXADA (R) e mantenha distância golpeando com Espaço / E!";
+  } else {
+    deathIcon.textContent = "💀";
+    deathTitle.textContent = "VOCÊ MORREU!";
+    deathMsg.textContent = "O Macho desmaiou em Pau Arcado!";
+  }
+  deathModal.classList.remove("hidden");
+  updateHUD();
+}
+
+function respawnPlayer() {
+  deathModal.classList.add("hidden");
+  state.playerHp = state.maxHp;
+  state.jaguar.active = false;
+  state.jaguar.hp = state.jaguar.maxHp;
+  state.jaguar.spawnCooldown = 45;
+  state.maluquinho.active = false;
+  state.maluquinho.announced = false;
+  if (jaguarEntity) jaguarEntity.mesh.visible = false;
+  if (maluquinhoEntity) maluquinhoEntity.mesh.visible = false;
+
+  state.mode = "playing";
+  switchLocation("yard", 0, -6.5, 0, 0.2, 0.48, 16.5);
+  showToast("❤️", "DE VOLTA AO SÍTIO", "Você acordou bem em Pau Arcado! Respeite o Orelha e fique atento à Onça.");
+}
+
+function kickOrelha() {
+  if (state.location !== "yard" || !dogOrelha) return;
+  if (distXZ(player.pos, dogOrelha.mesh.position) > 3.2) {
+    showToast("🐕", "ORELHA", "O Orelha está longe demais!");
+    return;
+  }
+  sfx.play("bark");
+  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.3, 0)), 0xef4444, 24);
+  triggerPlayerDeath("orelha");
+}
+
+function spawnJaguar() {
+  if (!jaguarEntity || state.jaguar.active || state.location !== "yard") return;
+  const spawns = [
+    new THREE.Vector3(-18.5, 0, 14.5),
+    new THREE.Vector3(18.5, 0, -14.0),
+    new THREE.Vector3(-18.0, 0, -14.0),
+    new THREE.Vector3(17.5, 0, 12.0),
+  ];
+  let best = spawns[0];
+  let bestD = -1;
+  spawns.forEach((sp) => {
+    const d = distXZ(player.pos, sp);
+    if (d > bestD) {
+      bestD = d;
+      best = sp;
+    }
+  });
+  jaguarEntity.mesh.position.copy(best);
+  jaguarEntity.mesh.visible = true;
+  state.jaguar.active = true;
+  state.jaguar.hp = state.jaguar.maxHp;
+  state.jaguar.attackCd = 1.0;
+  state.jaguar.hitFlash = 0;
+  sfx.play("roar");
+  showDayBanner("🐆 ALERTA! UMA ONÇA PINTADA INVADIU O SÍTIO! EQUIPE A ENXADA (R)!");
+  showToast("🐆", "ONÇA NA HORTA!", "Aperte R para segurar a ENXADA e Espaço / E para lutar contra a Onça!");
+  updateHUD();
+}
+
+function attackJaguarWithHoe() {
+  if (!state.jaguar.active || !jaguarEntity || state.location !== "yard") return false;
+  if (state.equippedTool !== "hoe") {
+    sfx.play("error");
+    showToast("⛏️", "EQUIPE A ENXADA (R)!", "Você está com o Regador! Aperte R ou clique no botão para pegar a ENXADA!");
+    return true;
+  }
+  state.swingTimer = 0.3;
+  const dist = distXZ(player.pos, jaguarEntity.mesh.position);
+  if (dist > 4.2) {
+    sfx.play("dig");
+    showToast("⛏️", "GOLPE DE ENXADA!", "Chegue um pouco mais perto da Onça para acertar!");
+    return true;
+  }
+  state.jaguar.hp = Math.max(0, state.jaguar.hp - 25);
+  state.jaguar.hitFlash = 0.25;
+  sfx.play("hit");
+  // Empurra a Onça para trás (knockback)
+  const kx = jaguarEntity.mesh.position.x - player.pos.x;
+  const kz = jaguarEntity.mesh.position.z - player.pos.z;
+  const klen = Math.hypot(kx, kz) || 1;
+  jaguarEntity.mesh.position.x = THREE.MathUtils.clamp(jaguarEntity.mesh.position.x + (kx / klen) * 2.8, -19.5, 19.5);
+  jaguarEntity.mesh.position.z = THREE.MathUtils.clamp(jaguarEntity.mesh.position.z + (kz / klen) * 2.8, -18.5, 20.0);
+  spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 16);
+  spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 0xef4444, 10);
+
+  if (state.jaguar.hp <= 0) {
+    state.jaguar.active = false;
+    state.jaguar.spawnCooldown = 68;
+    jaguarEntity.mesh.visible = false;
+    state.money += 60;
+    state.playerHp = state.maxHp;
+    sfx.play("upgrade");
+    showDayBanner("🏆 ONÇA DERROTADA COM A ENXADA! +R$ 60,00 DE RECOMPENSA!");
+    showToast("🐆", "MACHO PROTEGEU O SÍTIO!", "Você espantou a Onça com a enxada e ganhou R$ 60,00!");
+    saveGame();
+  } else {
+    showToast("⛏️", "ENXADADA NA ONÇA!", `Acertou! Vida da Onça: ${state.jaguar.hp}/${state.jaguar.maxHp} HP`);
+  }
+  updateHUD();
+  return true;
+}
+
+// Animação suave de sono (evita pular o dia abruptamente!)
+function startSleepTransition(fromBed = false) {
+  if (state.isSleeping || state.mode === "dead") return;
+  clearActiveInputs();
+  state.isSleeping = true;
+  state.mode = "sleeping";
+
+  // Fecha quaisquer modais abertos
+  pauseScreen.classList.add("hidden");
+  sellModal.classList.add("hidden");
+  shopModal.classList.add("hidden");
+  npcModal.classList.add("hidden");
+  guideModal.classList.add("hidden");
+  calendarModal.classList.add("hidden");
+
+  // Deita o Alyffer na cama se estiver no quarto!
+  if (fromBed && state.location === "room") {
+    playerMesh.position.set(-3.2, 0.9, -2.1);
+    playerMesh.rotation.set(-Math.PI / 2, 0, 0);
+  }
+
+  sfx.play("sleep");
+  const nextCal = getCalendarInfo(state.day + 1);
+  if (sleepTitle) sleepTitle.textContent = "😴 Alyffer foi dormir...";
+  if (sleepSub) sleepSub.textContent = "Descansando na roça de Pau Arcado até amanhecer...";
+  if (sleepProgressFill) sleepProgressFill.style.width = "0%";
+  if (sleepOverlay) {
+    sleepOverlay.classList.remove("hidden");
+    requestAnimationFrame(() => {
+      sleepOverlay.classList.add("visible");
+      if (sleepProgressFill) sleepProgressFill.style.width = "55%";
+    });
+  }
+
+  setTimeout(() => {
+    if (state.mode === "dead") return;
+    advanceToNextDay();
+    if (sleepTitle) sleepTitle.textContent = `☀️ Amanhecendo — ${nextCal.weekdayFull}!`;
+    if (sleepSub) {
+      sleepSub.textContent = state.isRainy
+        ? "🌧️ Dia chuvoso em Pau Arcado! Horta regada pela chuva."
+        : "☀️ Sol raiando na Estrada do Garcia! Hora de cuidar da horta.";
+    }
+    if (sleepProgressFill) sleepProgressFill.style.width = "100%";
+  }, 1250);
+
+  setTimeout(() => {
+    if (state.mode === "dead") return;
+    if (sleepOverlay) sleepOverlay.classList.remove("visible");
+  }, 2250);
+
+  setTimeout(() => {
+    if (state.mode === "dead") return;
+    if (sleepOverlay) sleepOverlay.classList.add("hidden");
+    playerMesh.rotation.set(0, player.facingYaw, 0);
+    playerMesh.position.copy(player.pos);
+    state.isSleeping = false;
+    state.mode = "playing";
+    updateHUD();
+  }, 3100);
 }
 
 function enterRoom() {
@@ -3700,6 +4262,16 @@ function findCurrentContext() {
   }
 
   // Yard (Pau Arcado) stations
+  if (state.jaguar.active && jaguarEntity && distXZ(player.pos, jaguarEntity.mesh.position) < 4.3) {
+    return {
+      type: "fight_jaguar",
+      key: state.equippedTool === "hoe" ? "Espaço / E" : "Tecla R",
+      text:
+        state.equippedTool === "hoe"
+          ? `⛏️ Bater na Onça com a Enxada! (${state.jaguar.hp} HP)`
+          : "⚠️ Aperte R para equipar a ENXADA e enfrentar a Onça!",
+    };
+  }
   if (distXZ(player.pos, BUS_STOP_YARD_POS) < 3.2) {
     const bus = getBus402Status("pauArcado");
     return {
@@ -3743,8 +4315,8 @@ function findCurrentContext() {
           : "Usar Composteira Orgânica (+30% Crescimento na Horta)",
     };
   }
-  if (dogCaramelo && distXZ(player.pos, dogCaramelo.mesh.position) < 2.1) {
-    return { type: "dog", key: "Espaço / E", text: "Fazer carinho no Caramelo 🐕" };
+  if (dogOrelha && distXZ(player.pos, dogOrelha.mesh.position) < 2.3) {
+    return { type: "dog", key: "Espaço / E", text: "Fazer carinho no Orelha 🐕" };
   }
   if (distXZ(player.pos, STAND_POS) < 3.8) {
     return { type: "shop", key: "Espaço / E", text: "Abrir Cooperativa Rural (Melhorias & Água Auto)" };
@@ -4009,8 +4581,22 @@ function boostAllGrowingPlots(amount) {
 }
 
 function triggerContextAction() {
+  if (state.isSleeping || state.mode !== "playing") return;
   const ctx = findCurrentContext();
-  if (!ctx) return;
+  if (!ctx) {
+    // Se estiver segurando a enxada no quintal com a Onça ativa (ou livre), dá golpe de enxada!
+    if (state.location === "yard" && state.jaguar.active) {
+      attackJaguarWithHoe();
+    } else if (state.equippedTool === "hoe") {
+      state.swingTimer = 0.28;
+      sfx.play("dig");
+    }
+    return;
+  }
+  if (ctx.type === "fight_jaguar") {
+    attackJaguarWithHoe();
+    return;
+  }
   if (ctx.type === "well") {
     if (blockAfterWorkHours()) return;
     state.water = getMaxWater();
@@ -4055,13 +4641,13 @@ function triggerContextAction() {
     saveGame();
   } else if (ctx.type === "dog") {
     sfx.play("bark");
-    spawnParticles(dogCaramelo.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 10);
+    spawnParticles(dogOrelha.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 10);
     showToast(
       "🐕",
-      "CARAMELO FELIZ!",
+      "ORELHA FELIZ!",
       state.insanity > 0
-        ? "Caramelo abanou o rabo! (Fique 1 dia sem ir na ETEC p/ descer 25% da barra)"
-        : "Caramelo abanou o rabo e deu um latido de alegria!"
+        ? "Orelha balançou as orelhonas e o rabo! (Fique 1 dia sem ir na ETEC p/ descer 25%)"
+        : "Orelha balançou as orelhonas de alegria! (Dica: NUNCA aperte X perto dele...)"
     );
     updateHUD();
     saveGame();
@@ -4116,7 +4702,7 @@ function triggerContextAction() {
   } else if (ctx.type === "exit_room") {
     exitRoom();
   } else if (ctx.type === "bed") {
-    advanceToNextDay();
+    startSleepTransition(true);
   } else if (ctx.type === "manga") {
     sfx.play("harvest");
     showToast(
@@ -4144,6 +4730,14 @@ function advanceToNextDay() {
   state.dayMinutes = 6.5 * 60;
   state.workEndNotifiedToday = false;
   state.isRainy = Math.random() < 0.35;
+  state.playerHp = state.maxHp;
+  state.jaguar.active = false;
+  state.jaguar.hp = state.jaguar.maxHp;
+  state.jaguar.spawnCooldown = 28;
+  state.maluquinho.active = false;
+  state.maluquinho.announced = false;
+  if (jaguarEntity) jaguarEntity.mesh.visible = false;
+  if (maluquinhoEntity) maluquinhoEntity.mesh.visible = false;
 
   // Para a sanidade descer ele precisa ficar sem ir para a ETEC (cada dia longe reduz 25%)
   if (!wasAtEtecToday && state.insanity > 0) {
@@ -4403,7 +4997,7 @@ const ALYFFER_CORINGA_LINES = [
   "A TABELA PERIÓDICA TEM O ELEMENTO QUÍMICO DO PASTEL DE QUEIJO?! HAHAHA!",
   "MINHA ENXADA TÁ FALANDO EM CÓDIGO BINÁRIO COM AS GALINHAS DO QUINTAL!",
   "SE EU DORMIR DE PONTA-CABEÇA A ALFACE CRESCE PRO CENTRO DA TERRA!",
-  "O CARAMELO LATIU EM JAPONÊS E PEDIU UM DIPLOMA DA ETEC! KKKKKK!",
+  "O ORELHA LATIU EM JAPONÊS E PEDIU UM DIPLOMA DA ETEC! KKKKKK!",
   "VIVEMOS NUMA SALADA GIGANTE! TUDO É ALFACE ROXA! HAHAHAHA!",
   "COLOQUEI ADUBO NPK NO MEU CAFÉ E AGORA MEU CHAPÉU FAZ FOTOSSÍNTESE!",
   "SE O PÃO LIGAR UMA AIRFRYER DENTRO DE OUTRA ABRE UM PORTAL PRA BOTUJURU!",
@@ -4448,8 +5042,8 @@ function triggerCoringaBurst(playFullLaugh = false) {
   spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 2.5, 0)), 0x4ade80, playFullLaugh ? 14 : 6);
 }
 
-function addInsanity(amount) {
-  state.visitedEtecToday = true;
+function addInsanity(amount, fromEtec = true) {
+  if (fromEtec) state.visitedEtecToday = true;
   const wasCrazy = state.isCrazy;
   state.insanity = Math.min(100, state.insanity + amount);
   state.isCrazy = state.insanity >= 100;
@@ -4986,6 +5580,12 @@ window.addEventListener("keydown", (e) => {
       } else {
         showToast("🧪", "ADUBO DO KAIO", "Fique perto de um canteiro com planta crescendo e aperte F!");
       }
+    } else if (e.code === "KeyR") {
+      toggleEquippedTool();
+    } else if (e.code === "KeyX") {
+      if (state.location === "yard" && dogOrelha && distXZ(player.pos, dogOrelha.mesh.position) < 2.8) {
+        kickOrelha();
+      }
     } else if (e.code === "KeyV") {
       toggleFirstPerson();
     } else if (e.code === "KeyK") {
@@ -5124,6 +5724,10 @@ function handleCanvasPointerEnd(e, isCancel) {
   }
 
   if (wasTap) {
+    if (state.jaguar.active && state.equippedTool === "hoe") {
+      attackJaguarWithHoe();
+      return;
+    }
     pointerNDC.x = (e.clientX / window.innerWidth) * 2 - 1;
     pointerNDC.y = -(e.clientY / window.innerHeight) * 2 + 1;
     raycaster.setFromCamera(pointerNDC, camera);
@@ -5252,6 +5856,7 @@ function enterFarm() {
   npcModal.classList.add("hidden");
   guideModal.classList.add("hidden");
   calendarModal.classList.add("hidden");
+  if (deathModal) deathModal.classList.add("hidden");
   hud.classList.remove("hidden");
   state.mode = "playing";
   setActiveSceneVisibility();
@@ -5286,8 +5891,8 @@ resetSaveBtn.addEventListener("click", () => {
 });
 resumeBtn.addEventListener("click", togglePause);
 sleepPauseBtn.addEventListener("click", () => {
-  togglePause();
-  advanceToNextDay();
+  pauseScreen.classList.add("hidden");
+  startSleepTransition(false);
 });
 restartPauseBtn.addEventListener("click", () => {
   resetToNewFarm();
@@ -5297,6 +5902,9 @@ restartPauseBtn.addEventListener("click", () => {
 });
 pauseBtn.addEventListener("click", togglePause);
 muteBtn.addEventListener("click", toggleMute);
+if (toolModeBtn) toolModeBtn.addEventListener("click", toggleEquippedTool);
+if (kickDogBtn) kickDogBtn.addEventListener("click", kickOrelha);
+if (respawnBtn) respawnBtn.addEventListener("click", respawnPlayer);
 if (camModeBtn) camModeBtn.addEventListener("click", toggleFirstPerson);
 if (calendarHudBtn) calendarHudBtn.addEventListener("click", openCalendarModal);
 if (calendarPill) calendarPill.addEventListener("click", openCalendarModal);
@@ -5320,8 +5928,8 @@ function updateSkyAndTime(dt) {
     showDayBanner("🌙 19:00 — EXPEDIENTE ENCERRADO! DEPOIS DAS 19H O MACHO NÃO PODE TRABALHAR!");
     showToast("🌙", "HORA DE DESCANSAR", "Passou das 19:00! Vá para casa dormir para começar o próximo dia.");
   }
-  if (state.dayMinutes >= 22 * 60) {
-    advanceToNextDay();
+  if (state.dayMinutes >= 22 * 60 && !state.isSleeping) {
+    startSleepTransition(false);
     return;
   }
   syncBusModelsVisibility();
@@ -5386,6 +5994,7 @@ let hudTickAccum = 0;
 let lastCtxSignature = "";
 const headProjVec = new THREE.Vector3();
 const CONTEXT_ICONS = {
+  fight_jaguar: "⛏️",
   well: "💧",
   coop: "🥚",
   compost: "🌿",
@@ -5568,15 +6177,13 @@ function updateGame(dt) {
       }
     }
   }
-  if (canGroup) {
-    canGroup.visible = state.location === "yard" && !state.isCrazy;
-  }
+  syncHeldToolVisibility();
 
   if (state.swingTimer > 0) {
     state.swingTimer = Math.max(0, state.swingTimer - dt);
-    rightArm.rotation.x = -1.25 + Math.sin(state.swingTimer * 24) * 0.45;
+    rightArm.rotation.x = -1.45 + Math.sin(state.swingTimer * 26) * 0.65;
     if (leftForearm) leftForearm.rotation.x = 0;
-    if (rightForearm) rightForearm.rotation.x = 0;
+    if (rightForearm) rightForearm.rotation.x = -0.35;
   } else if (state.isCrazy) {
     // Gesto "6-7" (67): ambos braços dobrados pra frente com palmas p/ cima subindo e descendo alternadamente!
     const pump67 = Math.sin(state.animTime * 9.5);
@@ -5723,30 +6330,187 @@ function updateGame(dt) {
       }
     });
 
-    if (dogCaramelo) {
-      dogCaramelo.tail.rotation.z = Math.sin(state.animTime * 14) * 0.35;
-      if (dogCaramelo.wait > 0) {
-        dogCaramelo.wait -= dt;
-        if (dogCaramelo.wait <= 0) {
-          dogCaramelo.target.set(
-            dogCaramelo.home.x + (Math.random() - 0.5) * 5,
+    if (dogOrelha) {
+      dogOrelha.tail.rotation.z = Math.sin(state.animTime * 14) * 0.35;
+      if (dogOrelha.leftEar && dogOrelha.rightEar) {
+        dogOrelha.leftEar.rotation.z = 0.18 + Math.sin(state.animTime * 7) * 0.08;
+        dogOrelha.rightEar.rotation.z = -0.18 - Math.sin(state.animTime * 7) * 0.08;
+      }
+      if (dogOrelha.wait > 0) {
+        dogOrelha.wait -= dt;
+        if (dogOrelha.wait <= 0) {
+          dogOrelha.target.set(
+            dogOrelha.home.x + (Math.random() - 0.5) * 5,
             0,
-            dogCaramelo.home.z + (Math.random() - 0.5) * 5
+            dogOrelha.home.z + (Math.random() - 0.5) * 5
           );
         }
       } else {
-        const dx = dogCaramelo.target.x - dogCaramelo.mesh.position.x;
-        const dz = dogCaramelo.target.z - dogCaramelo.mesh.position.z;
+        const dx = dogOrelha.target.x - dogOrelha.mesh.position.x;
+        const dz = dogOrelha.target.z - dogOrelha.mesh.position.z;
         const dist = Math.hypot(dx, dz);
         if (dist < 0.25) {
-          dogCaramelo.wait = 2 + Math.random() * 2.5;
+          dogOrelha.wait = 2 + Math.random() * 2.5;
         } else {
-          dogCaramelo.mesh.position.x += (dx / dist) * 2.1 * dt;
-          dogCaramelo.mesh.position.z += (dz / dist) * 2.1 * dt;
-          dogCaramelo.mesh.rotation.y = Math.atan2(dx, dz);
+          dogOrelha.mesh.position.x += (dx / dist) * 2.1 * dt;
+          dogOrelha.mesh.position.z += (dz / dist) * 2.1 * dt;
+          dogOrelha.mesh.rotation.y = Math.atan2(dx, dz);
         }
       }
     }
+
+    // Evento Aleatório: Onça Pintada no Quintal!
+    if (!state.jaguar.active) {
+      state.jaguar.spawnCooldown = Math.max(0, state.jaguar.spawnCooldown - dt);
+      if (state.jaguar.spawnCooldown <= 0 && !state.isSleeping) {
+        state.jaguar.checkAccum += dt;
+        if (state.jaguar.checkAccum >= 6.0) {
+          state.jaguar.checkAccum = 0;
+          if (Math.random() < 0.22) {
+            spawnJaguar();
+          }
+        }
+      }
+    } else if (jaguarEntity) {
+      jaguarEntity.mesh.visible = true;
+      const dx = player.pos.x - jaguarEntity.mesh.position.x;
+      const dz = player.pos.z - jaguarEntity.mesh.position.z;
+      const dist = Math.hypot(dx, dz) || 0.01;
+      const jagSpeed = 4.6;
+      if (dist > 1.3) {
+        jaguarEntity.mesh.position.x += (dx / dist) * jagSpeed * dt;
+        jaguarEntity.mesh.position.z += (dz / dist) * jagSpeed * dt;
+      }
+      jaguarEntity.mesh.rotation.y = Math.atan2(dx, dz);
+      // Animação de corrida e flash ao levar enxadada
+      const runCycle = Math.sin(state.animTime * 15);
+      jaguarEntity.legs[0].rotation.x = runCycle * 0.65;
+      jaguarEntity.legs[3].rotation.x = runCycle * 0.65;
+      jaguarEntity.legs[1].rotation.x = -runCycle * 0.65;
+      jaguarEntity.legs[2].rotation.x = -runCycle * 0.65;
+      jaguarEntity.tail.rotation.y = Math.sin(state.animTime * 12) * 0.35;
+      if (state.jaguar.hitFlash > 0) {
+        state.jaguar.hitFlash = Math.max(0, state.jaguar.hitFlash - dt);
+        jaguarEntity.bodyMat.emissive.setHex(0xef4444);
+        jaguarEntity.bodyMat.emissiveIntensity = 0.7;
+      } else {
+        jaguarEntity.bodyMat.emissive.setHex(0x000000);
+        jaguarEntity.bodyMat.emissiveIntensity = 0;
+      }
+      // Ataque da Onça no Alyffer
+      state.jaguar.attackCd = Math.max(0, state.jaguar.attackCd - dt);
+      if (dist <= 1.55 && state.jaguar.attackCd <= 0) {
+        state.jaguar.attackCd = 1.35;
+        state.playerHp = Math.max(0, state.playerHp - 25);
+        sfx.play("roar");
+        spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xef4444, 16);
+        showToast("🐆", "ARRANHÃO DA ONÇA!", `Você perdeu 25 HP! Vida: ${state.playerHp}/${state.maxHp} • Use a Enxada (R)!`);
+        updateHUD();
+        if (state.playerHp <= 0) {
+          triggerPlayerDeath("jaguar");
+          return;
+        }
+      }
+    }
+  } else {
+    // Se sair do quintal, a Onça recua para a mata
+    if (state.jaguar.active && jaguarEntity) {
+      state.jaguar.active = false;
+      state.jaguar.spawnCooldown = 35;
+      jaguarEntity.mesh.visible = false;
+    }
+  }
+
+  // Menino Maluquinho no Terminal à Noite (>= 18:30): persegue e atormenta o Alyffer!
+  const MALUQUINHO_LINES = [
+    "OI MOÇO!! TEM JOGUINHO NO SEU CELULAR?! HEHEHE!!",
+    "A PANELA NA MINHA CABEÇA TÁ PEGANDO WI-FI DO TERMINAL!!",
+    "EI ALYFFER!! VAI PERDER O ÔNIBUS 402!! KKKKKKK!!",
+    "MOÇO, ME DÁ UMA ALFACE E R$ 2 PRO PASTEL?! POR FAVORZINHOOO!!",
+    "PÓ-PÓ-PÓ!! TÔ TE PERSEGUINDO ATÉ A LINHA 7-RUBI!!",
+    "VOCÊ É O MACHO DE PAU ARCADO?! DEIXA EU MEXER NA SUA CESTA!!",
+  ];
+  const isNightTerminal = state.location === "terminal" && state.dayMinutes >= 18.5 * 60;
+  if (isNightTerminal && maluquinhoEntity) {
+    if (!state.maluquinho.active) {
+      state.maluquinho.active = true;
+      const sx = player.pos.x > -4 ? -11.5 : 4.0;
+      const sz = player.pos.z > 2 ? -2.0 : 7.5;
+      maluquinhoEntity.mesh.position.set(sx, getFloorYAt(sx, sz), sz);
+      maluquinhoEntity.mesh.visible = true;
+      state.maluquinho.tormentCd = 1.2;
+      state.maluquinho.bubbleTimer = 0;
+      if (!state.maluquinho.announced) {
+        state.maluquinho.announced = true;
+        sfx.play("maluquinho");
+        showDayBanner("🍲 CUIDADO! O MENINO MALUQUINHO APARECEU NO TERMINAL À NOITE!");
+        showToast("🍲", "MENINO MALUQUINHO!", "Ele está te perseguindo e atormentando no Terminal! Pegue o 402 ou o trem!");
+      }
+    }
+    const mx = maluquinhoEntity.mesh.position.x;
+    const mz = maluquinhoEntity.mesh.position.z;
+    const dx = player.pos.x - mx;
+    const dz = player.pos.z - mz;
+    const dist = Math.hypot(dx, dz) || 0.01;
+    const chaseSpeed = 5.4;
+    if (dist > 1.35) {
+      const nx = THREE.MathUtils.clamp(mx + (dx / dist) * chaseSpeed * dt, -13.6, 10.2);
+      const nz = THREE.MathUtils.clamp(mz + (dz / dist) * chaseSpeed * dt, -9.8, 10.8);
+      maluquinhoEntity.mesh.position.set(nx, getFloorYAt(nx, nz), nz);
+    }
+    maluquinhoEntity.mesh.rotation.y = Math.atan2(dx, dz);
+    // Animação agitada do Menino Maluquinho (panela balançando + pulinhos!)
+    const bounce = Math.abs(Math.sin(state.animTime * 14)) * 0.22;
+    maluquinhoEntity.mesh.position.y = getFloorYAt(maluquinhoEntity.mesh.position.x, maluquinhoEntity.mesh.position.z) + bounce;
+    maluquinhoEntity.potGroup.rotation.z = -0.18 + Math.sin(state.animTime * 16) * 0.16;
+    maluquinhoEntity.lArm.rotation.x = -1.2 + Math.sin(state.animTime * 18) * 0.7;
+    maluquinhoEntity.rArm.rotation.x = -1.2 - Math.sin(state.animTime * 18) * 0.7;
+    maluquinhoEntity.lLeg.rotation.x = Math.sin(state.animTime * 16) * 0.7;
+    maluquinhoEntity.rLeg.rotation.x = -Math.sin(state.animTime * 16) * 0.7;
+
+    state.maluquinho.bubbleTimer -= dt;
+    if (state.maluquinho.bubbleTimer <= 0) {
+      state.maluquinho.bubbleTimer = 3.2;
+      state.maluquinho.currentLine = MALUQUINHO_LINES[Math.floor(Math.random() * MALUQUINHO_LINES.length)];
+      if (maluquinhoBubbleText) maluquinhoBubbleText.textContent = `"${state.maluquinho.currentLine}"`;
+    }
+    if (maluquinhoBubble) {
+      maluquinhoBubble.classList.remove("hidden");
+      headProjVec.set(
+        maluquinhoEntity.mesh.position.x,
+        maluquinhoEntity.mesh.position.y + 3.25,
+        maluquinhoEntity.mesh.position.z
+      );
+      headProjVec.project(camera);
+      const halfPad = Math.min(155, Math.max(85, window.innerWidth * 0.34));
+      const sx = THREE.MathUtils.clamp((headProjVec.x * 0.5 + 0.5) * window.innerWidth, halfPad, window.innerWidth - halfPad);
+      const sy = THREE.MathUtils.clamp((-headProjVec.y * 0.5 + 0.5) * window.innerHeight, 92, Math.max(100, window.innerHeight - 150));
+      maluquinhoBubble.style.left = `${sx}px`;
+      maluquinhoBubble.style.top = `${sy}px`;
+    }
+
+    // Atormentando o Alyffer quando chega perto!
+    state.maluquinho.tormentCd = Math.max(0, state.maluquinho.tormentCd - dt);
+    if (dist < 2.8 && state.maluquinho.tormentCd <= 0) {
+      state.maluquinho.tormentCd = 2.4;
+      sfx.play("maluquinho");
+      spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.8, 0)), 0x38bdf8, 10);
+      addInsanity(8, false);
+      showToast("🍲", "ATORMENTADO NO TERMINAL!", state.maluquinho.currentLine || "O Menino Maluquinho não te larga!");
+    }
+  } else {
+    if (state.maluquinho.active) {
+      state.maluquinho.active = false;
+      state.maluquinho.announced = false;
+      if (maluquinhoEntity) maluquinhoEntity.mesh.visible = false;
+    }
+    if (maluquinhoBubble) maluquinhoBubble.classList.add("hidden");
+  }
+
+  // Botão secundário "Chutar o Orelha" aparece quando perto do Orelha
+  if (kickDogBtn) {
+    const nearOrelha = state.location === "yard" && dogOrelha && distXZ(player.pos, dogOrelha.mesh.position) < 2.5;
+    kickDogBtn.classList.toggle("hidden", !nearOrelha);
   }
 
   // Update Context Prompt only when changed
@@ -5839,8 +6603,15 @@ function updateCamera(dt, immediate = false) {
     );
     camera.lookAt(desiredPos.clone().add(lookDir));
 
-    // Braços em 1ª pessoa fazendo o gesto "6-7" quando Coringando!
+    // Braços em 1ª pessoa fazendo o gesto "6-7" quando Coringando, ou ferramenta equipada (Enxada / Regador)!
     fpCrazyArmsGroup.visible = state.isCrazy && state.mode === "playing";
+    fpToolGroup.visible = !state.isCrazy && state.mode === "playing" && (state.location === "yard" || state.equippedTool === "hoe");
+    if (fpToolGroup.visible) {
+      fpToolGroup.userData.fpCan.visible = state.equippedTool === "water" && state.location === "yard";
+      fpToolGroup.userData.fpHoe.visible = state.equippedTool === "hoe";
+      const swingAmt = state.swingTimer > 0 ? Math.sin(state.swingTimer * 24) * 0.65 : 0;
+      fpToolGroup.rotation.x = -swingAmt;
+    }
     if (fpCrazyArmsGroup.visible) {
       const p67 = Math.sin(state.animTime * 9.5);
       fpCrazyArmsGroup.userData.fpLeftHand.position.y = -0.3 + p67 * 0.12;
@@ -5853,6 +6624,7 @@ function updateCamera(dt, immediate = false) {
 
   playerMesh.visible = true;
   fpCrazyArmsGroup.visible = false;
+  fpToolGroup.visible = false;
 
   const target =
     state.mode === "start"
