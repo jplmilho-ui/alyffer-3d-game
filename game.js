@@ -191,6 +191,30 @@ const CROPS = {
     style: "strawberry",
     plantable: true,
   },
+  alface_guloso: {
+    id: "alface_guloso",
+    name: "Alface Guloso",
+    emoji: "😋",
+    seedCost: 30,
+    basePrice: 92,
+    growTime: 88,
+    color: 0x10b981,
+    leafColor: 0x047857,
+    style: "lettuce_guloso",
+    plantable: true,
+  },
+  alface_dourado: {
+    id: "alface_dourado",
+    name: "Alface Dourado",
+    emoji: "✨",
+    seedCost: 45,
+    basePrice: 145,
+    growTime: 115,
+    color: 0xfef08a,
+    leafColor: 0xeab308,
+    style: "lettuce_gold",
+    plantable: true,
+  },
   ovo_caipira: {
     id: "ovo_caipira",
     name: "Ovo Caipira",
@@ -203,10 +227,164 @@ const CROPS = {
     style: "egg",
     plantable: false,
   },
+  leite_fresco: {
+    id: "leite_fresco",
+    name: "Leite Fresco",
+    emoji: "🥛",
+    seedCost: 0,
+    basePrice: 28,
+    growTime: 0,
+    color: 0xf8fafc,
+    leafColor: 0xe2e8f0,
+    style: "animal",
+    plantable: false,
+  },
+  la_ovelha: {
+    id: "la_ovelha",
+    name: "Lã de Ovelha",
+    emoji: "🧶",
+    seedCost: 0,
+    basePrice: 24,
+    growTime: 0,
+    color: 0xf1f5f9,
+    leafColor: 0xcbd5e1,
+    style: "animal",
+    plantable: false,
+  },
+  trufa_porco: {
+    id: "trufa_porco",
+    name: "Trufa da Roça",
+    emoji: "🍄",
+    seedCost: 0,
+    basePrice: 38,
+    growTime: 0,
+    color: 0xa16207,
+    leafColor: 0x713f12,
+    style: "animal",
+    plantable: false,
+  },
 };
 
-const SEED_KEYS = ["alface_crespa", "alface_americana", "alface_roxa", "tomate", "cenoura", "morango"];
+const SEED_KEYS = [
+  "alface_crespa",
+  "alface_americana",
+  "alface_roxa",
+  "tomate",
+  "cenoura",
+  "morango",
+  "alface_guloso",
+  "alface_dourado",
+];
 const CROP_KEYS = Object.keys(CROPS);
+
+// Catálogo de Enxadas Especiais (com efeitos em combate contra a Onça e na horta!)
+const HOES = {
+  comum: {
+    id: "comum",
+    name: "Enxada Comum",
+    shortName: "Enxada",
+    emoji: "⛏️",
+    cost: 0,
+    damage: 25,
+    knockback: 2.8,
+    bladeColor: 0x94a3b8,
+    emissive: 0x000000,
+    emissiveIntensity: 0,
+    effectDesc: "25 de dano na Onça • Ara 1 canteiro",
+  },
+  fogo: {
+    id: "fogo",
+    name: "Enxada de Fogo",
+    shortName: "Enxada Fogo",
+    emoji: "🔥",
+    cost: 95,
+    damage: 40,
+    knockback: 3.1,
+    burnDamage: 18,
+    bladeColor: 0xf97316,
+    emissive: 0xea580c,
+    emissiveIntensity: 0.75,
+    effectDesc: "40 dano + Queimadura na Onça (+18 dano) • Ara 1 vizinho grátis!",
+  },
+  gelo: {
+    id: "gelo",
+    name: "Enxada de Gelo",
+    shortName: "Enxada Gelo",
+    emoji: "❄️",
+    cost: 130,
+    damage: 35,
+    knockback: 3.0,
+    slowDuration: 4.5,
+    bladeColor: 0x38bdf8,
+    emissive: 0x0284c7,
+    emissiveIntensity: 0.7,
+    effectDesc: "35 dano + Congela/desacelera Onça em 60% • Canteiro já nasce úmido!",
+  },
+  relampago: {
+    id: "relampago",
+    name: "Enxada Relâmpago",
+    shortName: "Enxada Raio",
+    emoji: "⚡",
+    cost: 185,
+    damage: 55,
+    knockback: 4.8,
+    speedBoost: 1.22,
+    bladeColor: 0xfacc15,
+    emissive: 0xeab308,
+    emissiveIntensity: 0.85,
+    effectDesc: "55 dano + Empurrão duplo • +22% velocidade andando enquanto segura!",
+  },
+  diamante: {
+    id: "diamante",
+    name: "Enxada de Diamante",
+    shortName: "Enxada Diam.",
+    emoji: "💎",
+    cost: 290,
+    damage: 75,
+    knockback: 4.2,
+    aoeTill: true,
+    doubleBonus: 0.25,
+    bladeColor: 0x67e8f9,
+    emissive: 0x06b6d4,
+    emissiveIntensity: 0.9,
+    effectDesc: "75 dano (derruba Onça em 2 golpes!) • Ara em área 3x3 + +25% colheita dupla!",
+  },
+};
+const HOE_KEYS = Object.keys(HOES);
+
+// Catálogo de Animais da Fazenda (Vacas, Ovelhas, Porcos)
+const ANIMAL_TYPES = {
+  cow: {
+    type: "cow",
+    label: "Vaca Leiteira",
+    emoji: "🐄",
+    cost: 85,
+    maxHp: 100,
+    productId: "leite_fresco",
+    actionText: "Ordenhar Leite Fresco 🥛",
+    names: ["Mimosa", "Estrela", "Malhada", "Pintada", "Bela", "Aurora"],
+  },
+  sheep: {
+    type: "sheep",
+    label: "Ovelha",
+    emoji: "🐑",
+    cost: 70,
+    maxHp: 75,
+    productId: "la_ovelha",
+    actionText: "Tosquiar Lã de Ovelha 🧶",
+    names: ["Nuvem", "Algodão", "Fofinha", "Neve", "Branca", "Lãzinha"],
+  },
+  pig: {
+    type: "pig",
+    label: "Porco Caipira",
+    emoji: "🐷",
+    cost: 95,
+    maxHp: 90,
+    productId: "trufa_porco",
+    actionText: "Recolher Trufa da Roça 🍄",
+    names: ["Torresmo", "Bacon", "Pipo", "Roncador", "Gorducho", "Bolinha"],
+  },
+};
 const ALL_TITLES = ["Estudante ETEC", "PAC", "Homem Guloso", "Airfryer", "Macho"];
 const STORAGE_KEY = "macho_horta_3d_save_v2";
 const WORK_END_MINUTES = 19 * 60; // Depois das 19:00 (7 da noite) não pode mais trabalhar!
@@ -705,7 +883,17 @@ let bus402TermMesh;
 let ceilingFanMesh;
 let dogOrelha;
 let jaguarEntity;
+let tamedJaguarEntity;
+let marceloYardEntity;
 let maluquinhoEntity;
+let westOriginalFenceGroup;
+let eastOriginalFenceGroup;
+let expansionWestGroup;
+let expansionEastGroup;
+const livestockGroup = new THREE.Group();
+const livestockEntities = [];
+let hoeBladeMat;
+let fpHoeBladeMat;
 let coopEggVisuals = [];
 let sprinklerGroup;
 const sprinklerHeads = [];
@@ -896,7 +1084,7 @@ function buildCountrysideEnvironment() {
 
   // Fence around the homestead (x: -22..22, z: -21..21, gate at x: 9.2..15.8, z: 21)
   const fenceMat = new THREE.MeshStandardMaterial({ color: 0x7c502b, roughness: 0.85 });
-  function addFenceSegment(x1, z1, x2, z2) {
+  function addFenceSegment(x1, z1, x2, z2, targetGroup = exteriorGroup) {
     const dx = x2 - x1;
     const dz = z2 - z1;
     const len = Math.hypot(dx, dz);
@@ -907,7 +1095,7 @@ function buildCountrysideEnvironment() {
       const post = new THREE.Mesh(new THREE.BoxGeometry(0.24, 1.45, 0.24), fenceMat);
       post.position.set(px, 0.72, pz);
       post.castShadow = true;
-      exteriorGroup.add(post);
+      targetGroup.add(post);
     }
     const angle = Math.atan2(dx, dz);
     [0.55, 1.15].forEach((ry) => {
@@ -915,14 +1103,93 @@ function buildCountrysideEnvironment() {
       rail.position.set((x1 + x2) / 2, ry, (z1 + z2) / 2);
       rail.rotation.y = angle;
       rail.castShadow = true;
-      exteriorGroup.add(rail);
+      targetGroup.add(rail);
     });
   }
   addFenceSegment(-22, -21, 22, -21);
-  addFenceSegment(-22, -21, -22, 21);
-  addFenceSegment(22, -21, 22, 21);
   addFenceSegment(-22, 21, 9.2, 21);
   addFenceSegment(15.8, 21, 22, 21);
+
+  westOriginalFenceGroup = new THREE.Group();
+  addFenceSegment(-22, -21, -22, 21, westOriginalFenceGroup);
+  exteriorGroup.add(westOriginalFenceGroup);
+
+  eastOriginalFenceGroup = new THREE.Group();
+  addFenceSegment(22, -21, 22, 21, eastOriginalFenceGroup);
+  exteriorGroup.add(eastOriginalFenceGroup);
+
+  // Expansão de Terreno Nível 1 (Pasto Oeste x: -40..-22)
+  expansionWestGroup = new THREE.Group();
+  expansionWestGroup.visible = false;
+  const westLawn = new THREE.Mesh(
+    new THREE.PlaneGeometry(18.5, 42.5),
+    new THREE.MeshStandardMaterial({ color: 0x62a84b, roughness: 0.92 })
+  );
+  westLawn.rotation.x = -Math.PI / 2;
+  westLawn.position.set(-31.2, 0.017, 0);
+  westLawn.receiveShadow = true;
+  expansionWestGroup.add(westLawn);
+  addFenceSegment(-40, -21, -22, -21, expansionWestGroup);
+  addFenceSegment(-40, -21, -40, 21, expansionWestGroup);
+  addFenceSegment(-40, 21, -22, 21, expansionWestGroup);
+  // Celeiro / Abrigo dos Animais no Pasto Oeste
+  const barnMat = new THREE.MeshStandardMaterial({ color: 0x991b1b, roughness: 0.8 });
+  const barnRoofMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12, roughness: 0.75 });
+  const hayMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.95 });
+  const barn = new THREE.Mesh(new THREE.BoxGeometry(6.2, 3.8, 4.6), barnMat);
+  barn.position.set(-34.5, 1.9, -15.2);
+  barn.castShadow = true;
+  expansionWestGroup.add(barn);
+  const barnRoof = new THREE.Mesh(new THREE.ConeGeometry(4.8, 2.0, 4), barnRoofMat);
+  barnRoof.position.set(-34.5, 4.8, -15.2);
+  barnRoof.rotation.y = Math.PI / 4;
+  barnRoof.scale.set(1.05, 1, 0.8);
+  expansionWestGroup.add(barnRoof);
+  [
+    [-28.5, 0.45, -14.5],
+    [-27.1, 0.45, -14.5],
+    [-27.8, 1.3, -14.5],
+  ].forEach(([hx, hy, hz]) => {
+    const hay = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.9, 1.0), hayMat);
+    hay.position.set(hx, hy, hz);
+    hay.castShadow = true;
+    expansionWestGroup.add(hay);
+  });
+  const westSign = new THREE.Mesh(
+    new THREE.BoxGeometry(3.8, 0.9, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("PASTO OESTE • FAZENDA", "+8 Canteiros & Curral", "#14532d", "#fef08a"),
+    })
+  );
+  westSign.position.set(-24.2, 2.1, -18.5);
+  expansionWestGroup.add(westSign);
+  exteriorGroup.add(expansionWestGroup);
+
+  // Expansão de Terreno Nível 2 (Fazenda Leste x: 22..38)
+  expansionEastGroup = new THREE.Group();
+  expansionEastGroup.visible = false;
+  const eastLawn = new THREE.Mesh(
+    new THREE.PlaneGeometry(16.5, 42.5),
+    new THREE.MeshStandardMaterial({ color: 0x62a84b, roughness: 0.92 })
+  );
+  eastLawn.rotation.x = -Math.PI / 2;
+  eastLawn.position.set(30.2, 0.017, 0);
+  eastLawn.receiveShadow = true;
+  expansionEastGroup.add(eastLawn);
+  addFenceSegment(22, -21, 38, -21, expansionEastGroup);
+  addFenceSegment(38, -21, 38, 21, expansionEastGroup);
+  addFenceSegment(22, 21, 38, 21, expansionEastGroup);
+  const eastSign = new THREE.Mesh(
+    new THREE.BoxGeometry(3.8, 0.9, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("FAZENDA LESTE • PAU ARCADO", "+8 Canteiros & Pasto Grande", "#1e3a8a", "#fef08a"),
+    })
+  );
+  eastSign.position.set(24.5, 2.1, 14.5);
+  expansionEastGroup.add(eastSign);
+  exteriorGroup.add(expansionEastGroup);
+
+  exteriorGroup.add(livestockGroup);
 
   // Estrada do Garcia Road Sign at the Gate
   const gatePost = new THREE.Mesh(new THREE.BoxGeometry(0.22, 2.4, 0.22), fenceMat);
@@ -1078,19 +1345,24 @@ function buildCountrysideEnvironment() {
   lantern.position.set(1.2, 3.25, 6.2);
   house.add(lantern);
 
-  // Placa "SÍTIO DO MACHO" fixada com suportes na frente do telhado da varanda (sem atravessar o telhado!)
+  // Placa "SÍTIO DO MACHO" fixada na viga frontal da varanda (abaixo do beiral, sem encavalar no telhado)
+  const porchFascia = new THREE.Mesh(new THREE.BoxGeometry(10.8, 0.28, 0.24), trimMat);
+  porchFascia.position.set(0, 3.56, 6.60);
+  porchFascia.castShadow = true;
+  house.add(porchFascia);
+
   [-1.5, 1.5].forEach((sx) => {
-    const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.55, 0.14), trimMat);
-    bracket.position.set(sx, 3.72, 6.62);
+    const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.95, 0.14), trimMat);
+    bracket.position.set(sx, 3.56, 6.72);
     house.add(bracket);
   });
   const houseSign = new THREE.Mesh(
-    new THREE.BoxGeometry(4.1, 0.96, 0.14),
+    new THREE.BoxGeometry(4.2, 0.88, 0.12),
     new THREE.MeshBasicMaterial({
       map: createWoodSignTexture("SÍTIO DO MACHO", "Pau Arcado • ETEC CLP"),
     })
   );
-  houseSign.position.set(0, 4.18, 6.66);
+  houseSign.position.set(0, 3.56, 6.82);
   house.add(houseSign);
 
   exteriorGroup.add(house);
@@ -1421,6 +1693,117 @@ function buildCountrysideEnvironment() {
     legs: jagLegs,
     tail: jagTail,
     bodyMat: jagFurMat,
+    tagMesh: jagTag,
+  };
+
+  // Onça Domada do Alyffer (com coleira verde/dourada — defende a fazenda e os animais!)
+  const tamedJag = jagGroup.clone();
+  const collar = new THREE.Mesh(
+    new THREE.TorusGeometry(0.32, 0.06, 8, 16),
+    new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x16a34a, emissiveIntensity: 0.4 })
+  );
+  collar.position.set(0, 1.05, 0.72);
+  tamedJag.add(collar);
+  // Substitui a plaquinha no clone
+  tamedJag.children[tamedJag.children.length - 2].material = new THREE.MeshBasicMaterial({
+    map: createWoodSignTexture("🐆 ONÇA DO MACHO", "Domada ❤️ • Guarda o Sítio", "#14532d", "#fef08a"),
+    transparent: true,
+    side: THREE.DoubleSide,
+  });
+  tamedJag.position.set(6.5, 0, -5.5);
+  tamedJag.visible = false;
+  exteriorGroup.add(tamedJag);
+  tamedJaguarEntity = {
+    mesh: tamedJag,
+    home: new THREE.Vector3(6.5, 0, -5.5),
+    target: new THREE.Vector3(6.5, 0, -5.5),
+    wait: 1.5,
+    attackCd: 0,
+  };
+
+  // Marcelo Careca (Segurança contratado na ETECAMP para matar a Onça e proteger os animais!)
+  const marceloYard = new THREE.Group();
+  const mSkinY = new THREE.MeshStandardMaterial({ color: 0xdca580, roughness: 0.55 });
+  const mVestY = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.65 });
+  const mPantsY = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.8 });
+  const mBootY = new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.5 });
+  const mTorsoY = new THREE.Mesh(new THREE.BoxGeometry(0.96, 1.15, 0.54), mVestY);
+  mTorsoY.position.y = 1.4;
+  mTorsoY.castShadow = true;
+  marceloYard.add(mTorsoY);
+  const mHeadY = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.68, 0.68), mSkinY);
+  mHeadY.position.y = 2.34;
+  mHeadY.castShadow = true;
+  marceloYard.add(mHeadY);
+  // Brilho careca no topo da cabeça do Marcelo!
+  const mShineY = new THREE.Mesh(
+    new THREE.SphereGeometry(0.14, 10, 10),
+    new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })
+  );
+  mShineY.scale.set(1.2, 0.3, 1.2);
+  mShineY.position.set(0.12, 2.69, 0.12);
+  marceloYard.add(mShineY);
+  // Óculos escuros de segurança
+  const mGlassesY = new THREE.Mesh(
+    new THREE.BoxGeometry(0.56, 0.14, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.7, roughness: 0.2 })
+  );
+  mGlassesY.position.set(0, 2.38, 0.35);
+  marceloYard.add(mGlassesY);
+  const mLArmY = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.84, 0.26), mSkinY);
+  mLArmY.position.set(-0.63, 1.4, 0);
+  const mRArmY = new THREE.Group();
+  mRArmY.position.set(0.63, 1.72, 0);
+  const mRArmMeshY = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.84, 0.26), mSkinY);
+  mRArmMeshY.position.y = -0.34;
+  mRArmY.add(mRArmMeshY);
+  // Enxada / Bastão caça-onça do Marcelo
+  const mClub = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.05, 0.06, 1.5, 8),
+    new THREE.MeshStandardMaterial({ color: 0x7c4a21 })
+  );
+  mClub.rotation.x = Math.PI / 2;
+  mClub.position.set(0, -0.68, 0.55);
+  const mClubHead = new THREE.Mesh(
+    new THREE.BoxGeometry(0.32, 0.36, 0.08),
+    new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.7, roughness: 0.3 })
+  );
+  mClubHead.position.set(0, -0.82, 1.25);
+  mRArmY.add(mClub, mClubHead);
+  marceloYard.add(mLArmY, mRArmY);
+  const mLLegY = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.8, 0.32), mPantsY);
+  mLLegY.position.set(-0.22, 0.44, 0);
+  const mRLegY = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.8, 0.32), mPantsY);
+  mRLegY.position.set(0.22, 0.44, 0);
+  const mLBootY = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.2, 0.44), mBootY);
+  mLBootY.position.set(-0.22, 0.1, 0.05);
+  const mRBootY = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.2, 0.44), mBootY);
+  mRBootY.position.set(0.22, 0.1, 0.05);
+  marceloYard.add(mLLegY, mRLegY, mLBootY, mRBootY);
+  const mTagY = new THREE.Mesh(
+    new THREE.PlaneGeometry(2.4, 0.58),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("MARCELO 🛡️ (CARECA)", "Guarda dos Animais & Caça-Onça", "#0f172a", "#4ade80"),
+      transparent: true,
+      side: THREE.DoubleSide,
+    })
+  );
+  mTagY.position.set(0, 3.35, 0);
+  marceloYard.add(mTagY);
+  marceloYard.position.set(-8.5, 0, -10.5);
+  marceloYard.visible = false;
+  exteriorGroup.add(marceloYard);
+  marceloYardEntity = {
+    mesh: marceloYard,
+    lArm: mLArmY,
+    rArm: mRArmY,
+    lLeg: mLLegY,
+    rLeg: mRLegY,
+    home: new THREE.Vector3(-8.5, 0, -10.5),
+    target: new THREE.Vector3(-8.5, 0, -10.5),
+    wait: 1.2,
+    attackCd: 0,
+    swingTimer: 0,
   };
 
   // Trees around the yard & distant countryside
@@ -2219,6 +2602,20 @@ function createNpcModel({
     wisp.position.set(0.16, 2.8, 0.06);
     wisp.rotation.z = -0.28;
     npc.add(topHair, sideL, sideR, back, frontStrand, wisp);
+  } else if (hairStyle === "bald") {
+    // Careca lustrosa do Marcelo!
+    const shine = new THREE.Mesh(
+      new THREE.SphereGeometry(0.14, 10, 10),
+      new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.55 })
+    );
+    shine.scale.set(1.2, 0.28, 1.2);
+    shine.position.set(0.12, 2.66, 0.12);
+    const shades = new THREE.Mesh(
+      new THREE.BoxGeometry(0.54, 0.13, 0.08),
+      new THREE.MeshStandardMaterial({ color: 0x09090b, metalness: 0.7, roughness: 0.2 })
+    );
+    shades.position.set(0, 2.36, 0.35);
+    npc.add(shine, shades);
   } else if (hairStyle === "long") {
     const top = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.22, 0.74), hairMat);
     top.position.set(0, 2.66, -0.02);
@@ -2677,6 +3074,18 @@ function buildEtecInside() {
       hairColor: 0x171717,
       etecBadge: true,
     },
+    {
+      id: "marcelo",
+      name: "Marcelo",
+      roleSub: "Careca • Contratar p/ Onça",
+      pos: new THREE.Vector3(1.8, 0, -6.2), // Corredor Principal da ETECAMP
+      yaw: -0.15,
+      skinColor: 0xdca580,
+      shirtColor: 0x0f172a, // Colete/Polo escuro de segurança
+      pantsColor: 0x1e293b,
+      shoeColor: 0x09090b,
+      hairStyle: "bald", // Totalmente careca!
+    },
   ];
 
   npcSpecs.forEach((spec) => {
@@ -2938,10 +3347,8 @@ function createMachoPlayerModel() {
     new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.65, roughness: 0.35 })
   );
   hoeCollar.position.set(0, 0.04, 1.24);
-  const hoeBlade = new THREE.Mesh(
-    new THREE.BoxGeometry(0.36, 0.44, 0.045),
-    new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.72, roughness: 0.28 })
-  );
+  hoeBladeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.72, roughness: 0.28 });
+  const hoeBlade = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.44, 0.045), hoeBladeMat);
   hoeBlade.position.set(0, -0.16, 1.28);
   hoeBlade.rotation.x = 0.22;
   hoeBlade.castShadow = true;
@@ -3053,10 +3460,8 @@ fpToolGroup.visible = false;
   );
   fpHoeHandle.rotation.x = Math.PI / 2;
   fpHoeHandle.position.set(0, 0, -0.25);
-  const fpHoeBlade = new THREE.Mesh(
-    new THREE.BoxGeometry(0.24, 0.3, 0.035),
-    new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.72, roughness: 0.28 })
-  );
+  fpHoeBladeMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, metalness: 0.72, roughness: 0.28 });
+  const fpHoeBlade = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.3, 0.035), fpHoeBladeMat);
   fpHoeBlade.position.set(0, -0.12, -0.76);
   fpHoeBlade.rotation.x = -0.22;
   fpHoe.add(fpHoeHandle, fpHoeBlade);
@@ -3182,8 +3587,193 @@ for (let r = 0; r < 4; r++) {
     const idx = r * 4 + c;
     const px = -7.8 + c * 3.1;
     const pz = -2.4 + r * 3.1;
-    plots.push(createPlotMesh(idx, px, pz));
+    const pl = createPlotMesh(idx, px, pz);
+    pl.landReq = 0;
+    plots.push(pl);
   }
+}
+// +8 Canteiros na Expansão Oeste (Terreno Nível 1: índices 16..23)
+for (let r = 0; r < 4; r++) {
+  for (let c = 0; c < 2; c++) {
+    const idx = 16 + r * 2 + c;
+    const px = -33.2 + c * 3.4;
+    const pz = -3.0 + r * 3.4;
+    const pl = createPlotMesh(idx, px, pz);
+    pl.landReq = 1;
+    pl.unlocked = false;
+    pl.group.visible = false;
+    plots.push(pl);
+  }
+}
+// +8 Canteiros na Expansão Leste (Terreno Nível 2: índices 24..31)
+for (let r = 0; r < 4; r++) {
+  for (let c = 0; c < 2; c++) {
+    const idx = 24 + r * 2 + c;
+    const px = 25.5 + c * 3.4;
+    const pz = -3.0 + r * 3.4;
+    const pl = createPlotMesh(idx, px, pz);
+    pl.landReq = 2;
+    pl.unlocked = false;
+    pl.group.visible = false;
+    plots.push(pl);
+  }
+}
+
+// Construtor 3D de Animais da Fazenda (Vaca, Ovelha e Porco)
+function createLivestockMesh(animal) {
+  const g = new THREE.Group();
+  const type = animal.type;
+  const legMeshes = [];
+
+  if (type === "cow") {
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.78 });
+    const spotMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.82 });
+    const pinkMat = new THREE.MeshStandardMaterial({ color: 0xf9a8d4, roughness: 0.7 });
+    const hornMat = new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.6 });
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.88, 1.65), whiteMat);
+    body.position.y = 1.05;
+    body.castShadow = true;
+    g.add(body);
+    [
+      [-0.49, 1.12, 0.3],
+      [0.49, 0.96, -0.25],
+      [0, 1.5, 0.1],
+    ].forEach(([sx, sy, sz]) => {
+      const sp = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.34, 0.42), spotMat);
+      sp.position.set(sx, sy, sz);
+      g.add(sp);
+    });
+    const udder = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.24, 0.44), pinkMat);
+    udder.position.set(0, 0.56, -0.28);
+    g.add(udder);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.6, 0.64), whiteMat);
+    head.position.set(0, 1.38, 1.02);
+    g.add(head);
+    const snout = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.28, 0.24), pinkMat);
+    snout.position.set(0, 1.24, 1.38);
+    g.add(snout);
+    [-0.24, 0.24].forEach((hx) => {
+      const horn = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.26, 6), hornMat);
+      horn.position.set(hx, 1.76, 0.95);
+      horn.rotation.z = hx < 0 ? 0.3 : -0.3;
+      g.add(horn);
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), spotMat);
+      eye.position.set(hx * 0.7, 1.46, 1.35);
+      g.add(eye);
+    });
+    [
+      [-0.32, 0.38, 0.58],
+      [0.32, 0.38, 0.58],
+      [-0.32, 0.38, -0.58],
+      [0.32, 0.38, -0.58],
+    ].forEach(([lx, ly, lz]) => {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.76, 0.2), spotMat);
+      leg.position.set(lx, ly, lz);
+      g.add(leg);
+      legMeshes.push(leg);
+    });
+  } else if (type === "sheep") {
+    const woolMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.95 });
+    const darkMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.72, 1.15), woolMat);
+    body.position.y = 0.82;
+    body.castShadow = true;
+    g.add(body);
+    const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45, 1), woolMat);
+    puff.position.set(0, 1.02, 0);
+    puff.scale.set(1.05, 0.72, 1.25);
+    g.add(puff);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.44, 0.48), darkMat);
+    head.position.set(0, 1.0, 0.72);
+    g.add(head);
+    const topWool = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.42), woolMat);
+    topWool.position.set(0, 1.25, 0.68);
+    g.add(topWool);
+    [
+      [-0.24, 0.26, 0.38],
+      [0.24, 0.26, 0.38],
+      [-0.24, 0.26, -0.38],
+      [0.24, 0.26, -0.38],
+    ].forEach(([lx, ly, lz]) => {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.52, 0.15), darkMat);
+      leg.position.set(lx, ly, lz);
+      g.add(leg);
+      legMeshes.push(leg);
+    });
+  } else {
+    // Porco Caipira
+    const pigMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.72 });
+    const snoutMat = new THREE.MeshStandardMaterial({ color: 0xf9a8d4, roughness: 0.65 });
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(0.76, 0.64, 1.12), pigMat);
+    body.position.y = 0.66;
+    body.castShadow = true;
+    g.add(body);
+    const head = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.5, 0.52), pigMat);
+    head.position.set(0, 0.84, 0.72);
+    g.add(head);
+    const snout = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.18), snoutMat);
+    snout.position.set(0, 0.76, 1.02);
+    g.add(snout);
+    [-0.14, 0.14].forEach((ex) => {
+      const eye = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.05), eyeMat);
+      eye.position.set(ex, 0.92, 0.99);
+      g.add(eye);
+    });
+    const tail = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.03, 6, 10), pigMat);
+    tail.position.set(0, 0.76, -0.6);
+    g.add(tail);
+    [
+      [-0.24, 0.2, 0.36],
+      [0.24, 0.2, 0.36],
+      [-0.24, 0.2, -0.36],
+      [0.24, 0.2, -0.36],
+    ].forEach(([lx, ly, lz]) => {
+      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.4, 0.16), pigMat);
+      leg.position.set(lx, ly, lz);
+      g.add(leg);
+      legMeshes.push(leg);
+    });
+  }
+
+  const readyHalo = new THREE.Mesh(
+    new THREE.OctahedronGeometry(0.22, 0),
+    new THREE.MeshBasicMaterial({ color: 0xfacc15 })
+  );
+  readyHalo.position.set(0, 2.25, 0);
+  readyHalo.visible = !!animal.hasProduct;
+  g.add(readyHalo);
+
+  const info = ANIMAL_TYPES[type];
+  const tag = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.9, 0.46),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture(`${info.emoji} ${animal.name}`, `${info.label}`, "#14532d", "#fef08a"),
+      transparent: true,
+      side: THREE.DoubleSide,
+    })
+  );
+  tag.position.set(0, 1.92, 0);
+  g.add(tag);
+
+  g.position.set(animal.x, 0, animal.z);
+  return { mesh: g, legs: legMeshes, readyHalo, animal };
+}
+
+function rebuildLivestockMeshes() {
+  while (livestockGroup.children.length > 0) {
+    livestockGroup.remove(livestockGroup.children[0]);
+  }
+  livestockEntities.length = 0;
+  state.animals.forEach((a) => {
+    if (!a.alive) return;
+    const ent = createLivestockMesh(a);
+    ent.target = new THREE.Vector3(a.x, 0, a.z);
+    ent.wait = Math.random() * 2;
+    livestockGroup.add(ent.mesh);
+    livestockEntities.push(ent);
+  });
 }
 
 function buildCropVisual(plot) {
@@ -3223,22 +3813,42 @@ function buildCropVisual(plot) {
       plant.add(l1, l2);
     } else if (crop.style.startsWith("lettuce")) {
       const isFull = stageLevel === 3;
-      const scale = isFull ? 1.0 : 0.62;
-      const outerMat = getCachedMat(crop.leafColor, 0.72);
-      const innerMat = getCachedMat(crop.color, 0.65);
+      const isGold = crop.style === "lettuce_gold";
+      const isGuloso = crop.style === "lettuce_guloso";
+      const scale = (isFull ? 1.0 : 0.62) * (isGuloso ? 1.32 : isGold ? 1.15 : 1.0);
+      const outerMat = isGold
+        ? new THREE.MeshStandardMaterial({
+            color: crop.leafColor,
+            emissive: 0xca8a04,
+            emissiveIntensity: 0.42,
+            metalness: 0.45,
+            roughness: 0.25,
+          })
+        : getCachedMat(crop.leafColor, 0.72);
+      const innerMat = isGold
+        ? new THREE.MeshStandardMaterial({
+            color: crop.color,
+            emissive: 0xfacc15,
+            emissiveIntensity: 0.55,
+            metalness: 0.5,
+            roughness: 0.2,
+          })
+        : getCachedMat(crop.color, 0.65);
 
       const core = new THREE.Mesh(isFull ? SHARED_GEOS.lettuceCore3 : SHARED_GEOS.lettuceCore2, innerMat);
       core.position.y = 0.22 * scale;
+      core.scale.setScalar(isGuloso ? 1.28 : isGold ? 1.12 : 1.0);
       core.castShadow = true;
       plant.add(core);
 
-      const leafCount = crop.style === "lettuce_round" ? 5 : 6;
+      const leafCount = crop.style === "lettuce_round" ? 5 : isGuloso ? 8 : 6;
       for (let k = 0; k < leafCount; k++) {
         const ang = (k / leafCount) * Math.PI * 2;
         const leaf = new THREE.Mesh(isFull ? SHARED_GEOS.lettuceLeaf3 : SHARED_GEOS.lettuceLeaf2, outerMat);
         leaf.position.set(Math.cos(ang) * 0.2 * scale, 0.18 * scale, Math.sin(ang) * 0.2 * scale);
         leaf.rotation.y = -ang + Math.PI / 2;
         leaf.rotation.x = crop.style === "lettuce_round" ? 0.28 : 0.55;
+        leaf.scale.setScalar(isGuloso ? 1.25 : isGold ? 1.1 : 1.0);
         leaf.castShadow = true;
         plant.add(leaf);
       }
@@ -3395,7 +4005,21 @@ const state = {
     hitFlash: 0,
     spawnCooldown: 26,
     checkAccum: 0,
+    slowTimer: 0,
+    burnTimer: 0,
+    targetAnimalId: null,
   },
+  jaguarDefeated: false, // Onça derrotada e caída, aguardando ser domada
+  jaguarDownPos: { x: 0, z: 0 },
+  jaguarDownTimer: 0,
+  hasTamedJaguar: false,
+  marceloHired: false,
+  marceloDaysLeft: 0,
+  ownedHoes: ["comum"],
+  activeHoe: "comum",
+  landLevel: 0,
+  animals: [],
+  nextAnimalId: 1,
   maluquinho: {
     active: false,
     tormentCd: 0,
@@ -3424,7 +4048,12 @@ const state = {
     tomate: 0,
     cenoura: 0,
     morango: 0,
+    alface_guloso: 0,
+    alface_dourado: 0,
     ovo_caipira: 0,
+    leite_fresco: 0,
+    la_ovelha: 0,
+    trufa_porco: 0,
   },
   dailyMult: {},
   hotCropId: "alface_crespa",
@@ -3453,7 +4082,49 @@ function getGrowthMultiplier() {
 }
 
 function getDoubleHarvestChance() {
-  return (state.upgrades.fertLevel - 1) * 0.16;
+  const hoe = HOES[state.activeHoe] || HOES.comum;
+  return (state.upgrades.fertLevel - 1) * 0.16 + (hoe.doubleBonus || 0);
+}
+
+function getActiveHoe() {
+  return HOES[state.activeHoe] || HOES.comum;
+}
+
+function getFarmBounds() {
+  return {
+    minX: state.landLevel >= 1 ? -38.5 : -20.5,
+    maxX: state.landLevel >= 2 ? 36.5 : 20.5,
+  };
+}
+
+function getMaxAnimals() {
+  return state.landLevel >= 2 ? 10 : state.landLevel >= 1 ? 6 : 0;
+}
+
+function getAnimalSpawnPos() {
+  // Animais pastam nos terrenos comprados (Oeste e Leste)
+  const useEast = state.landLevel >= 2 && Math.random() < 0.5;
+  if (useEast) {
+    return { x: 31 + (Math.random() - 0.5) * 8, z: -13 + Math.random() * 6 };
+  }
+  return { x: -32 + (Math.random() - 0.5) * 9, z: 9 + Math.random() * 9 };
+}
+
+function applyHoeVisual() {
+  const hoe = getActiveHoe();
+  [hoeBladeMat, fpHoeBladeMat].forEach((mat) => {
+    if (!mat) return;
+    mat.color.setHex(hoe.bladeColor);
+    mat.emissive.setHex(hoe.emissive);
+    mat.emissiveIntensity = hoe.emissiveIntensity;
+  });
+}
+
+function syncLandExpansion() {
+  if (expansionWestGroup) expansionWestGroup.visible = state.landLevel >= 1;
+  if (expansionEastGroup) expansionEastGroup.visible = state.landLevel >= 2;
+  if (westOriginalFenceGroup) westOriginalFenceGroup.visible = state.landLevel < 1;
+  if (eastOriginalFenceGroup) eastOriginalFenceGroup.visible = state.landLevel < 2;
 }
 
 function getSellPriceMultiplier() {
@@ -3507,13 +4178,20 @@ function generateCityOrders() {
 }
 
 function getUnlockedPlotCount() {
-  return Math.min(16, 6 + state.upgrades.plotTier * 2);
+  return Math.min(16, 6 + state.upgrades.plotTier * 2) + (state.landLevel >= 1 ? 8 : 0) + (state.landLevel >= 2 ? 8 : 0);
 }
 
 function syncUnlockedPlots() {
-  const count = getUnlockedPlotCount();
+  const baseCount = Math.min(16, 6 + state.upgrades.plotTier * 2);
+  syncLandExpansion();
   plots.forEach((p, idx) => {
-    p.unlocked = idx < count;
+    if (p.landReq > 0) {
+      const owned = state.landLevel >= p.landReq;
+      p.group.visible = owned;
+      p.unlocked = owned;
+    } else {
+      p.unlocked = idx < baseCount;
+    }
     refreshPlotAppearance(p);
   });
 }
@@ -3538,6 +4216,14 @@ function saveGame() {
       activeTitle: state.activeTitle,
       kaioAdubo: state.kaioAdubo,
       kaioSuperAdubo: state.kaioSuperAdubo,
+      hasTamedJaguar: state.hasTamedJaguar,
+      marceloHired: state.marceloHired,
+      marceloDaysLeft: state.marceloDaysLeft,
+      ownedHoes: state.ownedHoes,
+      activeHoe: state.activeHoe,
+      landLevel: state.landLevel,
+      animals: state.animals.filter((a) => a.alive),
+      nextAnimalId: state.nextAnimalId,
       upgrades: state.upgrades,
       inventory: state.inventory,
       plots: plots.map((p) => ({
@@ -3575,6 +4261,19 @@ function loadSavedGame() {
     if (typeof data.activeTitle === "string") state.activeTitle = data.activeTitle;
     if (typeof data.kaioAdubo === "number") state.kaioAdubo = data.kaioAdubo;
     if (typeof data.kaioSuperAdubo === "number") state.kaioSuperAdubo = data.kaioSuperAdubo;
+    if (typeof data.hasTamedJaguar === "boolean") state.hasTamedJaguar = data.hasTamedJaguar;
+    if (typeof data.marceloHired === "boolean") state.marceloHired = data.marceloHired;
+    if (typeof data.marceloDaysLeft === "number") state.marceloDaysLeft = data.marceloDaysLeft;
+    if (Array.isArray(data.ownedHoes) && data.ownedHoes.length) {
+      state.ownedHoes = data.ownedHoes.filter((h) => HOES[h]);
+      if (!state.ownedHoes.includes("comum")) state.ownedHoes.unshift("comum");
+    }
+    if (typeof data.activeHoe === "string" && HOES[data.activeHoe]) state.activeHoe = data.activeHoe;
+    if (typeof data.landLevel === "number") state.landLevel = data.landLevel;
+    if (Array.isArray(data.animals)) {
+      state.animals = data.animals.filter((a) => a && ANIMAL_TYPES[a.type]).map((a) => ({ ...a, alive: true }));
+    }
+    if (typeof data.nextAnimalId === "number") state.nextAnimalId = data.nextAnimalId;
     if (data.upgrades) Object.assign(state.upgrades, data.upgrades);
     if (typeof state.upgrades.autoWaterLevel !== "number") state.upgrades.autoWaterLevel = 0;
     if (data.inventory) Object.assign(state.inventory, data.inventory);
@@ -3625,8 +4324,16 @@ function setActiveSceneVisibility() {
     sprinklerGroup.visible = state.upgrades.autoWaterLevel >= 1;
   }
   if (jaguarEntity) {
-    jaguarEntity.mesh.visible = state.location === "yard" && state.jaguar.active;
+    jaguarEntity.mesh.visible = state.location === "yard" && (state.jaguar.active || state.jaguarDefeated);
   }
+  if (tamedJaguarEntity) {
+    tamedJaguarEntity.mesh.visible = state.location === "yard" && state.hasTamedJaguar;
+  }
+  if (marceloYardEntity) {
+    marceloYardEntity.mesh.visible = state.location === "yard" && state.marceloHired;
+  }
+  syncLandExpansion();
+  applyHoeVisual();
   if (maluquinhoEntity) {
     maluquinhoEntity.mesh.visible = state.location === "terminal" && state.maluquinho.active;
   }
@@ -3659,7 +4366,21 @@ function resetToNewFarm() {
   state.equippedTool = "water";
   state.playerHp = 100;
   state.isSleeping = false;
-  state.jaguar = { active: false, hp: 100, maxHp: 100, attackCd: 0, hitFlash: 0, spawnCooldown: 26, checkAccum: 0 };
+  state.jaguar = {
+    active: false, hp: 100, maxHp: 100, attackCd: 0, hitFlash: 0, spawnCooldown: 26, checkAccum: 0,
+    slowTimer: 0, burnTimer: 0, targetAnimalId: null,
+  };
+  state.jaguarDefeated = false;
+  state.jaguarDownTimer = 0;
+  state.hasTamedJaguar = false;
+  state.marceloHired = false;
+  state.marceloDaysLeft = 0;
+  state.ownedHoes = ["comum"];
+  state.activeHoe = "comum";
+  state.landLevel = 0;
+  state.animals = [];
+  state.nextAnimalId = 1;
+  rebuildLivestockMeshes();
   state.maluquinho = { active: false, tormentCd: 0, bubbleTimer: 0, currentLine: "", announced: false };
   state.kaioAdubo = 0;
   state.kaioSuperAdubo = 0;
@@ -3949,6 +4670,11 @@ function respawnPlayer() {
   state.jaguar.active = false;
   state.jaguar.hp = state.jaguar.maxHp;
   state.jaguar.spawnCooldown = 45;
+  state.jaguarDefeated = false;
+  if (jaguarEntity) {
+    jaguarEntity.mesh.rotation.z = 0;
+    jaguarEntity.mesh.position.y = 0;
+  }
   state.maluquinho.active = false;
   state.maluquinho.announced = false;
   if (jaguarEntity) jaguarEntity.mesh.visible = false;
@@ -3971,12 +4697,13 @@ function kickOrelha() {
 }
 
 function spawnJaguar() {
-  if (!jaguarEntity || state.jaguar.active || state.location !== "yard") return;
+  if (!jaguarEntity || state.jaguar.active || state.jaguarDefeated || state.location !== "yard") return;
+  const b = getFarmBounds();
   const spawns = [
-    new THREE.Vector3(-18.5, 0, 14.5),
-    new THREE.Vector3(18.5, 0, -14.0),
-    new THREE.Vector3(-18.0, 0, -14.0),
-    new THREE.Vector3(17.5, 0, 12.0),
+    new THREE.Vector3(b.minX + 1.5, 0, 14.5),
+    new THREE.Vector3(b.maxX - 1.5, 0, -14.0),
+    new THREE.Vector3(b.minX + 1.5, 0, -14.0),
+    new THREE.Vector3(b.maxX - 1.5, 0, 12.0),
   ];
   let best = spawns[0];
   let bestD = -1;
@@ -3988,15 +4715,111 @@ function spawnJaguar() {
     }
   });
   jaguarEntity.mesh.position.copy(best);
+  jaguarEntity.mesh.rotation.set(0, 0, 0);
   jaguarEntity.mesh.visible = true;
+  if (jaguarEntity.tagMesh) jaguarEntity.tagMesh.visible = true;
   state.jaguar.active = true;
   state.jaguar.hp = state.jaguar.maxHp;
   state.jaguar.attackCd = 1.0;
   state.jaguar.hitFlash = 0;
+  state.jaguar.slowTimer = 0;
+  state.jaguar.burnTimer = 0;
   sfx.play("roar");
-  showDayBanner("🐆 ALERTA! UMA ONÇA PINTADA INVADIU O SÍTIO! EQUIPE A ENXADA (R)!");
-  showToast("🐆", "ONÇA NA HORTA!", "Aperte R para segurar a ENXADA e Espaço / E para lutar contra a Onça!");
+  const hasAnimals = state.animals.some((a) => a.alive);
+  showDayBanner(
+    hasAnimals
+      ? "🐆 ALERTA! UMA ONÇA INVADIU A FAZENDA E QUER ATACAR SEUS ANIMAIS!"
+      : "🐆 ALERTA! UMA ONÇA PINTADA INVADIU O SÍTIO! EQUIPE A ENXADA (R)!"
+  );
+  showToast(
+    "🐆",
+    "ONÇA NA FAZENDA!",
+    state.marceloHired
+      ? "O Marcelo careca já está correndo para proteger os animais! Ajude com a ENXADA (R)!"
+      : "Aperte R para segurar a ENXADA e Espaço / E para lutar! (Contrate o Marcelo na ETECAMP)"
+  );
   updateHUD();
+}
+
+// Onça derrotada: pelo jogador fica caída (pode ser DOMADA); por Marcelo ou pela Onça domada, foge/morre
+function defeatJaguar(byWho = "player") {
+  if (!jaguarEntity) return;
+  state.jaguar.active = false;
+  state.jaguar.spawnCooldown = 68;
+  state.jaguar.burnTimer = 0;
+  state.jaguar.slowTimer = 0;
+  jaguarEntity.bodyMat.emissive.setHex(0x000000);
+  jaguarEntity.bodyMat.emissiveIntensity = 0;
+  state.playerHp = state.maxHp;
+
+  if (byWho === "player") {
+    state.jaguarDefeated = true;
+    state.jaguarDownTimer = 30;
+    state.jaguarDownPos = { x: jaguarEntity.mesh.position.x, z: jaguarEntity.mesh.position.z };
+    // Onça deitada de lado, atordoada
+    jaguarEntity.mesh.rotation.z = Math.PI / 2;
+    jaguarEntity.mesh.position.y = 0.45;
+    if (jaguarEntity.tagMesh) jaguarEntity.tagMesh.visible = false;
+    state.money += 60;
+    sfx.play("upgrade");
+    showDayBanner("🏆 ONÇA DERROTADA COM A ENXADA! +R$ 60 • CHEGUE PERTO PARA DOMAR!");
+    showToast(
+      "🐆",
+      "A ONÇA ESTÁ CAÍDA!",
+      state.hasTamedJaguar
+        ? "Você já tem uma Onça domada. Chegue perto para soltar esta na mata (+R$ 40)."
+        : "Chegue perto e aperte Espaço / E para DOMAR a Onça! Ela vai proteger sua fazenda!"
+    );
+  } else {
+    jaguarEntity.mesh.visible = false;
+    state.money += 40;
+    sfx.play("upgrade");
+    const who = byWho === "marcelo" ? "O Marcelo careca" : "Sua Onça domada";
+    showDayBanner(`🛡️ ${who.toUpperCase()} DERROTOU A ONÇA SELVAGEM! +R$ 40`);
+    showToast("🛡️", "FAZENDA PROTEGIDA!", `${who} expulsou a Onça e protegeu os animais! +R$ 40,00`);
+  }
+  updateHUD();
+  saveGame();
+}
+
+function tameJaguar() {
+  if (!state.jaguarDefeated || !jaguarEntity) return;
+  state.jaguarDefeated = false;
+  jaguarEntity.mesh.visible = false;
+  jaguarEntity.mesh.rotation.z = 0;
+  jaguarEntity.mesh.position.y = 0;
+  if (state.hasTamedJaguar) {
+    state.money += 40;
+    sfx.play("sell");
+    showToast("🌳", "ONÇA SOLTA NA MATA", "Você soltou a Onça longe da fazenda e ganhou R$ 40 do IBAMA de Pau Arcado!");
+  } else {
+    state.hasTamedJaguar = true;
+    if (tamedJaguarEntity) {
+      tamedJaguarEntity.mesh.position.set(state.jaguarDownPos.x, 0, state.jaguarDownPos.z);
+      tamedJaguarEntity.target.copy(tamedJaguarEntity.mesh.position);
+      tamedJaguarEntity.mesh.visible = state.location === "yard";
+    }
+    sfx.play("upgrade");
+    spawnParticles(new THREE.Vector3(state.jaguarDownPos.x, 1.2, state.jaguarDownPos.z), 0xf472b6, 22);
+    showDayBanner("❤️ ONÇA DOMADA! AGORA ELA É A GUARDIÃ DA FAZENDA DO MACHO!");
+    showToast("🐆", "ONÇA DOMADA!", "Ela segue você e ataca qualquer Onça selvagem que tentar pegar os animais!");
+  }
+  updateHUD();
+  saveGame();
+}
+
+function damageJaguar(amount, sourcePos, knockback = 2.8) {
+  if (!state.jaguar.active || !jaguarEntity) return;
+  state.jaguar.hp = Math.max(0, state.jaguar.hp - amount);
+  state.jaguar.hitFlash = 0.25;
+  const kx = jaguarEntity.mesh.position.x - sourcePos.x;
+  const kz = jaguarEntity.mesh.position.z - sourcePos.z;
+  const klen = Math.hypot(kx, kz) || 1;
+  const b = getFarmBounds();
+  jaguarEntity.mesh.position.x = THREE.MathUtils.clamp(jaguarEntity.mesh.position.x + (kx / klen) * knockback, b.minX + 1, b.maxX - 1);
+  jaguarEntity.mesh.position.z = THREE.MathUtils.clamp(jaguarEntity.mesh.position.z + (kz / klen) * knockback, -18.5, 20.0);
+  spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 14);
+  spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 0xef4444, 8);
 }
 
 function attackJaguarWithHoe() {
@@ -4006,40 +4829,111 @@ function attackJaguarWithHoe() {
     showToast("⛏️", "EQUIPE A ENXADA (R)!", "Você está com o Regador! Aperte R ou clique no botão para pegar a ENXADA!");
     return true;
   }
+  const hoe = getActiveHoe();
   state.swingTimer = 0.3;
   const dist = distXZ(player.pos, jaguarEntity.mesh.position);
   if (dist > 4.2) {
     sfx.play("dig");
-    showToast("⛏️", "GOLPE DE ENXADA!", "Chegue um pouco mais perto da Onça para acertar!");
+    showToast(hoe.emoji, "GOLPE DE ENXADA!", "Chegue um pouco mais perto da Onça para acertar!");
     return true;
   }
-  state.jaguar.hp = Math.max(0, state.jaguar.hp - 25);
-  state.jaguar.hitFlash = 0.25;
   sfx.play("hit");
-  // Empurra a Onça para trás (knockback)
-  const kx = jaguarEntity.mesh.position.x - player.pos.x;
-  const kz = jaguarEntity.mesh.position.z - player.pos.z;
-  const klen = Math.hypot(kx, kz) || 1;
-  jaguarEntity.mesh.position.x = THREE.MathUtils.clamp(jaguarEntity.mesh.position.x + (kx / klen) * 2.8, -19.5, 19.5);
-  jaguarEntity.mesh.position.z = THREE.MathUtils.clamp(jaguarEntity.mesh.position.z + (kz / klen) * 2.8, -18.5, 20.0);
-  spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 16);
-  spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 0xef4444, 10);
+  damageJaguar(hoe.damage, player.pos, hoe.knockback);
+
+  // Efeitos especiais das Enxadas
+  let effectMsg = "";
+  if (hoe.burnDamage) {
+    state.jaguar.burnTimer = 3.0;
+    effectMsg = " 🔥 Queimando!";
+    spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xf97316, 16);
+  }
+  if (hoe.slowDuration) {
+    state.jaguar.slowTimer = hoe.slowDuration;
+    effectMsg = " ❄️ Congelada!";
+    spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 0x7dd3fc, 16);
+  }
+  if (hoe.id === "relampago") {
+    effectMsg = " ⚡ Eletrocutada!";
+    spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.6, 0)), 0xfde047, 20);
+  }
+  if (hoe.id === "diamante") {
+    effectMsg = " 💎 Golpe Crítico!";
+    spawnParticles(jaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.3, 0)), 0x67e8f9, 20);
+  }
 
   if (state.jaguar.hp <= 0) {
-    state.jaguar.active = false;
-    state.jaguar.spawnCooldown = 68;
-    jaguarEntity.mesh.visible = false;
-    state.money += 60;
-    state.playerHp = state.maxHp;
-    sfx.play("upgrade");
-    showDayBanner("🏆 ONÇA DERROTADA COM A ENXADA! +R$ 60,00 DE RECOMPENSA!");
-    showToast("🐆", "MACHO PROTEGEU O SÍTIO!", "Você espantou a Onça com a enxada e ganhou R$ 60,00!");
-    saveGame();
+    defeatJaguar("player");
   } else {
-    showToast("⛏️", "ENXADADA NA ONÇA!", `Acertou! Vida da Onça: ${state.jaguar.hp}/${state.jaguar.maxHp} HP`);
+    showToast(hoe.emoji, `${hoe.shortName.toUpperCase()} NA ONÇA!`, `-${hoe.damage} HP${effectMsg} • Onça: ${state.jaguar.hp}/${state.jaguar.maxHp}`);
   }
   updateHUD();
   return true;
+}
+
+// Animais da Fazenda
+function buyAnimal(type) {
+  const info = ANIMAL_TYPES[type];
+  const aliveCount = state.animals.filter((a) => a.alive).length;
+  if (state.landLevel < 1) {
+    showToast("🏞️", "SEM PASTO!", "Compre o Terreno do Pasto Oeste na Cooperativa antes de comprar animais!");
+    return false;
+  }
+  if (aliveCount >= getMaxAnimals()) {
+    showToast("🐄", "CURRAL LOTADO", `Máximo de ${getMaxAnimals()} animais! Compre mais terreno para expandir.`);
+    return false;
+  }
+  const pos = getAnimalSpawnPos();
+  const used = state.animals.filter((a) => a.type === type).length;
+  const animal = {
+    id: state.nextAnimalId++,
+    type,
+    name: info.names[used % info.names.length],
+    x: pos.x,
+    z: pos.z,
+    hp: info.maxHp,
+    alive: true,
+    hasProduct: true,
+  };
+  state.animals.push(animal);
+  rebuildLivestockMeshes();
+  return true;
+}
+
+function collectAnimalProduct(ent) {
+  const a = ent.animal;
+  const info = ANIMAL_TYPES[a.type];
+  if (blockAfterWorkHours()) return;
+  if (!a.hasProduct) {
+    showToast(info.emoji, a.name.toUpperCase(), `${a.name} ainda não está pronta(o). Volte amanhã!`);
+    return;
+  }
+  a.hasProduct = false;
+  ent.readyHalo.visible = false;
+  state.inventory[info.productId] = (state.inventory[info.productId] || 0) + 1;
+  state.swingTimer = 0.25;
+  sfx.play("harvest");
+  spawnParticles(ent.mesh.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xfacc15, 12);
+  const product = CROPS[info.productId];
+  showToast(product.emoji, info.label.toUpperCase(), `+1 ${product.name} de ${a.name}! Venda no Terminal.`);
+  updateHUD();
+  saveGame();
+}
+
+function killAnimal(ent) {
+  const a = ent.animal;
+  const info = ANIMAL_TYPES[a.type];
+  a.alive = false;
+  a.hp = 0;
+  spawnParticles(ent.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xef4444, 22);
+  livestockGroup.remove(ent.mesh);
+  const idx = livestockEntities.indexOf(ent);
+  if (idx >= 0) livestockEntities.splice(idx, 1);
+  state.animals = state.animals.filter((x) => x.alive);
+  sfx.play("death");
+  showDayBanner(`💀 A ONÇA PEGOU ${info.emoji} ${a.name.toUpperCase()}! CONTRATE O MARCELO NA ETECAMP!`);
+  showToast("🐆", "ANIMAL PERDIDO!", `A Onça matou ${a.name} (${info.label}). Proteja seus animais!`);
+  state.jaguar.targetAnimalId = null;
+  saveGame();
 }
 
 // Animação suave de sono (evita pular o dia abruptamente!)
@@ -4254,7 +5148,12 @@ function findCurrentContext() {
           type: "npc",
           npcId: npc.id,
           key: "Espaço / E",
-          text: npc.id === "kaio" ? "Conversar / Comprar Adubo com Kaio Wendell" : `Conversar com ${npc.name}`,
+          text:
+            npc.id === "kaio"
+              ? "Conversar / Comprar Adubo com Kaio Wendell"
+              : npc.id === "marcelo"
+                ? "Contratar Marcelo Segurança (Careca da ETECAMP) 🛡️"
+                : `Conversar com ${npc.name}`,
         };
       }
     }
@@ -4262,6 +5161,59 @@ function findCurrentContext() {
   }
 
   // Yard (Pau Arcado) stations
+  // Onça caída atordoada pronta para ser domada!
+  if (state.jaguarDefeated && jaguarEntity && jaguarEntity.mesh.visible && distXZ(player.pos, jaguarEntity.mesh.position) < 3.2) {
+    return {
+      type: "tame_jaguar",
+      key: "Espaço / E",
+      text: state.hasTamedJaguar
+        ? "Soltar Onça Atordoada na Mata (+R$ 40 do IBAMA) 🌳"
+        : "Domar a Onça Pintada! ❤️🐆 (Ela defenderá a fazenda!)",
+    };
+  }
+
+  // Onça domada seguindo ou patrulhando
+  if (state.hasTamedJaguar && tamedJaguarEntity && tamedJaguarEntity.mesh.visible && distXZ(player.pos, tamedJaguarEntity.mesh.position) < 2.5) {
+    return {
+      type: "pet_tamed_jaguar",
+      key: "Espaço / E",
+      text: "Fazer carinho na Onça Domada 🐆❤️ (Guardiã)",
+    };
+  }
+
+  // Marcelo Segurança no quintal/pasto
+  if (state.marceloHired && marceloYardEntity && marceloYardEntity.mesh.visible && distXZ(player.pos, marceloYardEntity.mesh.position) < 2.5) {
+    return {
+      type: "talk_marcelo_yard",
+      key: "Espaço / E",
+      text: `Falar com Marcelo Segurança (${state.marceloDaysLeft} dia(s) de vigia) 🛡️`,
+    };
+  }
+
+  // Animais do sítio (Vacas, Ovelhas, Porcos)
+  if (livestockEntities && livestockEntities.length > 0) {
+    for (const ent of livestockEntities) {
+      if (ent.animal && ent.animal.alive && distXZ(player.pos, ent.mesh.position) < 2.8) {
+        const info = ANIMAL_TYPES[ent.animal.type];
+        if (ent.animal.hasProduct) {
+          return {
+            type: "collect_animal",
+            ent,
+            key: "Espaço / E",
+            text: `${info.actionText} de ${ent.animal.name}`,
+          };
+        } else {
+          return {
+            type: "pet_animal",
+            ent,
+            key: "Espaço / E",
+            text: `Acariciar ${ent.animal.name} (${info.label}) ${info.emoji}`,
+          };
+        }
+      }
+    }
+  }
+
   if (state.jaguar.active && jaguarEntity && distXZ(player.pos, jaguarEntity.mesh.position) < 4.3) {
     return {
       type: "fight_jaguar",
@@ -4478,11 +5430,30 @@ function interactWithPlot(plot) {
   if (blockAfterWorkHours()) return;
 
   if (plot.stage === "raw") {
-    plot.stage = "tilled";
+    const hoe = getActiveHoe();
+    const tillOne = (p) => {
+      if (!p.unlocked || p.stage !== "raw") return false;
+      p.stage = "tilled";
+      if (hoe.id === "gelo") p.waterTimer = 0; // solo gelado/úmido aplicado no plantio
+      spawnParticles(new THREE.Vector3(p.x, 0.35, p.z), hoe.id === "comum" ? 0x8b5a2b : hoe.bladeColor, 10);
+      refreshPlotAppearance(p);
+      return true;
+    };
+    tillOne(plot);
+    let extra = 0;
+    if (hoe.aoeTill || hoe.id === "fogo") {
+      const radius = hoe.aoeTill ? 4.6 : 3.5;
+      const neighbors = plots
+        .filter((o) => o !== plot && o.unlocked && o.stage === "raw" && Math.hypot(o.x - plot.x, o.z - plot.z) < radius)
+        .sort((a, b) => Math.hypot(a.x - plot.x, a.z - plot.z) - Math.hypot(b.x - plot.x, b.z - plot.z));
+      const limit = hoe.aoeTill ? 8 : 1;
+      neighbors.slice(0, limit).forEach((n) => {
+        if (tillOne(n)) extra++;
+      });
+    }
+    if (extra > 0) showToast(hoe.emoji, hoe.name.toUpperCase(), `Arou +${extra} canteiro(s) extra com um golpe só!`);
     state.swingTimer = 0.25;
     sfx.play("dig");
-    spawnParticles(new THREE.Vector3(plot.x, 0.35, plot.z), 0x8b5a2b, 12);
-    refreshPlotAppearance(plot);
     saveGame();
     return;
   }
@@ -4499,8 +5470,9 @@ function interactWithPlot(plot) {
     plot.cropId = crop.id;
     plot.growth = 0;
     plot.fertilized = false;
-    plot.waterTimer = state.upgrades.autoWaterLevel >= 1 ? 16 : state.water > 0 ? 16 : 0;
-    if (state.upgrades.autoWaterLevel < 1 && state.water > 0) {
+    const iceHoe = state.activeHoe === "gelo";
+    plot.waterTimer = state.upgrades.autoWaterLevel >= 1 || iceHoe ? 16 : state.water > 0 ? 16 : 0;
+    if (state.upgrades.autoWaterLevel < 1 && !iceHoe && state.water > 0) {
       state.water -= 1;
     }
     state.swingTimer = 0.22;
@@ -4545,7 +5517,9 @@ function interactWithPlot(plot) {
   if (plot.stage === "ready") {
     const crop = CROPS[plot.cropId];
     const doubleChance = getDoubleHarvestChance() + (plot.fertilized ? 0.35 : 0);
-    const bonus = Math.random() < doubleChance ? 2 : 1;
+    let bonus = Math.random() < doubleChance ? 2 : 1;
+    // Alface Guloso: colheita farta (2 a 4 unidades)!
+    if (crop.id === "alface_guloso") bonus += 1 + Math.floor(Math.random() * 2);
     state.inventory[crop.id] = (state.inventory[crop.id] || 0) + bonus;
     plot.stage = "tilled";
     plot.cropId = null;
@@ -4553,12 +5527,16 @@ function interactWithPlot(plot) {
     plot.waterTimer = 0;
     plot.fertilized = false;
     state.swingTimer = 0.25;
-    sfx.play("harvest");
+    sfx.play(crop.id === "alface_dourado" ? "upgrade" : "harvest");
     spawnParticles(new THREE.Vector3(plot.x, 0.65, plot.z), crop.color, 15);
+    if (crop.id === "alface_dourado") {
+      spawnParticles(new THREE.Vector3(plot.x, 1.0, plot.z), 0xfacc15, 20);
+      state.reputation += 1;
+    }
     showToast(
       crop.emoji,
-      "COLHEITA FRESCA",
-      bonus > 1 ? `+2 ${crop.name} (Adubo turbinado!)` : `+1 ${crop.name} na cesta!`
+      crop.id === "alface_dourado" ? "✨ ALFACE DOURADO RARO!" : crop.id === "alface_guloso" ? "😋 COLHEITA GULOSA!" : "COLHEITA FRESCA",
+      bonus > 1 ? `+${bonus} ${crop.name} na cesta!` : `+1 ${crop.name} na cesta!`
     );
     refreshPlotAppearance(plot);
     updateHUD();
@@ -4651,6 +5629,22 @@ function triggerContextAction() {
     );
     updateHUD();
     saveGame();
+  } else if (ctx.type === "tame_jaguar") {
+    tameJaguar();
+  } else if (ctx.type === "pet_tamed_jaguar") {
+    sfx.play("bark");
+    spawnParticles(tamedJaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0x22c55e, 14);
+    showToast("🐆", "ONÇA DOMADA!", "A onça ronrona carinhosamente como um gatinho gigante e vigia o pasto!");
+  } else if (ctx.type === "talk_marcelo_yard") {
+    sfx.play("plant");
+    showToast("🛡️", "MARCELO (SEGURANÇA)", `De plantão em Pau Arcado! Restam ${state.marceloDaysLeft} dia(s). Se a onça aparecer, eu desço o sarrafo!`);
+  } else if (ctx.type === "collect_animal") {
+    collectAnimalProduct(ctx.ent);
+  } else if (ctx.type === "pet_animal") {
+    sfx.play("bark");
+    spawnParticles(ctx.ent.mesh.position.clone().add(new THREE.Vector3(0, 0.9, 0)), 0xfacc15, 10);
+    const info = ANIMAL_TYPES[ctx.ent.animal.type];
+    showToast(info.emoji, `${ctx.ent.animal.name.toUpperCase()} FELIZ!`, `${ctx.ent.animal.name} está bem alimentada e protegida no pasto!`);
   } else if (ctx.type === "shop") {
     openShopModal();
   } else if (ctx.type === "bus_to_term") {
@@ -4734,9 +5728,39 @@ function advanceToNextDay() {
   state.jaguar.active = false;
   state.jaguar.hp = state.jaguar.maxHp;
   state.jaguar.spawnCooldown = 28;
+  state.jaguarDefeated = false;
+  state.jaguarDownTimer = 0;
+  if (jaguarEntity) {
+    jaguarEntity.mesh.visible = false;
+    jaguarEntity.mesh.rotation.z = 0;
+    jaguarEntity.mesh.position.y = 0;
+  }
   state.maluquinho.active = false;
   state.maluquinho.announced = false;
-  if (jaguarEntity) jaguarEntity.mesh.visible = false;
+  if (maluquinhoEntity) maluquinhoEntity.mesh.visible = false;
+
+  // Animais recuperam produção diária
+  if (state.animals && state.animals.length > 0) {
+    state.animals.forEach((a) => {
+      if (a.alive) a.hasProduct = true;
+    });
+    if (typeof livestockEntities !== "undefined" && livestockEntities) {
+      livestockEntities.forEach((ent) => {
+        if (ent.readyHalo) ent.readyHalo.visible = true;
+      });
+    }
+  }
+
+  // Contrato do Marcelo Segurança
+  if (state.marceloHired) {
+    state.marceloDaysLeft = (state.marceloDaysLeft || 1) - 1;
+    if (state.marceloDaysLeft <= 0) {
+      state.marceloHired = false;
+      state.marceloDaysLeft = 0;
+      if (marceloYardEntity) marceloYardEntity.mesh.visible = false;
+      showToast("🛡️", "CONTRATO DO MARCELO", "O contrato do Marcelo segurança terminou! Renove na ETECAMP.");
+    }
+  }
   if (maluquinhoEntity) maluquinhoEntity.mesh.visible = false;
 
   // Para a sanidade descer ele precisa ficar sem ir para a ETEC (cada dia longe reduz 25%)
@@ -5248,6 +6272,83 @@ function renderNpcModal() {
         renderNpcModal();
       };
     }
+  } else if (currentNpcId === "marcelo") {
+    npcTag.textContent = "ETECAMP • SEGURANÇA PARTICULAR & CAÇADOR";
+    npcName.textContent = "Marcelo (O Careca da ETECAMP)";
+    npcAppearance.textContent = "Careca, forte, polo escura de segurança e taco de madeira pesado. Especialista em caçar onças e proteger animais da fazenda!";
+    npcDialogue.textContent = state.marceloHired
+      ? `Marcelo: "E aí, Macho! Faltam ${state.marceloDaysLeft} dia(s) de serviço no seu sítio. Meu taco tá pronto e a Onça não passa nem perto das suas vacas e ovelhas!"`
+      : `Marcelo: "Fala, Alyffer! Fiquei sabendo que tem uma Onça Pintada atacando os animais no seu sítio em Pau Arcado. Eu sou segurança particular e desço a madeira nela se tentar atacar você ou seu rebanho! Me contrata que eu fico de vigia dia e noite!"`;
+
+    if (kaioShopBox) {
+      kaioShopBox.classList.remove("hidden");
+      kaioShopBox.innerHTML = `<div class="kaio-shop-header">🛡️ Contrato de Segurança Marcelo • Seu Caixa: ${formatBRL(state.money)}</div>`;
+      const marceloPlans = [
+        {
+          emoji: "🛡️",
+          name: "Contratar Marcelo (3 Dias)",
+          sub: "Patrulha o sítio com taco pesado (30 dano por golpe) e protege vacas, ovelhas e porcos!",
+          days: 3,
+          price: 50,
+        },
+        {
+          emoji: "⭐",
+          name: "Contrato Semanal (7 Dias • Desconto!)",
+          sub: "Proteção estendida por 7 dias seguidos contra qualquer ataque de onça!",
+          days: 7,
+          price: 90,
+        },
+      ];
+      marceloPlans.forEach((plan) => {
+        const row = document.createElement("div");
+        row.className = "row-card";
+        const canAfford = state.money >= plan.price;
+        row.innerHTML = `
+          <div class="row-info">
+            <span class="row-emoji">${plan.emoji}</span>
+            <div>
+              <div class="row-title">${plan.name}</div>
+              <div class="row-sub">${plan.sub}</div>
+            </div>
+          </div>
+          <button class="mini-btn green" type="button" ${canAfford ? "" : "disabled"}>
+            Contratar ${formatBRL(plan.price)}
+          </button>
+        `;
+        row.querySelector("button").addEventListener("click", () => {
+          if (state.money < plan.price) return;
+          state.money -= plan.price;
+          state.marceloHired = true;
+          state.marceloDaysLeft = (state.marceloDaysLeft || 0) + plan.days;
+          if (marceloYardEntity) marceloYardEntity.mesh.visible = state.location === "yard";
+          sfx.play("upgrade");
+          showDayBanner(`🛡️ MARCELO CONTRATADO POR +${plan.days} DIAS! SEUS ANIMAIS ESTÃO PROTEGIDOS!`);
+          showToast("🛡️", "MARCELO CONTRATADO!", `Ele já foi para Pau Arcado vigiar seu sítio! (${state.marceloDaysLeft} dias restantes).`);
+          updateHUD();
+          saveGame();
+          renderNpcModal();
+        });
+        kaioShopBox.appendChild(row);
+      });
+    }
+
+    npcActionBtn.textContent = state.marceloHired
+      ? `Marcelo de Vigia (${state.marceloDaysLeft}d restantes) ✓`
+      : "Contratar Marcelo por 3 Dias (R$ 50)";
+    npcActionBtn.disabled = state.money < 50;
+    npcActionBtn.onclick = () => {
+      if (state.money < 50) return;
+      state.money -= 50;
+      state.marceloHired = true;
+      state.marceloDaysLeft = (state.marceloDaysLeft || 0) + 3;
+      if (marceloYardEntity) marceloYardEntity.mesh.visible = state.location === "yard";
+      sfx.play("upgrade");
+      showDayBanner("🛡️ MARCELO CONTRATADO POR 3 DIAS! SEUS ANIMAIS ESTÃO PROTEGIDOS!");
+      showToast("🛡️", "MARCELO CONTRATADO!", "Ele já está em Pau Arcado vigiando com o taco!");
+      updateHUD();
+      saveGame();
+      renderNpcModal();
+    };
   }
 }
 
@@ -5427,6 +6528,192 @@ function renderShopModal() {
   shopMoneyVal.textContent = formatBRL(state.money);
   shopItemsList.innerHTML = "";
 
+  const addHeader = (text) => {
+    const h = document.createElement("div");
+    h.className = "shop-section-title";
+    h.textContent = text;
+    shopItemsList.appendChild(h);
+  };
+
+  // 1. TERRENOS & EXPANSÃO DA FAZENDA
+  addHeader("🏞️ TERRENOS & EXPANSÃO DA FAZENDA");
+  const landItems = [
+    {
+      emoji: "🌾",
+      title: "Pasto Oeste (+8 Canteiros & Curral)",
+      sub: state.landLevel >= 1
+        ? "Terreno Oeste desbloqueado! Curral e +8 canteiros (16 a 23) ativos."
+        : "Expande a cerca oeste, libera espaço p/ até 6 animais e +8 canteiros de plantio!",
+      cost: 120,
+      owned: state.landLevel >= 1,
+      available: true,
+      buy: () => {
+        state.landLevel = 1;
+        syncUnlockedPlots();
+        showDayBanner("🏞️ PASTO OESTE ADQUIRIDO! CURRAL & +8 CANTEIROS LIBERADOS!");
+      },
+    },
+    {
+      emoji: "🚜",
+      title: "Fazenda Leste (+8 Canteiros & Pasto Grande)",
+      sub: state.landLevel >= 2
+        ? "Fazenda Leste desbloqueada! Pasto amplo e +8 canteiros (24 a 31) ativos."
+        : state.landLevel < 1
+          ? "Requer Pasto Oeste primeiro! Aumenta capacidade p/ 10 animais e +8 canteiros."
+          : "Expande a cerca leste! Espaço p/ até 10 animais e +8 canteiros na horta!",
+      cost: 220,
+      owned: state.landLevel >= 2,
+      available: state.landLevel >= 1,
+      buy: () => {
+        state.landLevel = 2;
+        syncUnlockedPlots();
+        showDayBanner("🚜 FAZENDA LESTE ADQUIRIDA! CAPACIDADE MÁXIMA & 32 CANTEIROS TOTAIS!");
+      },
+    },
+  ];
+
+  landItems.forEach((it) => {
+    const row = document.createElement("div");
+    row.className = "row-card";
+    const canBuy = !it.owned && it.available && state.money >= it.cost;
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${it.emoji}</span>
+        <div>
+          <div class="row-title">${it.title}</div>
+          <div class="row-sub">${it.sub}</div>
+        </div>
+      </div>
+      <button class="mini-btn green" ${canBuy ? "" : "disabled"}>
+        ${it.owned ? "Comprado ✓" : !it.available ? "Bloqueado" : `Comprar ${formatBRL(it.cost)}`}
+      </button>
+    `;
+    row.querySelector("button").addEventListener("click", () => {
+      if (!canBuy) return;
+      state.money -= it.cost;
+      it.buy();
+      sfx.play("upgrade");
+      updateHUD();
+      renderShopModal();
+      saveGame();
+    });
+    shopItemsList.appendChild(row);
+  });
+
+  // 2. ANIMAIS DO PASTO & CURRAL
+  const aliveAnimals = state.animals.filter((a) => a.alive).length;
+  const maxAn = getMaxAnimals();
+  addHeader(`🐄 ANIMAIS DA FAZENDA (${aliveAnimals}/${maxAn} Animais)`);
+  const animalList = [
+    {
+      type: "cow",
+      emoji: "🐄",
+      title: "Vaca Leiteira Caipira",
+      sub: "Produz Leite Fresco diário (R$ 28 na venda) • Requer Pasto Oeste",
+      cost: 85,
+    },
+    {
+      type: "sheep",
+      emoji: "🐑",
+      title: "Ovelha da Mantiqueira",
+      sub: "Produz Lã Macia diária (R$ 22 na venda) • Requer Pasto Oeste",
+      cost: 70,
+    },
+    {
+      type: "pig",
+      emoji: "🐷",
+      title: "Porco Caipira Raro",
+      sub: "Encontra Trufas Nobres diárias (R$ 38 na venda) • Requer Pasto Oeste",
+      cost: 95,
+    },
+  ];
+
+  animalList.forEach((an) => {
+    const row = document.createElement("div");
+    row.className = "row-card";
+    const count = state.animals.filter((a) => a.alive && a.type === an.type).length;
+    const canAfford = state.landLevel >= 1 && aliveAnimals < maxAn && state.money >= an.cost;
+    const btnText =
+      state.landLevel < 1
+        ? "Sem Pasto"
+        : aliveAnimals >= maxAn
+          ? "Curral Lotado"
+          : `Comprar ${formatBRL(an.cost)}`;
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${an.emoji}</span>
+        <div>
+          <div class="row-title">${an.title} (${count} no sítio)</div>
+          <div class="row-sub">${an.sub}</div>
+        </div>
+      </div>
+      <button class="mini-btn green" ${canAfford ? "" : "disabled"}>${btnText}</button>
+    `;
+    row.querySelector("button").addEventListener("click", () => {
+      if (!canAfford) return;
+      if (buyAnimal(an.type)) {
+        state.money -= an.cost;
+        sfx.play("sell");
+        showToast(an.emoji, "NOVO ANIMAL ADQUIRIDO!", `${an.title} foi para o pasto! Cuidado com a Onça!`);
+        updateHUD();
+        renderShopModal();
+        saveGame();
+      }
+    });
+    shopItemsList.appendChild(row);
+  });
+
+  // 3. ENXADAS ESPECIAIS (COMBATE & HORTA)
+  addHeader("⛏️ ENXADAS ESPECIAIS (COMBATE & EFEITOS)");
+  HOE_KEYS.forEach((hoeKey) => {
+    const hoe = HOES[hoeKey];
+    const isOwned = state.ownedHoes.includes(hoe.id);
+    const isActive = state.activeHoe === hoe.id;
+    const row = document.createElement("div");
+    row.className = "row-card";
+    const canBuy = !isOwned && state.money >= hoe.cost;
+    const btnLabel = isActive
+      ? "Equipada ✓"
+      : isOwned
+        ? "Equipar"
+        : `Comprar ${formatBRL(hoe.cost)}`;
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${hoe.emoji}</span>
+        <div>
+          <div class="row-title">${hoe.name} ${isActive ? "⭐" : ""}</div>
+          <div class="row-sub">${hoe.effectDesc}</div>
+        </div>
+      </div>
+      <button class="mini-btn ${isActive ? "" : "green"}" ${isActive || (!isOwned && !canBuy) ? "disabled" : ""}>
+        ${btnLabel}
+      </button>
+    `;
+    row.querySelector("button").addEventListener("click", () => {
+      if (isActive) return;
+      if (isOwned) {
+        state.activeHoe = hoe.id;
+        applyHoeVisual();
+        sfx.play("upgrade");
+        showToast(hoe.emoji, "ENXADA EQUIPADA!", `${hoe.name} está na sua mão!`);
+      } else if (state.money >= hoe.cost) {
+        state.money -= hoe.cost;
+        state.ownedHoes.push(hoe.id);
+        state.activeHoe = hoe.id;
+        applyHoeVisual();
+        sfx.play("upgrade");
+        showDayBanner(`⚔️ ${hoe.name.toUpperCase()} ADQUIRIDA! ${hoe.effectDesc}`);
+        showToast(hoe.emoji, "ENXADA ESPECIAL COMPRADA!", `${hoe.name} equipada!`);
+      }
+      updateHUD();
+      renderShopModal();
+      saveGame();
+    });
+    shopItemsList.appendChild(row);
+  });
+
+  // 4. MELHORIAS GERAIS & IRRIGAÇÃO
+  addHeader("💧 MELHORIAS DO SÍTIO & IRRIGAÇÃO");
   const plotCost = 35 + state.upgrades.plotTier * 45;
   const canCost = 30 * state.upgrades.canLevel;
   const autoWaterCost = state.upgrades.autoWaterLevel === 0 ? 90 : 180;
@@ -5436,8 +6723,8 @@ function renderShopModal() {
   const items = [
     {
       emoji: "🌱",
-      title: `Expandir Quintal (+2 Canteiros)`,
-      sub: `Desbloqueados: ${getUnlockedPlotCount()}/16 canteiros`,
+      title: `Expandir Quintal Base (+2 Canteiros)`,
+      sub: `Desbloqueados: ${getUnlockedPlotCount()}/16 canteiros base`,
       cost: plotCost,
       maxed: state.upgrades.plotTier >= 5,
       buy: () => {
@@ -5600,7 +6887,7 @@ window.addEventListener("keydown", (e) => {
       togglePause();
     } else if (e.code === "KeyM") {
       toggleMute();
-    } else if (e.code >= "Digit1" && e.code <= "Digit6") {
+    } else if (e.code >= "Digit1" && e.code <= "Digit8") {
       const idx = Number(e.code.replace("Digit", "")) - 1;
       if (SEED_KEYS[idx]) {
         state.selectedCrop = SEED_KEYS[idx];
@@ -6015,6 +7302,11 @@ const CONTEXT_ICONS = {
   bed: "🛏️",
   manga: "📚",
   etec: "🎒",
+  tame_jaguar: "❤️",
+  pet_tamed_jaguar: "🐆",
+  talk_marcelo_yard: "🛡️",
+  collect_animal: "🥛",
+  pet_animal: "🐄",
 };
 
 function updateGame(dt) {
@@ -6057,12 +7349,15 @@ function updateGame(dt) {
       -inputVec.x * sinY + inputVec.y * cosY
     ).normalize();
 
+    const activeHoeData = HOES[state.activeHoe] || HOES.comum;
+    const hoeSpeed = state.equippedTool === "hoe" ? (activeHoeData.speedBoost || 1.0) : 1.0;
     const baseSpeed = state.location === "room" ? 5.2 : 7.6;
-    const boostMult = (state.isCrazy ? 1.25 : 1.0) * (state.energyTimer > 0 ? 1.32 : 1.0);
+    const boostMult = (state.isCrazy ? 1.25 : 1.0) * (state.energyTimer > 0 ? 1.32 : 1.0) * hoeSpeed;
     const walkSpeed = baseSpeed * boostMult * analogScale;
 
-    let minX = -20.5;
-    let maxX = 20.5;
+    const farmBounds = getFarmBounds();
+    let minX = farmBounds.minX;
+    let maxX = farmBounds.maxX;
     let minZ = -19.5;
     let maxZ = 22.5;
     let activeObstacles = obstacles;
@@ -6360,30 +7655,81 @@ function updateGame(dt) {
     }
 
     // Evento Aleatório: Onça Pintada no Quintal!
-    if (!state.jaguar.active) {
+    if (state.jaguarDefeated && jaguarEntity) {
+      jaguarEntity.mesh.visible = true;
+      state.jaguarDownTimer -= dt;
+      if (state.jaguarDownTimer <= 0) {
+        state.jaguarDefeated = false;
+        jaguarEntity.mesh.visible = false;
+        jaguarEntity.mesh.rotation.z = 0;
+        jaguarEntity.mesh.position.y = 0;
+        showToast("🐆", "A ONÇA FUGIU", "A Onça acordou e fugiu para a mata antes de ser domada!");
+      }
+    } else if (!state.jaguar.active) {
       state.jaguar.spawnCooldown = Math.max(0, state.jaguar.spawnCooldown - dt);
       if (state.jaguar.spawnCooldown <= 0 && !state.isSleeping) {
         state.jaguar.checkAccum += dt;
         if (state.jaguar.checkAccum >= 6.0) {
           state.jaguar.checkAccum = 0;
-          if (Math.random() < 0.22) {
+          // Onça aparece mais quando há animais na fazenda
+          const chance = state.animals.some((a) => a.alive) ? 0.3 : 0.22;
+          if (Math.random() < chance) {
             spawnJaguar();
           }
         }
       }
     } else if (jaguarEntity) {
       jaguarEntity.mesh.visible = true;
-      const dx = player.pos.x - jaguarEntity.mesh.position.x;
-      const dz = player.pos.z - jaguarEntity.mesh.position.z;
+      const jpos = jaguarEntity.mesh.position;
+
+      // Escolhe alvo: animal mais próximo (prioridade!) ou o jogador
+      let targetPos = player.pos;
+      let targetEnt = null;
+      let bestAnimalDist = Infinity;
+      livestockEntities.forEach((ent) => {
+        if (!ent.animal.alive) return;
+        const d = distXZ(jpos, ent.mesh.position);
+        if (d < bestAnimalDist) {
+          bestAnimalDist = d;
+          targetEnt = ent;
+        }
+      });
+      const playerDist = distXZ(jpos, player.pos);
+      if (targetEnt && bestAnimalDist < playerDist + 6) {
+        targetPos = targetEnt.mesh.position;
+      } else {
+        targetEnt = null;
+      }
+
+      const dx = targetPos.x - jpos.x;
+      const dz = targetPos.z - jpos.z;
       const dist = Math.hypot(dx, dz) || 0.01;
-      const jagSpeed = 4.6;
+
+      // Efeitos das enxadas: congelamento e queimadura
+      let speedMult = 1;
+      if (state.jaguar.slowTimer > 0) {
+        state.jaguar.slowTimer = Math.max(0, state.jaguar.slowTimer - dt);
+        speedMult = 0.4;
+      }
+      if (state.jaguar.burnTimer > 0) {
+        state.jaguar.burnTimer = Math.max(0, state.jaguar.burnTimer - dt);
+        state.jaguar.hp = Math.max(0, state.jaguar.hp - (18 / 3) * dt);
+        if (Math.random() < 0.3) spawnParticles(jpos.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xf97316, 2);
+        if (state.jaguar.hp <= 0) {
+          defeatJaguar("player");
+          return;
+        }
+      }
+
+      const jagSpeed = 4.6 * speedMult;
       if (dist > 1.3) {
-        jaguarEntity.mesh.position.x += (dx / dist) * jagSpeed * dt;
-        jaguarEntity.mesh.position.z += (dz / dist) * jagSpeed * dt;
+        const b = getFarmBounds();
+        jpos.x = THREE.MathUtils.clamp(jpos.x + (dx / dist) * jagSpeed * dt, b.minX, b.maxX);
+        jpos.z = THREE.MathUtils.clamp(jpos.z + (dz / dist) * jagSpeed * dt, -19.5, 21);
       }
       jaguarEntity.mesh.rotation.y = Math.atan2(dx, dz);
       // Animação de corrida e flash ao levar enxadada
-      const runCycle = Math.sin(state.animTime * 15);
+      const runCycle = Math.sin(state.animTime * 15 * speedMult);
       jaguarEntity.legs[0].rotation.x = runCycle * 0.65;
       jaguarEntity.legs[3].rotation.x = runCycle * 0.65;
       jaguarEntity.legs[1].rotation.x = -runCycle * 0.65;
@@ -6393,25 +7739,169 @@ function updateGame(dt) {
         state.jaguar.hitFlash = Math.max(0, state.jaguar.hitFlash - dt);
         jaguarEntity.bodyMat.emissive.setHex(0xef4444);
         jaguarEntity.bodyMat.emissiveIntensity = 0.7;
+      } else if (state.jaguar.slowTimer > 0) {
+        jaguarEntity.bodyMat.emissive.setHex(0x0ea5e9);
+        jaguarEntity.bodyMat.emissiveIntensity = 0.5;
+      } else if (state.jaguar.burnTimer > 0) {
+        jaguarEntity.bodyMat.emissive.setHex(0xea580c);
+        jaguarEntity.bodyMat.emissiveIntensity = 0.45;
       } else {
         jaguarEntity.bodyMat.emissive.setHex(0x000000);
         jaguarEntity.bodyMat.emissiveIntensity = 0;
       }
-      // Ataque da Onça no Alyffer
+      // Ataque da Onça (em animais ou no Alyffer)
       state.jaguar.attackCd = Math.max(0, state.jaguar.attackCd - dt);
-      if (dist <= 1.55 && state.jaguar.attackCd <= 0) {
+      if (dist <= 1.6 && state.jaguar.attackCd <= 0) {
         state.jaguar.attackCd = 1.35;
-        state.playerHp = Math.max(0, state.playerHp - 25);
         sfx.play("roar");
-        spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xef4444, 16);
-        showToast("🐆", "ARRANHÃO DA ONÇA!", `Você perdeu 25 HP! Vida: ${state.playerHp}/${state.maxHp} • Use a Enxada (R)!`);
-        updateHUD();
-        if (state.playerHp <= 0) {
-          triggerPlayerDeath("jaguar");
-          return;
+        if (targetEnt) {
+          const a = targetEnt.animal;
+          a.hp = Math.max(0, a.hp - 34);
+          spawnParticles(targetEnt.mesh.position.clone().add(new THREE.Vector3(0, 1.1, 0)), 0xef4444, 14);
+          if (a.hp <= 0) {
+            killAnimal(targetEnt);
+          } else {
+            const info = ANIMAL_TYPES[a.type];
+            showToast("🐆", `ONÇA ATACANDO ${a.name.toUpperCase()}!`, `${info.emoji} ${a.name}: ${a.hp}/${info.maxHp} HP • Defenda com a Enxada!`);
+          }
+        } else {
+          state.playerHp = Math.max(0, state.playerHp - 25);
+          spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xef4444, 16);
+          showToast("🐆", "ARRANHÃO DA ONÇA!", `Você perdeu 25 HP! Vida: ${state.playerHp}/${state.maxHp} • Use a Enxada (R)!`);
+          updateHUD();
+          if (state.playerHp <= 0) {
+            triggerPlayerDeath("jaguar");
+            return;
+          }
         }
       }
     }
+
+    // Marcelo Careca: patrulha a fazenda e caça a Onça
+    if (marceloYardEntity && state.marceloHired) {
+      const mm = marceloYardEntity;
+      mm.mesh.visible = true;
+      let tgt;
+      let running = false;
+      if (state.jaguar.active && jaguarEntity) {
+        tgt = jaguarEntity.mesh.position;
+        running = true;
+      } else {
+        if (mm.wait > 0) {
+          mm.wait -= dt;
+          if (mm.wait <= 0) {
+            const b = getFarmBounds();
+            mm.target.set(
+              THREE.MathUtils.clamp(mm.home.x + (Math.random() - 0.5) * 16, b.minX + 1, b.maxX - 1),
+              0,
+              THREE.MathUtils.clamp(mm.home.z + (Math.random() - 0.5) * 16, -18, 18)
+            );
+          }
+        }
+        tgt = mm.target;
+      }
+      const mdx = tgt.x - mm.mesh.position.x;
+      const mdz = tgt.z - mm.mesh.position.z;
+      const md = Math.hypot(mdx, mdz) || 0.01;
+      const mSpeed = running ? 5.6 : 2.4;
+      if (md > (running ? 1.8 : 0.3)) {
+        mm.mesh.position.x += (mdx / md) * mSpeed * dt;
+        mm.mesh.position.z += (mdz / md) * mSpeed * dt;
+        mm.mesh.rotation.y = Math.atan2(mdx, mdz);
+        const sw = Math.sin(state.animTime * (running ? 15 : 9)) * 0.6;
+        mm.lLeg.rotation.x = sw;
+        mm.rLeg.rotation.x = -sw;
+        mm.lArm.rotation.x = -sw;
+      } else if (!running && mm.wait <= 0) {
+        mm.wait = 2 + Math.random() * 3;
+      }
+      mm.attackCd = Math.max(0, mm.attackCd - dt);
+      if (mm.swingTimer > 0) {
+        mm.swingTimer = Math.max(0, mm.swingTimer - dt);
+        mm.rArm.rotation.x = -1.4 + Math.sin(mm.swingTimer * 22) * 0.7;
+      } else {
+        mm.rArm.rotation.x = THREE.MathUtils.lerp(mm.rArm.rotation.x, -0.2, 8 * dt);
+      }
+      if (running && md <= 2.3 && mm.attackCd <= 0 && state.jaguar.active) {
+        mm.attackCd = 1.1;
+        mm.swingTimer = 0.3;
+        sfx.play("hit");
+        damageJaguar(30, mm.mesh.position, 2.2);
+        if (state.jaguar.hp <= 0) defeatJaguar("marcelo");
+        updateHUD();
+      }
+    }
+
+    // Onça Domada: segue o Alyffer e defende a fazenda
+    if (tamedJaguarEntity && state.hasTamedJaguar) {
+      const tj = tamedJaguarEntity;
+      tj.mesh.visible = true;
+      let tgt = player.pos;
+      let hunting = false;
+      if (state.jaguar.active && jaguarEntity) {
+        tgt = jaguarEntity.mesh.position;
+        hunting = true;
+      }
+      const tdx = tgt.x - tj.mesh.position.x;
+      const tdz = tgt.z - tj.mesh.position.z;
+      const td = Math.hypot(tdx, tdz) || 0.01;
+      const followDist = hunting ? 1.7 : 3.2;
+      if (td > followDist) {
+        const sp = hunting ? 6.2 : td > 8 ? 6.5 : 3.6;
+        tj.mesh.position.x += (tdx / td) * sp * dt;
+        tj.mesh.position.z += (tdz / td) * sp * dt;
+        tj.mesh.rotation.y = Math.atan2(tdx, tdz);
+      }
+      tj.attackCd = Math.max(0, tj.attackCd - dt);
+      if (hunting && td <= 2.0 && tj.attackCd <= 0 && state.jaguar.active) {
+        tj.attackCd = 1.25;
+        sfx.play("roar");
+        damageJaguar(22, tj.mesh.position, 2.0);
+        if (state.jaguar.hp <= 0) defeatJaguar("tamed");
+        updateHUD();
+      }
+    }
+
+    // Animais pastando
+    livestockEntities.forEach((ent) => {
+      const a = ent.animal;
+      ent.readyHalo.visible = !!a.hasProduct;
+      if (a.hasProduct) {
+        ent.readyHalo.rotation.y += 2.4 * dt;
+        ent.readyHalo.position.y = 2.25 + Math.sin(state.animTime * 3 + a.id) * 0.12;
+      }
+      // Foge da Onça se ela estiver perto!
+      let fleeing = false;
+      if (state.jaguar.active && jaguarEntity && distXZ(ent.mesh.position, jaguarEntity.mesh.position) < 7) {
+        fleeing = true;
+        const fx = ent.mesh.position.x - jaguarEntity.mesh.position.x;
+        const fz = ent.mesh.position.z - jaguarEntity.mesh.position.z;
+        const fl = Math.hypot(fx, fz) || 1;
+        ent.target.set(ent.mesh.position.x + (fx / fl) * 4, 0, ent.mesh.position.z + (fz / fl) * 4);
+        ent.wait = 0;
+      }
+      if (ent.wait > 0) {
+        ent.wait -= dt;
+        if (ent.wait <= 0) {
+          ent.target.set(a.x + (Math.random() - 0.5) * 6, 0, a.z + (Math.random() - 0.5) * 6);
+        }
+      } else {
+        const adx = ent.target.x - ent.mesh.position.x;
+        const adz = ent.target.z - ent.mesh.position.z;
+        const ad = Math.hypot(adx, adz);
+        if (ad < 0.25) {
+          ent.wait = 2.5 + Math.random() * 4;
+        } else {
+          const sp = fleeing ? 3.4 : 1.1;
+          const b = getFarmBounds();
+          ent.mesh.position.x = THREE.MathUtils.clamp(ent.mesh.position.x + (adx / ad) * sp * dt, b.minX, b.maxX);
+          ent.mesh.position.z = THREE.MathUtils.clamp(ent.mesh.position.z + (adz / ad) * sp * dt, -19.5, 20);
+          ent.mesh.rotation.y = Math.atan2(adx, adz);
+          const lc = Math.sin(state.animTime * (fleeing ? 14 : 7)) * 0.4;
+          ent.legs.forEach((leg, i) => (leg.rotation.x = i % 3 === 0 ? lc : -lc));
+        }
+      }
+    });
   } else {
     // Se sair do quintal, a Onça recua para a mata
     if (state.jaguar.active && jaguarEntity) {

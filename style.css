@@ -842,6 +842,38 @@ html, body {
   box-shadow: 0 0 14px rgba(74, 222, 128, 0.25);
 }
 
+.seed-slot.special-gold {
+  border-color: rgba(250, 204, 21, 0.35);
+  background: rgba(250, 204, 21, 0.08);
+}
+
+.seed-slot.special-gold.active {
+  border-color: var(--gold);
+  background: rgba(250, 204, 21, 0.22);
+  box-shadow: 0 0 16px rgba(250, 204, 21, 0.35);
+}
+
+.seed-slot.special-guloso {
+  border-color: rgba(16, 185, 129, 0.35);
+  background: rgba(16, 185, 129, 0.08);
+}
+
+.shop-section-title {
+  margin: 12px 0 4px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.82rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gold);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: 4px;
+}
+
+.shop-section-title:first-child {
+  margin-top: 2px;
+}
+
 .slot-num {
   position: absolute;
   top: 4px;
