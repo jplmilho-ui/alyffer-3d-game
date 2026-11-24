@@ -10,15 +10,19 @@ const sellModal = document.getElementById("sellModal");
 const shopModal = document.getElementById("shopModal");
 const npcModal = document.getElementById("npcModal");
 const guideModal = document.getElementById("guideModal");
+const calendarModal = document.getElementById("calendarModal");
 const dayBanner = document.getElementById("dayBanner");
 const dayBannerText = document.getElementById("dayBannerText");
 
 const farmerTagPill = document.getElementById("farmerTagPill");
 const titleBadge = document.getElementById("titleBadge");
 const moneyVal = document.getElementById("moneyVal");
+const calendarPill = document.getElementById("calendarPill");
 const dayTimeVal = document.getElementById("dayTimeVal");
 const locationVal = document.getElementById("locationVal");
 const basketVal = document.getElementById("basketVal");
+const aduboVal = document.getElementById("aduboVal");
+const waterLabel = document.getElementById("waterLabel");
 const waterBar = document.getElementById("waterBar");
 const waterText = document.getElementById("waterText");
 const insanityPill = document.getElementById("insanityPill");
@@ -27,6 +31,20 @@ const insanityBar = document.getElementById("insanityBar");
 const insanityText = document.getElementById("insanityText");
 const buffBadge = document.getElementById("buffBadge");
 const buffText = document.getElementById("buffText");
+
+const fpCrosshair = document.getElementById("fpCrosshair");
+const crazyVignette = document.getElementById("crazyVignette");
+const camModeBtn = document.getElementById("camModeBtn");
+const camModeLabel = document.getElementById("camModeLabel");
+const calendarHudBtn = document.getElementById("calendarHudBtn");
+const closeCalendarBtn = document.getElementById("closeCalendarBtn");
+const calendarMonthTitle = document.getElementById("calendarMonthTitle");
+const calendarSummaryLine = document.getElementById("calendarSummaryLine");
+const calendarGrid = document.getElementById("calendarGrid");
+const busScheduleTitle = document.getElementById("busScheduleTitle");
+const busStatusBanner = document.getElementById("busStatusBanner");
+const busTimesPauArcado = document.getElementById("busTimesPauArcado");
+const busTimesTerminal = document.getElementById("busTimesTerminal");
 
 const contextPrompt = document.getElementById("contextPrompt");
 const contextKey = document.getElementById("contextKey");
@@ -67,6 +85,7 @@ const npcMissionBox = document.getElementById("npcMissionBox");
 const npcMissionTitle = document.getElementById("npcMissionTitle");
 const npcMissionReq = document.getElementById("npcMissionReq");
 const npcMissionReward = document.getElementById("npcMissionReward");
+const kaioShopBox = document.getElementById("kaioShopBox");
 const npcActionBtn = document.getElementById("npcActionBtn");
 
 const closeShopBtn = document.getElementById("closeShopBtn");
@@ -77,7 +96,7 @@ const closeGuideBtn = document.getElementById("closeGuideBtn");
 const titlesList = document.getElementById("titlesList");
 const guideQuestsList = document.getElementById("guideQuestsList");
 
-// Crop & Product Definitions (Alface principalmente + produtos do quintal!)
+// Crop & Product Definitions (Alface principalmente + produtos do quintal — tempo maior para valorizar o Adubo do Kaio!)
 const CROPS = {
   alface_crespa: {
     id: "alface_crespa",
@@ -85,7 +104,7 @@ const CROPS = {
     emoji: "🥬",
     seedCost: 4,
     basePrice: 12,
-    growTime: 13,
+    growTime: 42,
     color: 0x4ade80,
     leafColor: 0x22c55e,
     style: "lettuce_curly",
@@ -97,7 +116,7 @@ const CROPS = {
     emoji: "🥗",
     seedCost: 8,
     basePrice: 22,
-    growTime: 18,
+    growTime: 58,
     color: 0xa3e635,
     leafColor: 0x84cc16,
     style: "lettuce_round",
@@ -109,7 +128,7 @@ const CROPS = {
     emoji: "🟣",
     seedCost: 12,
     basePrice: 34,
-    growTime: 24,
+    growTime: 75,
     color: 0xa855f7,
     leafColor: 0x7e22ce,
     style: "lettuce_purple",
@@ -121,7 +140,7 @@ const CROPS = {
     emoji: "🍅",
     seedCost: 15,
     basePrice: 42,
-    growTime: 27,
+    growTime: 85,
     color: 0xef4444,
     leafColor: 0x16a34a,
     style: "tomato",
@@ -133,7 +152,7 @@ const CROPS = {
     emoji: "🥕",
     seedCost: 10,
     basePrice: 27,
-    growTime: 20,
+    growTime: 65,
     color: 0xf97316,
     leafColor: 0x15803d,
     style: "carrot",
@@ -145,7 +164,7 @@ const CROPS = {
     emoji: "🍓",
     seedCost: 18,
     basePrice: 52,
-    growTime: 30,
+    growTime: 100,
     color: 0xf43f5e,
     leafColor: 0x15803d,
     style: "strawberry",
@@ -169,6 +188,148 @@ const SEED_KEYS = ["alface_crespa", "alface_americana", "alface_roxa", "tomate",
 const CROP_KEYS = Object.keys(CROPS);
 const ALL_TITLES = ["Estudante ETEC", "PAC", "Homem Guloso", "Airfryer", "Macho"];
 const STORAGE_KEY = "macho_horta_3d_save_v2";
+const WORK_END_MINUTES = 19 * 60; // Depois das 19:00 (7 da noite) não pode mais trabalhar!
+
+// Calendário Rural (Dia 1 = Segunda-feira, 01 de Março, Ano 1)
+const WEEKDAYS_FULL = ["Domingo", "Segunda-feira", "Terça-feira", "Quarta-feira", "Quinta-feira", "Sexta-feira", "Sábado"];
+const WEEKDAYS_SHORT = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const MONTHS_INFO = [
+  { name: "Março", short: "Mar", days: 31 },
+  { name: "Abril", short: "Abr", days: 30 },
+  { name: "Maio", short: "Mai", days: 31 },
+  { name: "Junho", short: "Jun", days: 30 },
+  { name: "Julho", short: "Jul", days: 31 },
+  { name: "Agosto", short: "Ago", days: 31 },
+  { name: "Setembro", short: "Set", days: 30 },
+  { name: "Outubro", short: "Out", days: 31 },
+  { name: "Novembro", short: "Nov", days: 30 },
+  { name: "Dezembro", short: "Dez", days: 31 },
+  { name: "Janeiro", short: "Jan", days: 31 },
+  { name: "Fevereiro", short: "Fev", days: 28 },
+];
+
+function getCalendarInfo(dayNum) {
+  const zeroIdx = Math.max(0, Math.floor(dayNum) - 1);
+  // Dia 1 = Segunda (1)
+  const dayOfWeek = (1 + zeroIdx) % 7;
+  let rem = zeroIdx;
+  let monthCursor = 0;
+  let year = 1;
+  while (rem >= MONTHS_INFO[monthCursor].days) {
+    rem -= MONTHS_INFO[monthCursor].days;
+    monthCursor++;
+    if (monthCursor >= MONTHS_INFO.length) {
+      monthCursor = 0;
+      year++;
+    }
+  }
+  const month = MONTHS_INFO[monthCursor];
+  const dayOfMonth = rem + 1;
+  const firstDayOfMonthWeek = (dayOfWeek - (dayOfMonth - 1) % 7 + 7) % 7;
+  const scheduleType = dayOfWeek === 0 ? "sunday" : dayOfWeek === 6 ? "saturday" : "weekday";
+  const scheduleLabel =
+    scheduleType === "weekday" ? "Dias Úteis" : scheduleType === "saturday" ? "Sábados" : "Domingos e Feriados";
+
+  return {
+    dayNum,
+    dayOfWeek,
+    weekdayFull: WEEKDAYS_FULL[dayOfWeek],
+    weekdayShort: WEEKDAYS_SHORT[dayOfWeek],
+    dayOfMonth,
+    monthName: month.name,
+    monthShort: month.short,
+    daysInMonth: month.days,
+    firstDayOfMonthWeek,
+    year,
+    scheduleType,
+    scheduleLabel,
+    isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+  };
+}
+
+// Horários Oficiais Linha 402 (Pau Arcado ↔ Terminal Central) — Fonte: JundMob
+const BUS_402_RAW = {
+  weekday: {
+    terminal: [
+      "03:50", "05:00", "05:30", "06:20", "07:00", "07:40", "08:20", "09:50",
+      "10:40", "12:00", "12:50", "14:00", "15:30", "17:00", "18:40", "20:05",
+      "21:30", "22:50", "00:00",
+    ],
+    pauArcado: [
+      "04:20", "05:40", "06:10", "07:00", "07:40", "08:20", "09:00", "10:30",
+      "11:20", "12:40", "13:25", "14:40", "16:10", "17:45", "19:20", "20:45",
+      "22:10", "23:30",
+    ],
+  },
+  saturday: {
+    terminal: [
+      "03:50", "05:00", "06:10", "07:20", "08:30", "10:35", "11:45", "13:10",
+      "14:25", "15:40", "16:50", "18:00", "20:10", "22:25", "00:00",
+    ],
+    pauArcado: [
+      "04:30", "05:40", "06:50", "08:00", "09:10", "11:15", "12:30", "13:55",
+      "15:10", "16:20", "17:30", "18:40", "20:50", "23:05",
+    ],
+  },
+  sunday: {
+    terminal: [
+      "03:50", "05:00", "06:10", "07:20", "08:30", "10:35", "11:45", "13:10",
+      "14:25", "15:40", "16:50", "18:00", "20:10", "22:25", "00:00",
+    ],
+    pauArcado: [
+      "04:30", "05:40", "06:50", "08:00", "09:10", "11:15", "12:30", "13:55",
+      "15:10", "16:20", "17:30", "18:40", "20:50", "23:05",
+    ],
+  },
+};
+
+function parseHHMM(str) {
+  const [h, m] = str.split(":").map(Number);
+  return h === 0 && m === 0 ? 24 * 60 : h * 60 + m;
+}
+
+function formatHHMM(totalMin) {
+  const norm = ((Math.floor(totalMin) % 1440) + 1440) % 1440;
+  const hh = String(Math.floor(norm / 60)).padStart(2, "0");
+  const mm = String(norm % 60).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+// Janela de embarque do ônibus no ponto: de -3 min até +17 min do horário programado
+const BUS_BOARD_BEFORE = 3;
+const BUS_BOARD_AFTER = 17;
+
+function getBus402Status(direction, dayNum = state.day, nowMin = state.dayMinutes) {
+  const cal = getCalendarInfo(dayNum);
+  const rawList = BUS_402_RAW[cal.scheduleType][direction] || [];
+  let activeTime = null;
+  let nextTime = null;
+  let minsUntilNext = Infinity;
+
+  for (const label of rawList) {
+    const dep = parseHHMM(label);
+    if (nowMin >= dep - BUS_BOARD_BEFORE && nowMin <= dep + BUS_BOARD_AFTER) {
+      activeTime = label;
+    }
+    if (dep > nowMin && dep - nowMin < minsUntilNext) {
+      minsUntilNext = dep - nowMin;
+      nextTime = label;
+    }
+  }
+
+  return {
+    cal,
+    rawList,
+    available: !state.isRainy && activeTime !== null,
+    activeTime,
+    nextTime,
+    minsUntilNext: Number.isFinite(minsUntilNext) ? Math.ceil(minsUntilNext) : null,
+  };
+}
+
+function isAfterWorkHours() {
+  return state.dayMinutes >= WORK_END_MINUTES;
+}
 
 function formatBRL(value) {
   return `R$ ${value.toFixed(2).replace(".", ",")}`;
@@ -505,9 +666,12 @@ let windowMat;
 let lanternMat;
 let wellWaterMesh;
 let bus402YardMesh;
+let bus402TermMesh;
 let ceilingFanMesh;
 let dogCaramelo;
 let coopEggVisuals = [];
+let sprinklerGroup;
+const sprinklerHeads = [];
 
 function addObstacleBox(cx, cz, w, d, targetList = obstacles) {
   targetList.push({
@@ -752,44 +916,93 @@ function buildCountrysideEnvironment() {
   body.receiveShadow = true;
   house.add(body);
 
-  const roof = new THREE.Mesh(new THREE.ConeGeometry(8.8, 3.2, 4), roofMat);
-  roof.position.y = 5.95;
+  // Beiral / forro sob o telhado principal (sem vãos e sem atravessar a varanda!)
+  const roofSoffit = new THREE.Mesh(new THREE.BoxGeometry(11.8, 0.16, 8.2), trimMat);
+  roofSoffit.position.y = 4.38;
+  roofSoffit.castShadow = true;
+  house.add(roofSoffit);
+
+  // Telhado principal dimensionado exatamente sobre o corpo da casa (x: ±6.05, z: ±4.25)
+  const roof = new THREE.Mesh(new THREE.ConeGeometry(8.0, 3.0, 4), roofMat);
+  roof.position.y = 5.92;
   roof.rotation.y = Math.PI / 4;
-  roof.scale.set(1.16, 1, 0.86);
+  roof.scale.set(1.07, 1, 0.75);
   roof.castShadow = true;
   house.add(roof);
 
-  // Classic Blue Water Tank (Caixa d'água azul) on a side tower
+  // Torre lateral externa da Caixa d'Água Azul (fora do telhado, apoiada em estrutura firme!)
+  const towerGroup = new THREE.Group();
+  towerGroup.position.set(6.75, 0, -1.6);
+  [
+    [-0.72, -0.72],
+    [0.72, -0.72],
+    [-0.72, 0.72],
+    [0.72, 0.72],
+  ].forEach(([lx, lz]) => {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.18, 4.3, 0.18), trimMat);
+    leg.position.set(lx, 2.15, lz);
+    leg.castShadow = true;
+    towerGroup.add(leg);
+  });
+  [1.6, 3.1].forEach((by) => {
+    const braceX1 = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.12, 0.12), trimMat);
+    braceX1.position.set(0, by, 0.72);
+    const braceX2 = new THREE.Mesh(new THREE.BoxGeometry(1.55, 0.12, 0.12), trimMat);
+    braceX2.position.set(0, by, -0.72);
+    const braceZ1 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 1.55), trimMat);
+    braceZ1.position.set(0.72, by, 0);
+    const braceZ2 = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.12, 1.55), trimMat);
+    braceZ2.position.set(-0.72, by, 0);
+    towerGroup.add(braceX1, braceX2, braceZ1, braceZ2);
+  });
+  const towerPlatform = new THREE.Mesh(new THREE.BoxGeometry(1.95, 0.18, 1.95), porchMat);
+  towerPlatform.position.y = 4.35;
+  towerPlatform.castShadow = true;
+  towerGroup.add(towerPlatform);
   const waterTower = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.95, 0.85, 1.15, 14),
-    new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.45 })
+    new THREE.CylinderGeometry(0.88, 0.78, 1.15, 16),
+    new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.42 })
   );
-  waterTower.position.set(3.4, 5.4, -1.6);
+  waterTower.position.set(0, 5.02, 0);
   waterTower.castShadow = true;
-  house.add(waterTower);
+  towerGroup.add(waterTower);
+  const waterLid = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.92, 0.92, 0.14, 16),
+    new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.4 })
+  );
+  waterLid.position.set(0, 5.64, 0);
+  towerGroup.add(waterLid);
+  house.add(towerGroup);
+  addObstacleBox(6.75, -16.1, 2.0, 2.0);
 
   const chimney = new THREE.Mesh(
-    new THREE.BoxGeometry(0.9, 2.2, 0.9),
+    new THREE.BoxGeometry(0.85, 2.5, 0.85),
     new THREE.MeshStandardMaterial({ color: 0x8c3b23, roughness: 0.85 })
   );
-  chimney.position.set(-3.2, 6.2, -1.2);
+  chimney.position.set(-3.0, 5.95, -1.1);
   chimney.castShadow = true;
   house.add(chimney);
+  const chimneyCap = new THREE.Mesh(
+    new THREE.BoxGeometry(1.05, 0.16, 1.05),
+    new THREE.MeshStandardMaterial({ color: 0x6b2c1a, roughness: 0.85 })
+  );
+  chimneyCap.position.set(-3.0, 7.26, -1.1);
+  house.add(chimneyCap);
 
   const porchDeck = new THREE.Mesh(new THREE.BoxGeometry(11.0, 0.35, 3.2), porchMat);
   porchDeck.position.set(0, 0.175, 5.1);
   porchDeck.receiveShadow = true;
   house.add(porchDeck);
 
-  const porchRoof = new THREE.Mesh(new THREE.BoxGeometry(11.2, 0.25, 3.4), roofMat);
-  porchRoof.position.set(0, 3.7, 5.1);
-  porchRoof.rotation.x = 0.14;
+  const porchRoof = new THREE.Mesh(new THREE.BoxGeometry(11.2, 0.22, 3.3), roofMat);
+  porchRoof.position.set(0, 3.74, 5.15);
+  porchRoof.rotation.x = 0.11;
   porchRoof.castShadow = true;
   house.add(porchRoof);
 
   [-4.9, -1.9, 1.9, 4.9].forEach((px) => {
-    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.26, 3.4, 0.26), trimMat);
-    pillar.position.set(px, 1.85, 6.45);
+    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.26, 3.28, 0.26), trimMat);
+    pillar.position.set(px, 1.98, 6.45);
     pillar.castShadow = true;
     house.add(pillar);
   });
@@ -828,13 +1041,19 @@ function buildCountrysideEnvironment() {
   lantern.position.set(1.2, 3.25, 6.2);
   house.add(lantern);
 
+  // Placa "SÍTIO DO MACHO" fixada com suportes na frente do telhado da varanda (sem atravessar o telhado!)
+  [-1.5, 1.5].forEach((sx) => {
+    const bracket = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.55, 0.14), trimMat);
+    bracket.position.set(sx, 3.72, 6.62);
+    house.add(bracket);
+  });
   const houseSign = new THREE.Mesh(
-    new THREE.BoxGeometry(4.2, 1.05, 0.14),
+    new THREE.BoxGeometry(4.1, 0.96, 0.14),
     new THREE.MeshBasicMaterial({
       map: createWoodSignTexture("SÍTIO DO MACHO", "Pau Arcado • ETEC CLP"),
     })
   );
-  houseSign.position.set(0, 4.45, 5.95);
+  houseSign.position.set(0, 4.18, 6.66);
   house.add(houseSign);
 
   exteriorGroup.add(house);
@@ -1169,6 +1388,38 @@ function buildCountrysideEnvironment() {
     });
   }
 
+  // Sistema de Irrigação Automática 3D (Aspersores nos cruzamentos da horta — visível após compra na Loja!)
+  sprinklerGroup = new THREE.Group();
+  sprinklerGroup.visible = false;
+  const pipeMat = new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.4, roughness: 0.35 });
+  const brassMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.65, roughness: 0.3 });
+  [
+    [-6.25, -0.85],
+    [-0.05, -0.85],
+    [-6.25, 5.35],
+    [-0.05, 5.35],
+  ].forEach(([sx, sz]) => {
+    const sp = new THREE.Group();
+    sp.position.set(sx, 0, sz);
+    const base = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.26, 0.14, 10), pipeMat);
+    base.position.y = 0.07;
+    sp.add(base);
+    const riser = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.56, 8), pipeMat);
+    riser.position.y = 0.36;
+    sp.add(riser);
+    const head = new THREE.Group();
+    head.position.y = 0.66;
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 0.08, 10), brassMat);
+    head.add(cap);
+    const bar1 = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.045, 0.05), brassMat);
+    const bar2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.045, 0.54), brassMat);
+    head.add(bar1, bar2);
+    sp.add(head);
+    sprinklerGroup.add(sp);
+    sprinklerHeads.push({ head, x: sx, z: sz });
+  });
+  exteriorGroup.add(sprinklerGroup);
+
   // Fireflies for dusk/night atmosphere
   for (let i = 0; i < 24; i++) {
     const ff = new THREE.Mesh(
@@ -1193,19 +1444,61 @@ function buildBedroomInterior() {
   const woodMat = new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.75 });
 
   const roomLamp = new THREE.PointLight(0xfff1c9, 1.2, 24);
-  roomLamp.position.set(0, 3.9, 0.5);
+  roomLamp.position.set(0, 3.5, 0.4);
   interiorGroup.add(roomLamp);
 
-  // Rotating Ceiling Fan
+  // Forro do teto (FrontSide voltado para baixo: invisível na câmera 3ª pessoa de cima, totalmente visível em 1ª pessoa!)
+  const ceilingMat = new THREE.MeshStandardMaterial({ color: 0xc29b6c, roughness: 0.85, side: THREE.FrontSide });
+  const ceilingPlane = new THREE.Mesh(new THREE.PlaneGeometry(10.8, 8.6), ceilingMat);
+  ceilingPlane.rotation.x = Math.PI / 2;
+  ceilingPlane.position.set(0, 4.3, 0);
+  interiorGroup.add(ceilingPlane);
+
+  // Parede frontal (FrontSide voltado p/ dentro do quarto: 3ª pessoa enxerga por fora, 1ª pessoa vê parede fechada!)
+  const frontWallIn = new THREE.Mesh(
+    new THREE.PlaneGeometry(10.8, 4.3),
+    new THREE.MeshStandardMaterial({ color: 0xe6e2d3, roughness: 0.85, side: THREE.FrontSide })
+  );
+  frontWallIn.rotation.y = Math.PI;
+  frontWallIn.position.set(0, 2.15, 4.25);
+  interiorGroup.add(frontWallIn);
+
+  // Viga de madeira de parede a parede segurando o ventilador de teto (nunca mais voando no ar!)
+  const ceilingBeam = new THREE.Mesh(new THREE.BoxGeometry(10.6, 0.18, 0.24), woodMat);
+  ceilingBeam.position.set(0, 4.21, 0);
+  interiorGroup.add(ceilingBeam);
+
+  // Suporte fixo + haste metálica descendo da viga até o motor do ventilador
+  const metalRodMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.65, roughness: 0.3 });
+  const fanCanopy = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.1, 0.1, 12), metalRodMat);
+  fanCanopy.position.set(0, 4.08, 0);
+  interiorGroup.add(fanCanopy);
+  const fanRod = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.48, 10), metalRodMat);
+  fanRod.position.set(0, 3.84, 0);
+  interiorGroup.add(fanRod);
+
+  // Rotating Ceiling Fan preso na haste
   ceilingFanMesh = new THREE.Group();
-  ceilingFanMesh.position.set(0, 3.85, 0);
-  const fanHub = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.12, 10), woodMat);
+  ceilingFanMesh.position.set(0, 3.58, 0);
+  const fanHub = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.16, 12), metalRodMat);
   ceilingFanMesh.add(fanHub);
   for (let b = 0; b < 4; b++) {
-    const blade = new THREE.Mesh(new THREE.BoxGeometry(1.4, 0.03, 0.22), woodMat);
-    blade.rotation.y = (b * Math.PI) / 2;
-    ceilingFanMesh.add(blade);
+    const bladePivot = new THREE.Group();
+    bladePivot.rotation.y = (b * Math.PI) / 2;
+    const arm = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.04, 0.06), metalRodMat);
+    arm.position.set(0.22, 0, 0);
+    const blade = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.03, 0.22), woodMat);
+    blade.position.set(0.56, 0, 0);
+    blade.rotation.x = 0.08;
+    bladePivot.add(arm, blade);
+    ceilingFanMesh.add(bladePivot);
   }
+  const fanGlobe = new THREE.Mesh(
+    new THREE.SphereGeometry(0.14, 10, 10),
+    new THREE.MeshStandardMaterial({ color: 0xfef3c7, emissive: 0xfde68a, emissiveIntensity: 0.7 })
+  );
+  fanGlobe.position.y = -0.14;
+  ceilingFanMesh.add(fanGlobe);
   interiorGroup.add(ceilingFanMesh);
 
   const floor = new THREE.Mesh(new THREE.BoxGeometry(10.8, 0.2, 8.6), floorMat);
@@ -1443,11 +1736,12 @@ function buildTerminalAndStation() {
   termSign.position.set(-5.75, 5.05, 7.85);
   terminalGroup.add(termSign);
 
-  // Bus 402 at Bay 1 (back to Pau Arcado)
+  // Bus 402 at Bay 1 (back to Pau Arcado — só aparece nos horários da JundMob!)
   const busTerm402 = createBusModel("402 PAU ARCADO", "Via Estrada do Garcia", 0x1d4ed8);
   busTerm402.position.set(-8.6, 0, -5.9);
   busTerm402.rotation.y = Math.PI / 2;
   terminalGroup.add(busTerm402);
+  bus402TermMesh = busTerm402;
   addObstacleBox(-8.6, -5.9, 6.7, 2.7, terminalObstacles);
 
   // Bus 401 Botujuru parked at Bay 2 (left side for realism)
@@ -1922,6 +2216,15 @@ function buildEtecInside() {
   rightWall.position.set(16.1, 2.4, 0);
   etecInsideGroup.add(rightWall);
 
+  // Teto interno da ETEC (FrontSide voltado para baixo: visível em 1ª pessoa, transparente em 3ª pessoa)
+  const etecCeiling = new THREE.Mesh(
+    new THREE.PlaneGeometry(32.4, 26.4),
+    new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.9, side: THREE.FrontSide })
+  );
+  etecCeiling.rotation.x = Math.PI / 2;
+  etecCeiling.position.set(0, 4.8, 0);
+  etecInsideGroup.add(etecCeiling);
+
   // Interior Partition Walls with Wide Doorways (Central Corridor is x = -4.2 .. +4.2)
   function addInteriorWall(cx, cz, w, d) {
     const wMesh = new THREE.Mesh(new THREE.BoxGeometry(w, 3.8, d), wallMat);
@@ -2115,7 +2418,7 @@ function buildEtecInside() {
     {
       id: "kaio",
       name: "Kaio Wendell",
-      roleSub: "Química • +Insanidade",
+      roleSub: "Química • Vende Adubo",
       pos: new THREE.Vector3(7.2, 0, -5.8), // Inside Chemistry Lab (NE)
       yaw: -0.35,
       skinColor: 0xf3d2b8,
@@ -2179,7 +2482,59 @@ function buildRainSystem() {
 }
 buildRainSystem();
 
-// Alyffer "Macho" 3D Character Model
+// Textura procedural de olhos esbugalhados vermelhos injetados de sangue (Modo Coringando)
+function createCrazyRedEyeTexture() {
+  const canvas = document.createElement("canvas");
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext("2d");
+
+  // Esclera avermelhada
+  const grad = ctx.createRadialGradient(64, 64, 14, 64, 64, 64);
+  grad.addColorStop(0, "#ffe4e6");
+  grad.addColorStop(0.55, "#fca5a5");
+  grad.addColorStop(1, "#dc2626");
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 128, 128);
+
+  // Veias vermelhas intensas
+  ctx.strokeStyle = "#b91c1c";
+  ctx.lineWidth = 3;
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2;
+    ctx.beginPath();
+    ctx.moveTo(64 + Math.cos(a) * 62, 64 + Math.sin(a) * 62);
+    ctx.quadraticCurveTo(
+      64 + Math.cos(a + 0.18) * 38,
+      64 + Math.sin(a + 0.18) * 38,
+      64 + Math.cos(a - 0.1) * 24,
+      64 + Math.sin(a - 0.1) * 24
+    );
+    ctx.stroke();
+  }
+
+  // Íris vermelha brilhante + pupila minúscula insana
+  ctx.fillStyle = "#ef4444";
+  ctx.beginPath();
+  ctx.arc(64, 64, 21, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#09090b";
+  ctx.beginPath();
+  ctx.arc(64, 64, 8, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.fillStyle = "#ffffff";
+  ctx.beginPath();
+  ctx.arc(58, 58, 3.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  const tex = new THREE.CanvasTexture(canvas);
+  if (THREE.sRGBEncoding) tex.encoding = THREE.sRGBEncoding;
+  return tex;
+}
+
+// Alyffer "Macho" 3D Character Model (com braços articulados p/ gesto 6-7, olhos esbugalhados vermelhos e língua p/ fora!)
 function createMachoPlayerModel() {
   const group = new THREE.Group();
 
@@ -2217,6 +2572,68 @@ function createMachoPlayerModel() {
   rightEye.position.set(0.14, 2.38, 0.34);
   group.add(leftEye, rightEye);
 
+  // Rosto Coringando: Olhos ESBUGALHADOS para fora e VERMELHOS + LÍNGUA PARA FORA!
+  const crazyFaceGroup = new THREE.Group();
+  crazyFaceGroup.visible = false;
+  const crazyEyeMat = new THREE.MeshStandardMaterial({
+    map: createCrazyRedEyeTexture(),
+    color: 0xffb4b4,
+    emissive: 0xdc2626,
+    emissiveIntensity: 0.58,
+    roughness: 0.25,
+  });
+  const pupilMat = new THREE.MeshBasicMaterial({ color: 0x09090b });
+
+  const leftCrazyEye = new THREE.Group();
+  leftCrazyEye.position.set(-0.16, 2.39, 0.38);
+  const lEyeBall = new THREE.Mesh(new THREE.SphereGeometry(0.135, 14, 14), crazyEyeMat);
+  lEyeBall.scale.set(1.0, 1.05, 1.75);
+  lEyeBall.position.z = 0.08;
+  const lPupil = new THREE.Mesh(new THREE.SphereGeometry(0.036, 8, 8), pupilMat);
+  lPupil.position.set(0, 0, 0.31);
+  leftCrazyEye.add(lEyeBall, lPupil);
+
+  const rightCrazyEye = new THREE.Group();
+  rightCrazyEye.position.set(0.16, 2.39, 0.38);
+  const rEyeBall = new THREE.Mesh(new THREE.SphereGeometry(0.135, 14, 14), crazyEyeMat);
+  rEyeBall.scale.set(1.0, 1.05, 1.75);
+  rEyeBall.position.z = 0.08;
+  const rPupil = new THREE.Mesh(new THREE.SphereGeometry(0.036, 8, 8), pupilMat);
+  rPupil.position.set(0, 0, 0.31);
+  rightCrazyEye.add(rEyeBall, rPupil);
+
+  // Boca escancarada + Língua enorme para fora!
+  const crazyMouth = new THREE.Mesh(
+    new THREE.BoxGeometry(0.32, 0.16, 0.06),
+    new THREE.MeshBasicMaterial({ color: 0x2b070c })
+  );
+  crazyMouth.position.set(0, 2.13, 0.35);
+
+  const tongueGroup = new THREE.Group();
+  tongueGroup.position.set(0, 2.11, 0.36);
+  const tongueMat = new THREE.MeshStandardMaterial({
+    color: 0xf43f5e,
+    emissive: 0x9f1239,
+    emissiveIntensity: 0.25,
+    roughness: 0.35,
+  });
+  const tongueBase = new THREE.Mesh(new THREE.BoxGeometry(0.17, 0.065, 0.34), tongueMat);
+  tongueBase.position.set(0, -0.04, 0.15);
+  tongueBase.rotation.x = 0.38;
+  const tongueTip = new THREE.Mesh(new THREE.SphereGeometry(0.09, 10, 10), tongueMat);
+  tongueTip.scale.set(1.0, 0.45, 1.15);
+  tongueTip.position.set(0, -0.11, 0.31);
+  const tongueLine = new THREE.Mesh(
+    new THREE.BoxGeometry(0.025, 0.02, 0.24),
+    new THREE.MeshBasicMaterial({ color: 0x9f1239 })
+  );
+  tongueLine.position.set(0, -0.015, 0.16);
+  tongueLine.rotation.x = 0.38;
+  tongueGroup.add(tongueBase, tongueTip, tongueLine);
+
+  crazyFaceGroup.add(leftCrazyEye, rightCrazyEye, crazyMouth, tongueGroup);
+  group.add(crazyFaceGroup);
+
   const hatBrim = new THREE.Mesh(new THREE.CylinderGeometry(0.84, 0.88, 0.08, 16), strawMat);
   hatBrim.position.y = 2.7;
   hatBrim.castShadow = true;
@@ -2231,21 +2648,45 @@ function createMachoPlayerModel() {
   hatBand.position.y = 2.77;
   group.add(hatBand);
 
-  const armGeo = new THREE.BoxGeometry(0.26, 0.84, 0.26);
-  const leftArm = new THREE.Mesh(armGeo, skinMat);
-  leftArm.position.set(-0.62, 1.4, 0);
-  leftArm.castShadow = true;
-  group.add(leftArm);
+  // Braços articulados (ombro + antebraço + palma) para o gesto "6-7" ao coringar!
+  const upperArmGeo = new THREE.BoxGeometry(0.25, 0.44, 0.25);
+  const forearmGeo = new THREE.BoxGeometry(0.23, 0.42, 0.23);
+  const palmGeo = new THREE.BoxGeometry(0.26, 0.08, 0.28);
+
+  const leftArmGroup = new THREE.Group();
+  leftArmGroup.position.set(-0.62, 1.72, 0);
+  const leftUpper = new THREE.Mesh(upperArmGeo, skinMat);
+  leftUpper.position.set(0, -0.22, 0);
+  leftUpper.castShadow = true;
+  leftArmGroup.add(leftUpper);
+  const leftForearmGroup = new THREE.Group();
+  leftForearmGroup.position.set(0, -0.42, 0);
+  const leftForearmMesh = new THREE.Mesh(forearmGeo, skinMat);
+  leftForearmMesh.position.set(0, -0.2, 0);
+  leftForearmMesh.castShadow = true;
+  const leftPalm = new THREE.Mesh(palmGeo, skinMat);
+  leftPalm.position.set(0, -0.42, 0.04);
+  leftForearmGroup.add(leftForearmMesh, leftPalm);
+  leftArmGroup.add(leftForearmGroup);
+  group.add(leftArmGroup);
 
   const rightArmGroup = new THREE.Group();
   rightArmGroup.position.set(0.62, 1.72, 0);
-  const rightArmMesh = new THREE.Mesh(armGeo, skinMat);
-  rightArmMesh.position.set(0, -0.32, 0);
-  rightArmMesh.castShadow = true;
-  rightArmGroup.add(rightArmMesh);
+  const rightUpper = new THREE.Mesh(upperArmGeo, skinMat);
+  rightUpper.position.set(0, -0.22, 0);
+  rightUpper.castShadow = true;
+  rightArmGroup.add(rightUpper);
+  const rightForearmGroup = new THREE.Group();
+  rightForearmGroup.position.set(0, -0.42, 0);
+  const rightForearmMesh = new THREE.Mesh(forearmGeo, skinMat);
+  rightForearmMesh.position.set(0, -0.2, 0);
+  rightForearmMesh.castShadow = true;
+  const rightPalm = new THREE.Mesh(palmGeo, skinMat);
+  rightPalm.position.set(0, -0.42, 0.04);
+  rightForearmGroup.add(rightForearmMesh, rightPalm);
 
   const canGroup = new THREE.Group();
-  canGroup.position.set(0, -0.72, 0.26);
+  canGroup.position.set(0, -0.34, 0.24);
   const canBody = new THREE.Mesh(
     new THREE.CylinderGeometry(0.17, 0.19, 0.34, 10),
     new THREE.MeshStandardMaterial({ color: 0x0284c7, metalness: 0.35, roughness: 0.4 })
@@ -2258,8 +2699,9 @@ function createMachoPlayerModel() {
   canSpout.position.set(0, 0.08, 0.22);
   canSpout.rotation.x = 0.85;
   canGroup.add(canSpout);
-  rightArmGroup.add(canGroup);
+  rightForearmGroup.add(canGroup);
 
+  rightArmGroup.add(rightForearmGroup);
   group.add(rightArmGroup);
 
   const legGeo = new THREE.BoxGeometry(0.32, 0.8, 0.32);
@@ -2283,19 +2725,56 @@ function createMachoPlayerModel() {
   group.add(rightBoot);
 
   group.userData = {
-    leftArm,
+    leftArm: leftArmGroup,
     rightArm: rightArmGroup,
+    leftForearm: leftForearmGroup,
+    rightForearm: rightForearmGroup,
     leftLeg,
     rightLeg,
     leftBoot,
     rightBoot,
     canGroup,
+    leftEye,
+    rightEye,
+    crazyFaceGroup,
+    leftCrazyEye,
+    rightCrazyEye,
+    lPupil,
+    rPupil,
+    tongueGroup,
   };
   return group;
 }
 
 const playerMesh = createMachoPlayerModel();
 scene.add(playerMesh);
+
+// Mãos em 1ª Pessoa fazendo o gesto "6-7" quando Coringando!
+const fpCrazyArmsGroup = new THREE.Group();
+fpCrazyArmsGroup.visible = false;
+{
+  const fpSkinMat = new THREE.MeshStandardMaterial({ color: 0xc98a63, roughness: 0.65 });
+  const fpLeftHand = new THREE.Group();
+  fpLeftHand.position.set(-0.34, -0.34, -0.68);
+  const fpLArm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.46), fpSkinMat);
+  fpLArm.position.set(0, 0, 0.14);
+  const fpLPalm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.05, 0.2), fpSkinMat);
+  fpLPalm.position.set(0, 0.02, -0.14);
+  fpLeftHand.add(fpLArm, fpLPalm);
+
+  const fpRightHand = new THREE.Group();
+  fpRightHand.position.set(0.34, -0.34, -0.68);
+  const fpRArm = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, 0.46), fpSkinMat);
+  fpRArm.position.set(0, 0, 0.14);
+  const fpRPalm = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.05, 0.2), fpSkinMat);
+  fpRPalm.position.set(0, 0.02, -0.14);
+  fpRightHand.add(fpRArm, fpRPalm);
+
+  fpCrazyArmsGroup.add(fpLeftHand, fpRightHand);
+  fpCrazyArmsGroup.userData = { fpLeftHand, fpRightHand };
+}
+scene.add(camera);
+camera.add(fpCrazyArmsGroup);
 
 // Optimized Shared Geometry & Material Cache for Garden Plots
 const plots = [];
@@ -2402,6 +2881,7 @@ function createPlotMesh(index, x, z) {
     cropId: null,
     growth: 0,
     waterTimer: 0,
+    fertilized: false,
     visualStage: -1,
     visualCropId: null,
   };
@@ -2526,8 +3006,12 @@ function refreshPlotAppearance(plot) {
     plot.soilMat.color.setHex(0x4a5543);
   } else if (plot.stage === "raw") {
     plot.soilMat.color.setHex(SOIL_COLORS.raw);
+  } else if (plot.fertilized && plot.waterTimer > 0) {
+    plot.soilMat.color.setHex(0x283618); // Terra adubada e molhada
   } else if (plot.waterTimer > 0) {
     plot.soilMat.color.setHex(SOIL_COLORS.watered);
+  } else if (plot.fertilized) {
+    plot.soilMat.color.setHex(0x544b2c);
   } else {
     plot.soilMat.color.setHex(SOIL_COLORS.tilled);
   }
@@ -2610,11 +3094,18 @@ const state = {
   activeTitle: "Estudante ETEC",
   selectedCrop: "alface_crespa",
   water: 8,
+  kaioAdubo: 0,
+  kaioSuperAdubo: 0,
+  workEndNotifiedToday: false,
+  autoWaterAccum: 0,
+  firstPerson: false,
+  fpPitch: 0,
   upgrades: {
     plotTier: 0,
     canLevel: 1,
     fertLevel: 1,
     standLevel: 1,
+    autoWaterLevel: 0,
   },
   inventory: {
     alface_crespa: 0,
@@ -2646,7 +3137,9 @@ function getMaxWater() {
 }
 
 function getGrowthMultiplier() {
-  return 1 + (state.upgrades.fertLevel - 1) * 0.28;
+  const base = 1 + (state.upgrades.fertLevel - 1) * 0.25;
+  const irrBonus = state.upgrades.autoWaterLevel >= 2 ? 1.15 : 1.0;
+  return base * irrBonus;
 }
 
 function getDoubleHarvestChance() {
@@ -2733,6 +3226,8 @@ function saveGame() {
       paoStep: state.paoStep,
       titles: state.titles,
       activeTitle: state.activeTitle,
+      kaioAdubo: state.kaioAdubo,
+      kaioSuperAdubo: state.kaioSuperAdubo,
       upgrades: state.upgrades,
       inventory: state.inventory,
       plots: plots.map((p) => ({
@@ -2740,6 +3235,7 @@ function saveGame() {
         cropId: p.cropId,
         growth: p.growth,
         waterTimer: p.waterTimer,
+        fertilized: !!p.fertilized,
       })),
     };
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -2767,7 +3263,10 @@ function loadSavedGame() {
     if (typeof data.paoStep === "number") state.paoStep = data.paoStep;
     if (Array.isArray(data.titles) && data.titles.length) state.titles = data.titles;
     if (typeof data.activeTitle === "string") state.activeTitle = data.activeTitle;
+    if (typeof data.kaioAdubo === "number") state.kaioAdubo = data.kaioAdubo;
+    if (typeof data.kaioSuperAdubo === "number") state.kaioSuperAdubo = data.kaioSuperAdubo;
     if (data.upgrades) Object.assign(state.upgrades, data.upgrades);
+    if (typeof state.upgrades.autoWaterLevel !== "number") state.upgrades.autoWaterLevel = 0;
     if (data.inventory) Object.assign(state.inventory, data.inventory);
     if (Array.isArray(data.plots)) {
       data.plots.forEach((sp, idx) => {
@@ -2776,6 +3275,7 @@ function loadSavedGame() {
           plots[idx].cropId = sp.cropId || null;
           plots[idx].growth = sp.growth || 0;
           plots[idx].waterTimer = sp.waterTimer || 0;
+          plots[idx].fertilized = !!sp.fertilized;
         }
       });
     }
@@ -2785,16 +3285,26 @@ function loadSavedGame() {
   }
 }
 
+function syncBusModelsVisibility() {
+  if (bus402YardMesh) {
+    bus402YardMesh.visible = getBus402Status("pauArcado").available;
+  }
+  if (bus402TermMesh) {
+    bus402TermMesh.visible = getBus402Status("terminal").available;
+  }
+}
+
 function setActiveSceneVisibility() {
   exteriorGroup.visible = state.location === "yard";
   interiorGroup.visible = state.location === "room";
   terminalGroup.visible = state.location === "terminal";
   etecGroup.visible = state.location === "etec";
   etecInsideGroup.visible = state.location === "etec_inside";
-  playerMesh.userData.canGroup.visible = state.location === "yard";
-  if (bus402YardMesh) {
-    bus402YardMesh.visible = !state.isRainy;
+  playerMesh.userData.canGroup.visible = state.location === "yard" && !state.isCrazy;
+  if (sprinklerGroup) {
+    sprinklerGroup.visible = state.upgrades.autoWaterLevel >= 1;
   }
+  syncBusModelsVisibility();
   syncCoopEggsVisual();
 }
 
@@ -2820,7 +3330,13 @@ function resetToNewFarm() {
   state.titles = ["Estudante ETEC"];
   state.activeTitle = "Estudante ETEC";
   state.selectedCrop = "alface_crespa";
-  state.upgrades = { plotTier: 0, canLevel: 1, fertLevel: 1, standLevel: 1 };
+  state.kaioAdubo = 0;
+  state.kaioSuperAdubo = 0;
+  state.workEndNotifiedToday = false;
+  state.autoWaterAccum = 0;
+  state.firstPerson = false;
+  state.fpPitch = 0;
+  state.upgrades = { plotTier: 0, canLevel: 1, fertLevel: 1, standLevel: 1, autoWaterLevel: 0 };
   state.water = getMaxWater();
   CROP_KEYS.forEach((k) => (state.inventory[k] = 0));
   plots.forEach((p, idx) => {
@@ -2828,6 +3344,7 @@ function resetToNewFarm() {
     p.cropId = null;
     p.growth = 0;
     p.waterTimer = 0;
+    p.fertilized = false;
     p.visualStage = -99;
     p.visualCropId = null;
   });
@@ -2862,15 +3379,25 @@ function updateHUD() {
   state.isCrazy = state.insanity >= 100;
   titleBadge.textContent = state.isCrazy ? `🤡 CORINGANDO (${state.activeTitle})` : state.activeTitle;
   moneyVal.textContent = formatBRL(state.money);
+  const cal = getCalendarInfo(state.day);
   const hh = String(Math.floor(state.dayMinutes / 60)).padStart(2, "0");
   const mm = String(Math.floor(state.dayMinutes % 60)).padStart(2, "0");
-  dayTimeVal.textContent = `Dia ${state.day} • ${hh}:${mm} ${state.isRainy ? "🌧️" : "☀️"}`;
+  const dayStr = String(cal.dayOfMonth).padStart(2, "0");
+  const weatherIcon = state.isRainy ? "🌧️" : isAfterWorkHours() ? "🌙" : "☀️";
+  dayTimeVal.textContent = `${cal.weekdayShort}, ${dayStr}/${cal.monthShort} • ${hh}:${mm} ${weatherIcon}`;
   locationVal.textContent = LOCATION_LABELS[state.location] || "Pau Arcado";
 
   const totalItems = getTotalBasketCount();
   basketVal.textContent = `🥬 ${totalItems} ${totalItems === 1 ? "item" : "itens"}`;
 
+  if (aduboVal) {
+    aduboVal.textContent = `🧪 ${state.kaioAdubo} • ⚗️ ${state.kaioSuperAdubo}`;
+  }
+
   const maxW = getMaxWater();
+  if (waterLabel) {
+    waterLabel.textContent = state.upgrades.autoWaterLevel >= 1 ? "REGADOR • 💦 AUTO" : "REGADOR";
+  }
   waterText.textContent = `${state.water}/${maxW}`;
   waterBar.style.width = `${Math.min(100, (state.water / maxW) * 100)}%`;
 
@@ -2885,6 +3412,17 @@ function updateHUD() {
   insanityBar.style.width = `${Math.min(100, state.insanity)}%`;
   insanityPill.classList.toggle("crazy", state.isCrazy);
 
+  if (camModeBtn && camModeLabel) {
+    camModeBtn.classList.toggle("active-mode", state.firstPerson);
+    camModeLabel.textContent = state.firstPerson ? "3ª Pessoa" : "1ª Pessoa";
+  }
+  if (fpCrosshair) {
+    fpCrosshair.classList.toggle("hidden", !(state.firstPerson && state.mode === "playing"));
+  }
+  if (crazyVignette) {
+    crazyVignette.classList.toggle("hidden", !(state.isCrazy && state.mode === "playing"));
+  }
+
   if (coringaBubble) {
     coringaBubble.classList.toggle("hidden", !(state.isCrazy && state.mode === "playing"));
   }
@@ -2892,6 +3430,9 @@ function updateHUD() {
   if (state.energyTimer > 0) {
     buffBadge.classList.remove("hidden");
     buffText.textContent = `⚡ Energia (${Math.ceil(state.energyTimer)}s)`;
+  } else if (isAfterWorkHours()) {
+    buffBadge.classList.remove("hidden");
+    buffText.textContent = `🌙 Após 19h (Sem trabalho)`;
   } else {
     buffBadge.classList.add("hidden");
   }
@@ -2972,8 +3513,9 @@ function switchLocation(loc, x, z, facingYaw, camYaw, camPitch, camDist) {
   setActiveSceneVisibility();
   player.pos.set(x, getFloorYAt(x, z), z);
   player.facingYaw = facingYaw;
-  state.camYaw = camYaw;
+  state.camYaw = state.firstPerson ? facingYaw + Math.PI : camYaw;
   state.camPitch = camPitch;
+  state.fpPitch = 0;
   state.camDist = camDist;
   playerMesh.position.copy(player.pos);
   playerMesh.rotation.y = player.facingYaw;
@@ -2983,6 +3525,21 @@ function switchLocation(loc, x, z, facingYaw, camYaw, camPitch, camDist) {
   updateHUD();
   saveGame();
   renderer.render(scene, camera);
+}
+
+function toggleFirstPerson() {
+  state.firstPerson = !state.firstPerson;
+  if (state.firstPerson) {
+    state.camYaw = player.facingYaw + Math.PI;
+    state.fpPitch = 0;
+    showToast("👁️", "MODO 1ª PESSOA", "Arraste para olhar em volta • V para voltar p/ 3ª Pessoa.");
+  } else {
+    state.camPitch = 0.46;
+    showToast("🎥", "MODO 3ª PESSOA", "Câmera orbital restaurada!");
+  }
+  sfx.play("plant");
+  updateHUD();
+  updateCamera(0.016, true);
 }
 
 function enterRoom() {
@@ -3000,13 +3557,36 @@ function takeBus402ToTerminal() {
     showToast("🌧️", "ÔNIBUS 402 PARADO", "Está chovendo em Pau Arcado! O 402 não passa hoje. Durma até o próximo dia.");
     return;
   }
+  const busInfo = getBus402Status("pauArcado");
+  if (!busInfo.available) {
+    sfx.play("error");
+    const nextMsg = busInfo.nextTime
+      ? `Próximo 402 (${busInfo.cal.scheduleLabel}) sai às ${busInfo.nextTime} (em ${busInfo.minsUntilNext} min). Aperte K p/ ver tabela!`
+      : `Sem mais saídas do 402 hoje! Durma até amanhã.`;
+    showToast("🚌", "ÔNIBUS 402 FORA DE HORÁRIO", nextMsg);
+    return;
+  }
   switchLocation("terminal", -5.8, 0.2, 0, 0.2, 0.45, 16.5);
-  showDayBanner("TERMINAL DE CAMPO LIMPO PAULISTA • LINHA 402");
+  showDayBanner(`TERMINAL DE CAMPO LIMPO PAULISTA • LINHA 402 (${busInfo.activeTime})`);
 }
 
 function takeBus402ToYard() {
+  if (state.isRainy) {
+    sfx.play("error");
+    showToast("🌧️", "ÔNIBUS 402 PARADO", "Chuva forte em Pau Arcado! Use Pausar (P) → Dormir se precisar voltar.");
+    return;
+  }
+  const busInfo = getBus402Status("terminal");
+  if (!busInfo.available) {
+    sfx.play("error");
+    const nextMsg = busInfo.nextTime
+      ? `Próximo 402 (${busInfo.cal.scheduleLabel}) sai do Terminal às ${busInfo.nextTime} (em ${busInfo.minsUntilNext} min). Aperte K p/ ver tabela!`
+      : `Sem mais saídas do 402 hoje no Terminal! Use P → Dormir até amanhã.`;
+    showToast("🚌", "ÔNIBUS 402 FORA DE HORÁRIO", nextMsg);
+    return;
+  }
   switchLocation("yard", 10.2, 16.0, Math.PI, 0.2, 0.48, 16.5);
-  showToast("🚌", "VOLTOU PRA PAU ARCADO", "Desceu do Ônibus 402 na Estrada do Garcia!");
+  showToast("🚌", "VOLTOU PRA PAU ARCADO", `Desceu do Ônibus 402 (${busInfo.activeTime}) na Estrada do Garcia!`);
 }
 
 function takeTrainToEtec() {
@@ -3053,14 +3633,27 @@ function findCurrentContext() {
       return {
         type: "term_sell",
         key: "Espaço / E",
-        text: items > 0 ? `Vender Colheita no Terminal (${items})` : "Abrir Bancas & Encomendas de CLP",
+        text: isAfterWorkHours()
+          ? "Bancas fechadas após 19:00 (ver encomendas)"
+          : items > 0
+            ? `Vender Colheita no Terminal (${items})`
+            : "Abrir Bancas & Encomendas de CLP",
       };
     }
     if (distXZ(player.pos, TERM_PASTEL_POS) < 2.7) {
       return { type: "pastel", key: "Espaço / E", text: "Comprar Pastel + Caldo de Cana (R$ 8 • +Energia)" };
     }
     if (distXZ(player.pos, TERM_BUS_BACK_POS) < 2.8) {
-      return { type: "bus_to_yard", key: "Espaço / E", text: "Pegar Ônibus 402 de volta p/ Pau Arcado" };
+      const bus = getBus402Status("terminal");
+      return {
+        type: "bus_to_yard",
+        key: "Espaço / E",
+        text: bus.available
+          ? `Embarcar Ônibus 402 (${bus.activeTime}) → Pau Arcado`
+          : bus.nextTime
+            ? `Ônibus 402 fora de horário • Próximo às ${bus.nextTime} (em ${bus.minsUntilNext}m)`
+            : "Ônibus 402 encerrou hoje • Pressione K p/ tabela",
+      };
     }
     if (distXZ(player.pos, TERM_TRAIN_POS) < 3.0) {
       return { type: "train_to_etec", key: "Espaço / E", text: "Pegar Trem Linha 7-Rubi p/ ETEC (Botujuru)" };
@@ -3086,14 +3679,21 @@ function findCurrentContext() {
       return {
         type: "chem_bench",
         key: "Espaço / E",
-        text: state.npkDoneToday
-          ? "Fórmula NPK já sintetizada hoje ✓"
-          : "Sintetizar Super-Adubo NPK no Lab de Química!",
+        text: isAfterWorkHours()
+          ? "Lab fechado após 19:00 — Vá descansar!"
+          : state.npkDoneToday
+            ? "Fórmula NPK já sintetizada hoje ✓"
+            : "Sintetizar Super-Adubo NPK no Lab de Química!",
       };
     }
     for (const npc of etecNpcs) {
       if (distXZ(player.pos, npc.pos) < 2.45) {
-        return { type: "npc", npcId: npc.id, key: "Espaço / E", text: `Conversar com ${npc.name}` };
+        return {
+          type: "npc",
+          npcId: npc.id,
+          key: "Espaço / E",
+          text: npc.id === "kaio" ? "Conversar / Comprar Adubo com Kaio Wendell" : `Conversar com ${npc.name}`,
+        };
       }
     }
     return null;
@@ -3101,38 +3701,53 @@ function findCurrentContext() {
 
   // Yard (Pau Arcado) stations
   if (distXZ(player.pos, BUS_STOP_YARD_POS) < 3.2) {
+    const bus = getBus402Status("pauArcado");
     return {
       type: "bus_to_term",
       key: "Espaço / E",
       text: state.isRainy
         ? "Ônibus 402 parado pela chuva! Espere amanhã"
-        : "Pegar Ônibus 402 → Terminal Campo Limpo Paulista",
+        : bus.available
+          ? `Embarcar Ônibus 402 (${bus.activeTime}) → Terminal CLP`
+          : bus.nextTime
+            ? `Ônibus 402 fora de horário • Próximo às ${bus.nextTime} (em ${bus.minsUntilNext}m)`
+            : "Sem mais ônibus 402 hoje • Veja Calendário (K)",
     };
   }
   if (distXZ(player.pos, COOP_POS) < 2.8) {
     return {
       type: "coop",
       key: "Espaço / E",
-      text: state.coopEggs > 0 ? `Recolher Ovos Caipiras (${state.coopEggs} 🥚)` : "Galinheiro (sem ovos agora)",
+      text: isAfterWorkHours()
+        ? "🌙 Após 19:00 — Sem trabalho! Vá dormir"
+        : state.coopEggs > 0
+          ? `Recolher Ovos Caipiras (${state.coopEggs} 🥚)`
+          : "Galinheiro (sem ovos agora)",
     };
   }
   if (distXZ(player.pos, WELL_POS) < 3.4) {
-    return { type: "well", key: "Espaço / E", text: "Encher Regador no Poço" };
+    return {
+      type: "well",
+      key: "Espaço / E",
+      text: isAfterWorkHours() ? "🌙 Após 19:00 — Expediente encerrado!" : "Encher Regador no Poço",
+    };
   }
   if (distXZ(player.pos, COMPOST_POS) < 2.9) {
     return {
       type: "compost",
       key: "Espaço / E",
-      text: state.compostDoneToday
-        ? "Composteira já usada hoje ✓"
-        : "Usar Composteira Orgânica (+30% Crescimento na Horta)",
+      text: isAfterWorkHours()
+        ? "🌙 Após 19:00 — Expediente encerrado!"
+        : state.compostDoneToday
+          ? "Composteira já usada hoje ✓"
+          : "Usar Composteira Orgânica (+30% Crescimento na Horta)",
     };
   }
   if (dogCaramelo && distXZ(player.pos, dogCaramelo.mesh.position) < 2.1) {
     return { type: "dog", key: "Espaço / E", text: "Fazer carinho no Caramelo 🐕" };
   }
   if (distXZ(player.pos, STAND_POS) < 3.8) {
-    return { type: "shop", key: "Espaço / E", text: "Abrir Cooperativa Rural (Melhorias)" };
+    return { type: "shop", key: "Espaço / E", text: "Abrir Cooperativa Rural (Melhorias & Água Auto)" };
   }
   if (distXZ(player.pos, DOOR_POS) < 2.3) {
     return { type: "door", key: "Espaço / E", text: "Entrar em Casa (Quarto do Macho)" };
@@ -3153,6 +3768,14 @@ function findCurrentContext() {
     if (!bestPlot.unlocked) {
       return { type: "locked_plot", plot: bestPlot, key: "L", text: "Canteiro bloqueado — Compre na Loja!" };
     }
+    if (isAfterWorkHours()) {
+      return {
+        type: "plot",
+        plot: bestPlot,
+        key: "🌙 19h+",
+        text: "Depois das 19:00 o Macho não trabalha! Vá dormir em casa",
+      };
+    }
     if (bestPlot.stage === "raw") {
       return { type: "plot", plot: bestPlot, key: "Espaço / E", text: "Arar terra do canteiro" };
     }
@@ -3168,19 +3791,34 @@ function findCurrentContext() {
     if (bestPlot.stage === "growing") {
       const crop = CROPS[bestPlot.cropId];
       const pct = Math.min(99, Math.floor(bestPlot.growth * 100));
+      const hasAnyFert = state.kaioAdubo > 0 || state.kaioSuperAdubo > 0;
       if (bestPlot.waterTimer <= 0) {
         return {
           type: "plot",
           plot: bestPlot,
           key: "Espaço / E",
-          text: `Regar ${crop.name} (${pct}%)`,
+          text: hasAnyFert ? `Regar ${crop.name} (${pct}%) • F: Adubo Kaio` : `Regar ${crop.name} (${pct}%)`,
+        };
+      }
+      if (hasAnyFert) {
+        const fertLabel =
+          !bestPlot.fertilized && state.kaioAdubo > 0
+            ? `Aplicar Adubo NPK do Kaio (+50% e 2x vel.)`
+            : state.kaioSuperAdubo > 0
+              ? `Aplicar Super-Adubo do Kaio (Colheita Já!)`
+              : `Aplicar Adubo NPK do Kaio (+50%)`;
+        return {
+          type: "plot",
+          plot: bestPlot,
+          key: "Espaço / F",
+          text: `${crop.name} (${pct}%) — ${fertLabel}`,
         };
       }
       return {
         type: "info_plot",
         plot: bestPlot,
         key: "🌱",
-        text: `${crop.name} crescendo (${pct}%) — Regado`,
+        text: `${crop.name} crescendo (${pct}%) — ${bestPlot.fertilized ? "Adubado ⚡" : "Regado"}`,
       };
     }
     if (bestPlot.stage === "ready") {
@@ -3205,11 +3843,67 @@ function waterPlot(plot, isSplash = false) {
   return true;
 }
 
+function blockAfterWorkHours() {
+  if (!isAfterWorkHours()) return false;
+  sfx.play("error");
+  showToast("🌙", "EXPEDIENTE ENCERRADO (19:00)", "Depois das 19:00 o Macho não pode mais trabalhar! Vá dormir em casa.");
+  return true;
+}
+
+function applyKaioFertilizer(plot) {
+  if (!plot || !plot.unlocked || plot.stage !== "growing") {
+    sfx.play("error");
+    showToast("🧪", "ADUBO DO KAIO", "Chegue perto de um canteiro com planta crescendo para aplicar o adubo!");
+    return false;
+  }
+  if (blockAfterWorkHours()) return false;
+  if (state.kaioAdubo <= 0 && state.kaioSuperAdubo <= 0) {
+    sfx.play("error");
+    showToast("🧪", "SEM ADUBO DO KAIO", "Compre Adubo NPK ou Super-Adubo com o Kaio Wendell no Lab de Química da ETEC!");
+    return false;
+  }
+
+  const crop = CROPS[plot.cropId];
+  // Usa Adubo NPK regular primeiro (se tiver e não estiver adubado), ou Super-Adubo se só tiver dele / já adubado
+  if (state.kaioAdubo > 0 && (!plot.fertilized || state.kaioSuperAdubo <= 0)) {
+    state.kaioAdubo -= 1;
+    plot.fertilized = true;
+    plot.growth = Math.min(1, plot.growth + 0.5);
+    plot.waterTimer = Math.max(plot.waterTimer, 20);
+    if (plot.growth >= 1) plot.stage = "ready";
+    state.swingTimer = 0.25;
+    sfx.play("upgrade");
+    spawnParticles(new THREE.Vector3(plot.x, 0.55, plot.z), 0x84cc16, 16);
+    showToast(
+      "🧪",
+      "ADUBO NPK DO KAIO!",
+      plot.stage === "ready"
+        ? `${crop.name} amadureceu na hora!`
+        : `${crop.name} saltou +50% e agora cresce em 2x velocidade!`
+    );
+  } else if (state.kaioSuperAdubo > 0) {
+    state.kaioSuperAdubo -= 1;
+    plot.fertilized = true;
+    plot.growth = 1;
+    plot.stage = "ready";
+    plot.waterTimer = Math.max(plot.waterTimer, 20);
+    state.swingTimer = 0.28;
+    sfx.play("upgrade");
+    spawnParticles(new THREE.Vector3(plot.x, 0.65, plot.z), 0xfacc15, 20);
+    showToast("⚗️", "SUPER-ADUBO DO KAIO!", `${crop.emoji} ${crop.name} amadureceu 100% instantaneamente!`);
+  }
+  refreshPlotAppearance(plot);
+  updateHUD();
+  saveGame();
+  return true;
+}
+
 function interactWithPlot(plot) {
   if (!plot.unlocked) {
     openShopModal();
     return;
   }
+  if (blockAfterWorkHours()) return;
 
   if (plot.stage === "raw") {
     plot.stage = "tilled";
@@ -3232,8 +3926,9 @@ function interactWithPlot(plot) {
     plot.stage = "growing";
     plot.cropId = crop.id;
     plot.growth = 0;
-    plot.waterTimer = state.water > 0 ? 16 : 0;
-    if (state.water > 0) {
+    plot.fertilized = false;
+    plot.waterTimer = state.upgrades.autoWaterLevel >= 1 ? 16 : state.water > 0 ? 16 : 0;
+    if (state.upgrades.autoWaterLevel < 1 && state.water > 0) {
       state.water -= 1;
     }
     state.swingTimer = 0.22;
@@ -3269,18 +3964,22 @@ function interactWithPlot(plot) {
       sfx.play("water");
       updateHUD();
       saveGame();
+    } else if (state.kaioAdubo > 0 || state.kaioSuperAdubo > 0) {
+      applyKaioFertilizer(plot);
     }
     return;
   }
 
   if (plot.stage === "ready") {
     const crop = CROPS[plot.cropId];
-    const bonus = Math.random() < getDoubleHarvestChance() ? 2 : 1;
+    const doubleChance = getDoubleHarvestChance() + (plot.fertilized ? 0.35 : 0);
+    const bonus = Math.random() < doubleChance ? 2 : 1;
     state.inventory[crop.id] = (state.inventory[crop.id] || 0) + bonus;
     plot.stage = "tilled";
     plot.cropId = null;
     plot.growth = 0;
     plot.waterTimer = 0;
+    plot.fertilized = false;
     state.swingTimer = 0.25;
     sfx.play("harvest");
     spawnParticles(new THREE.Vector3(plot.x, 0.65, plot.z), crop.color, 15);
@@ -3313,6 +4012,7 @@ function triggerContextAction() {
   const ctx = findCurrentContext();
   if (!ctx) return;
   if (ctx.type === "well") {
+    if (blockAfterWorkHours()) return;
     state.water = getMaxWater();
     state.swingTimer = 0.25;
     sfx.play("refill");
@@ -3320,6 +4020,7 @@ function triggerContextAction() {
     showToast("💧", "REGADOR CHEIO", `Água recarregada (${state.water}/${getMaxWater()}).`);
     updateHUD();
   } else if (ctx.type === "coop") {
+    if (blockAfterWorkHours()) return;
     if (state.coopEggs <= 0) {
       showToast("🐔", "GALINHEIRO", "As galinhas já botaram hoje! Amanhã cedo tem mais ovos caipiras.");
       return;
@@ -3334,6 +4035,7 @@ function triggerContextAction() {
     updateHUD();
     saveGame();
   } else if (ctx.type === "compost") {
+    if (blockAfterWorkHours()) return;
     if (state.compostDoneToday) {
       showToast("🌿", "COMPOSTEIRA", "Você já usou o húmus da composteira hoje!");
       return;
@@ -3378,6 +4080,7 @@ function triggerContextAction() {
   } else if (ctx.type === "exit_etec") {
     exitEtecInside();
   } else if (ctx.type === "chem_bench") {
+    if (blockAfterWorkHours()) return;
     if (state.npkDoneToday) {
       showToast("🧪", "LABORATÓRIO DE QUÍMICA", "A síntese NPK já foi feita hoje! Volte amanhã.");
       return;
@@ -3439,6 +4142,7 @@ function advanceToNextDay() {
 
   state.day += 1;
   state.dayMinutes = 6.5 * 60;
+  state.workEndNotifiedToday = false;
   state.isRainy = Math.random() < 0.35;
 
   // Para a sanidade descer ele precisa ficar sem ir para a ETEC (cada dia longe reduz 25%)
@@ -3453,8 +4157,9 @@ function advanceToNextDay() {
     state.location = "yard";
     player.pos.set(0, 0, -6.5);
     player.facingYaw = 0;
-    state.camYaw = 0.2;
+    state.camYaw = state.firstPerson ? Math.PI : 0.2;
     state.camPitch = 0.48;
+    state.fpPitch = 0;
     state.camDist = 16.5;
     playerMesh.position.copy(player.pos);
     playerMesh.rotation.y = player.facingYaw;
@@ -3466,8 +4171,8 @@ function advanceToNextDay() {
 
   plots.forEach((p) => {
     if (p.unlocked && p.stage === "growing") {
-      p.growth = Math.min(1, p.growth + 0.35);
-      p.waterTimer = Math.max(p.waterTimer, state.isRainy ? 20 : 10);
+      p.growth = Math.min(1, p.growth + (p.fertilized ? 0.36 : 0.22));
+      p.waterTimer = Math.max(p.waterTimer, state.isRainy || state.upgrades.autoWaterLevel >= 1 ? 20 : 10);
       if (p.growth >= 1) p.stage = "ready";
       refreshPlotAppearance(p);
     }
@@ -3477,10 +4182,12 @@ function advanceToNextDay() {
   generateCityOrders();
   sfx.play("sleep");
   const hotCrop = CROPS[state.hotCropId];
+  const cal = getCalendarInfo(state.day);
+  const dateLabel = `${cal.weekdayShort}, ${String(cal.dayOfMonth).padStart(2, "0")}/${cal.monthShort}`;
   if (state.isRainy) {
-    showDayBanner(`DIA ${state.day} CHUVOSO 🌧️ • ÔNIBUS 402 PARADO! HORTA REGADA!`);
+    showDayBanner(`${dateLabel} • CHUVOSO 🌧️ • ÔNIBUS 402 PARADO! HORTA REGADA!`);
   } else {
-    showDayBanner(`BOM DIA, MACHO! DIA ${state.day} ☀️ • ${hotCrop.emoji} ${hotCrop.name} EM ALTA!`);
+    showDayBanner(`BOM DIA, MACHO! ${dateLabel} ☀️ • ${hotCrop.emoji} ${hotCrop.name} EM ALTA!`);
   }
 
   if (prevInsanity > 0) {
@@ -3520,9 +4227,12 @@ function closeSellModal() {
 
 function renderSellModal() {
   const atTerminal = state.location === "terminal";
-  sellModeNotice.textContent = atTerminal
-    ? "Você está nas Bancas do Terminal de Campo Limpo Paulista! Venda sua colheita ou entregue encomendas."
-    : "Para vender seus produtos, pegue o Ônibus 402 na porteira de Pau Arcado até o Terminal de Campo Limpo Paulista!";
+  const canSellNow = atTerminal && !isAfterWorkHours();
+  sellModeNotice.textContent = !atTerminal
+    ? "Para vender seus produtos, pegue o Ônibus 402 (nos horários da JundMob) até o Terminal de Campo Limpo Paulista!"
+    : isAfterWorkHours()
+      ? "🌙 Já passou das 19:00! O expediente terminou e as bancas de venda fecharam. Pegue o 402 de volta e vá dormir!"
+      : "Você está nas Bancas do Terminal de Campo Limpo Paulista! Venda sua colheita ou entregue encomendas.";
   sellActionArea.classList.toggle("hidden", !atTerminal);
 
   sellInventoryList.innerHTML = "";
@@ -3546,10 +4256,10 @@ function renderSellModal() {
           <div class="row-sub">Na cesta: <strong>${qty}</strong> • Preço hoje: <strong>${formatBRL(price)}</strong>/un</div>
         </div>
       </div>
-      <button class="mini-btn" ${qty <= 0 || !atTerminal ? "disabled" : ""}>Vender (${formatBRL(subtotal)})</button>
+      <button class="mini-btn" ${qty <= 0 || !canSellNow ? "disabled" : ""}>${isAfterWorkHours() ? "Fechado (19h+)" : `Vender (${formatBRL(subtotal)})`}</button>
     `;
     row.querySelector("button").addEventListener("click", () => {
-      if (!atTerminal || state.inventory[id] <= 0) return;
+      if (!canSellNow || state.inventory[id] <= 0) return;
       state.money += subtotal;
       state.inventory[id] = 0;
       sfx.play("sell");
@@ -3561,15 +4271,18 @@ function renderSellModal() {
     sellInventoryList.appendChild(row);
   });
 
-  sellAllBtn.disabled = !atTerminal || totalPotential <= 0;
-  sellAllBtn.textContent =
-    totalPotential > 0 ? `Vender Tudo da Cesta (+${formatBRL(totalPotential)})` : "Cesta Vazia — Colha no Quintal!";
+  sellAllBtn.disabled = !canSellNow || totalPotential <= 0;
+  sellAllBtn.textContent = isAfterWorkHours()
+    ? "🌙 Bancas Fechadas após 19:00"
+    : totalPotential > 0
+      ? `Vender Tudo da Cesta (+${formatBRL(totalPotential)})`
+      : "Cesta Vazia — Colha no Quintal!";
 
   ordersList.innerHTML = "";
   state.orders.forEach((order) => {
     const crop = CROPS[order.cropId];
     const have = state.inventory[order.cropId] || 0;
-    const canDeliver = atTerminal && !order.completed && have >= order.qty;
+    const canDeliver = canSellNow && !order.completed && have >= order.qty;
     const row = document.createElement("div");
     row.className = "row-card";
     row.innerHTML = `
@@ -3581,11 +4294,11 @@ function renderSellModal() {
         </div>
       </div>
       <button class="mini-btn green" ${canDeliver ? "" : "disabled"}>
-        ${order.completed ? "Entregue ✓" : atTerminal ? "Entregar" : "Vá ao Terminal"}
+        ${order.completed ? "Entregue ✓" : isAfterWorkHours() ? "Fechado 19h+" : atTerminal ? "Entregar" : "Vá ao Terminal"}
       </button>
     `;
     row.querySelector("button").addEventListener("click", () => {
-      if (!atTerminal || order.completed || (state.inventory[order.cropId] || 0) < order.qty) return;
+      if (!canSellNow || order.completed || (state.inventory[order.cropId] || 0) < order.qty) return;
       state.inventory[order.cropId] -= order.qty;
       state.money += order.reward;
       state.reputation += 1;
@@ -3601,7 +4314,7 @@ function renderSellModal() {
 }
 
 sellAllBtn.addEventListener("click", () => {
-  if (state.location !== "terminal") return;
+  if (state.location !== "terminal" || isAfterWorkHours()) return;
   let earned = 0;
   CROP_KEYS.forEach((id) => {
     const qty = state.inventory[id] || 0;
@@ -3678,8 +4391,10 @@ const KAIO_LINES = [
 ];
 
 const ALYFFER_CORINGA_LINES = [
+  "6-7!! SEIS SETE!! 🤲🤡 OLHA O 6-7 NA HORTA DE PAU ARCADO!!",
   "HAHAHAHA! A ALFACE CRESPA ME CONTOU O SEGREDO DO ÔNIBUS 402!",
   "CORINGUEI! SE EU PLANTAR UM TÊNIS VERMELHO NASCE UM MUZZONLINE?!",
+  "SEIS... SETE... 6-7!! 👅👀 MEUS OLHOS SAÍRAM PRA VER A ALFACE CRESCER!",
   "O KAIO MISTUROU H₂O COM CALDO DE CANA E AGORA TÔ VENDO EM 4D! KKKKK!",
   "POR QUE O TREM DA LINHA 7-RUBI NÃO É FEITO DE MORANGO?! HAHAHA!",
   "EU SOU O CORINGA DE PAU ARCADO! QUEM É BATMAN PERTO DO MACHO?!",
@@ -3770,6 +4485,10 @@ function closeNpcModal() {
 
 function renderNpcModal() {
   npcMissionBox.classList.add("hidden");
+  if (kaioShopBox) {
+    kaioShopBox.classList.add("hidden");
+    kaioShopBox.innerHTML = "";
+  }
   npcActionBtn.disabled = false;
 
   if (currentNpcId === "muzzonline") {
@@ -3794,13 +4513,66 @@ function renderNpcModal() {
       renderNpcModal();
     };
   } else if (currentNpcId === "kaio") {
-    npcTag.textContent = "LAB DE QUÍMICA • ETEC CLP";
-    npcName.textContent = "Kaio Wendell (Cientista Louco)";
-    npcAppearance.textContent = "Sobretudo estiloso, cabelo de cientista, calça social e sapato social.";
+    npcTag.textContent = "LAB DE QUÍMICA • LOJA DE ADUBO DO KAIO";
+    npcName.textContent = "Kaio Wendell (Cientista & Vendedor de Adubo)";
+    npcAppearance.textContent = "Sobretudo estiloso, cabelo de cientista, calça social e sapato social. Vende adubo químico p/ acelerar sua horta!";
     const kaioQuote = KAIO_LINES[Math.floor(Math.random() * KAIO_LINES.length)];
     npcDialogue.textContent = state.isCrazy
       ? `${kaioQuote}\n\n🤡 Alyffer Coringando: "${state.currentCoringaLine}"`
       : kaioQuote;
+
+    // Loja de Adubo Químico do Kaio na ETEC!
+    if (kaioShopBox) {
+      kaioShopBox.classList.remove("hidden");
+      kaioShopBox.innerHTML = `<div class="kaio-shop-header">🧪 Adubo Químico do Kaio • Seu Caixa: ${formatBRL(state.money)}</div>`;
+      const kaioProducts = [
+        {
+          emoji: "🧪",
+          name: "Adubo NPK do Kaio",
+          sub: `+50% crescimento na hora e 2x velocidade no canteiro • Você tem: ${state.kaioAdubo}`,
+          price: 15,
+          buy: () => {
+            state.kaioAdubo += 1;
+          },
+        },
+        {
+          emoji: "⚗️",
+          name: "Super-Adubo Turbinado",
+          sub: `Colheita 100% instantânea + chance extra dupla • Você tem: ${state.kaioSuperAdubo}`,
+          price: 35,
+          buy: () => {
+            state.kaioSuperAdubo += 1;
+          },
+        },
+      ];
+      kaioProducts.forEach((prod) => {
+        const row = document.createElement("div");
+        row.className = "row-card";
+        const canBuy = state.money >= prod.price;
+        row.innerHTML = `
+          <div class="row-info">
+            <span class="row-emoji">${prod.emoji}</span>
+            <div>
+              <div class="row-title">${prod.name}</div>
+              <div class="row-sub">${prod.sub}</div>
+            </div>
+          </div>
+          <button class="mini-btn green" type="button" ${canBuy ? "" : "disabled"}>Comprar ${formatBRL(prod.price)}</button>
+        `;
+        row.querySelector("button").addEventListener("click", () => {
+          if (state.money < prod.price) return;
+          state.money -= prod.price;
+          prod.buy();
+          sfx.play("sell");
+          showToast(prod.emoji, "ADUBO COMPRADO DO KAIO!", `Use com F ou Espaço em qualquer planta crescendo na horta!`);
+          updateHUD();
+          saveGame();
+          renderNpcModal();
+        });
+        kaioShopBox.appendChild(row);
+      });
+    }
+
     npcActionBtn.textContent = state.isCrazy
       ? "Coringar no Lab de Química (100% 🤡)"
       : "Ouvir Aula de Química (+30% Sanidade/Coringa)";
@@ -3883,6 +4655,97 @@ function renderNpcModal() {
       };
     }
   }
+}
+
+// Calendar & Bus 402 Modal Logic
+function openCalendarModal() {
+  clearActiveInputs();
+  state.mode = "modal";
+  renderCalendarModal();
+  calendarModal.classList.remove("hidden");
+}
+
+function closeCalendarModal() {
+  calendarModal.classList.add("hidden");
+  state.mode = "playing";
+}
+
+function renderCalendarModal() {
+  const cal = getCalendarInfo(state.day);
+  calendarMonthTitle.textContent = `${cal.monthName} • Ano ${cal.year} (Dia ${state.day})`;
+
+  const nowText = formatHHMM(state.dayMinutes);
+  const workStatus = isAfterWorkHours()
+    ? "🌙 Expediente encerrado (após 19:00 — vá dormir!)"
+    : "☀️ Expediente ativo (trabalho permitido até 19:00)";
+  calendarSummaryLine.innerHTML = `Hoje é <strong>${cal.weekdayFull}, ${String(cal.dayOfMonth).padStart(2, "0")} de ${cal.monthName}</strong> • Hora: <strong>${nowText}</strong> • Clima: <strong>${state.isRainy ? "Chuvoso 🌧️" : "Ensolarado ☀️"}</strong> • ${workStatus}`;
+
+  calendarGrid.innerHTML = "";
+  for (let i = 0; i < cal.firstDayOfMonthWeek; i++) {
+    const empty = document.createElement("div");
+    empty.className = "cal-cell empty";
+    calendarGrid.appendChild(empty);
+  }
+  for (let d = 1; d <= cal.daysInMonth; d++) {
+    const dow = (cal.firstDayOfMonthWeek + d - 1) % 7;
+    const isWeekend = dow === 0 || dow === 6;
+    const isToday = d === cal.dayOfMonth;
+    const isPast = d < cal.dayOfMonth;
+    const cell = document.createElement("div");
+    cell.className = `cal-cell${isWeekend ? " weekend" : ""}${isPast ? " past" : ""}${isToday ? " today" : ""}`;
+    const tagText = isToday
+      ? state.isRainy
+        ? "🌧️ Hoje"
+        : "☀️ Hoje"
+      : dow === 6
+        ? "🚌 Sáb"
+        : dow === 0
+          ? "🚌 Dom"
+          : "";
+    cell.innerHTML = `<span class="cal-num">${d}</span><span class="cal-tag">${tagText}</span>`;
+    calendarGrid.appendChild(cell);
+  }
+
+  busScheduleTitle.textContent = `🚌 Linha 402 — Horários Oficiais JundMob (${cal.scheduleLabel})`;
+  const pauStatus = getBus402Status("pauArcado");
+  const termStatus = getBus402Status("terminal");
+
+  if (state.isRainy) {
+    busStatusBanner.className = "bus-status-banner blocked";
+    busStatusBanner.textContent = "🌧️ Dia chuvoso em Pau Arcado! O Ônibus 402 não circula hoje.";
+  } else if (pauStatus.available || termStatus.available) {
+    busStatusBanner.className = "bus-status-banner available";
+    const parts = [];
+    if (pauStatus.available) parts.push(`Pau Arcado: NO PONTO (${pauStatus.activeTime})`);
+    if (termStatus.available) parts.push(`Terminal CLP: NO PONTO (${termStatus.activeTime})`);
+    busStatusBanner.textContent = `✅ Ônibus 402 disponível agora! ${parts.join(" • ")}`;
+  } else {
+    busStatusBanner.className = "bus-status-banner";
+    const nextP = pauStatus.nextTime ? `${pauStatus.nextTime} (em ${pauStatus.minsUntilNext}m)` : "amanhã";
+    const nextT = termStatus.nextTime ? `${termStatus.nextTime} (em ${termStatus.minsUntilNext}m)` : "amanhã";
+    busStatusBanner.textContent = `⏳ Fora de horário agora (${nowText}). Próximo Pau Arcado: ${nextP} • Próximo Terminal: ${nextT}`;
+  }
+
+  function fillTimesGrid(el, statusObj) {
+    el.innerHTML = "";
+    statusObj.rawList.forEach((label) => {
+      const dep = parseHHMM(label);
+      const chip = document.createElement("span");
+      let cls = "bus-time-chip";
+      if (statusObj.activeTime === label && !state.isRainy) {
+        cls += " active";
+      } else if (statusObj.nextTime === label) {
+        cls += " next";
+      } else if (dep + BUS_BOARD_AFTER < state.dayMinutes) {
+        cls += " past";
+      }
+      chip.className = cls;
+      chip.textContent = label;
+      el.appendChild(chip);
+    });
+  }
+  fillTimesGrid(busTimesPauArcado, pauStatus);
+  fillTimesGrid(busTimesTerminal, termStatus);
 }
 
 // Guide & Titles Modal Logic
@@ -3972,6 +4835,7 @@ function renderShopModal() {
 
   const plotCost = 35 + state.upgrades.plotTier * 45;
   const canCost = 30 * state.upgrades.canLevel;
+  const autoWaterCost = state.upgrades.autoWaterLevel === 0 ? 90 : 180;
   const fertCost = 40 * state.upgrades.fertLevel;
   const standCost = 45 * state.upgrades.standLevel;
 
@@ -3985,6 +4849,25 @@ function renderShopModal() {
       buy: () => {
         state.upgrades.plotTier += 1;
         syncUnlockedPlots();
+      },
+    },
+    {
+      emoji: "💦",
+      title:
+        state.upgrades.autoWaterLevel === 0
+          ? `Água Automática (Aspersores na Horta)`
+          : `Irrigação Automática Pro (Nível ${state.upgrades.autoWaterLevel}/2)`,
+      sub:
+        state.upgrades.autoWaterLevel === 0
+          ? `Instala 4 aspersores 3D que regam toda a horta automaticamente!`
+          : state.upgrades.autoWaterLevel === 1
+            ? `Nível 2: Irrigação contínua + bônus de +15% na velocidade das plantas!`
+            : `Irrigação automática máxima ativa (+15% velocidade)!`,
+      cost: autoWaterCost,
+      maxed: state.upgrades.autoWaterLevel >= 2,
+      buy: () => {
+        state.upgrades.autoWaterLevel += 1;
+        if (sprinklerGroup) sprinklerGroup.visible = true;
       },
     },
     {
@@ -4003,8 +4886,8 @@ function renderShopModal() {
     },
     {
       emoji: "🌿",
-      title: `Adubo Orgânico (Nível ${state.upgrades.fertLevel}/4)`,
-      sub: `Crescimento +${(state.upgrades.fertLevel - 1) * 28}% • Chance de colheita dupla`,
+      title: `Solo Fértil da Roça (Nível ${state.upgrades.fertLevel}/4)`,
+      sub: `Crescimento +${(state.upgrades.fertLevel - 1) * 25}% • Chance de colheita dupla (p/ adubo turbo, compre com o Kaio na ETEC!)`,
       cost: fertCost,
       maxed: state.upgrades.fertLevel >= 4,
       buy: () => {
@@ -4062,6 +4945,10 @@ window.addEventListener("keydown", (e) => {
   }
 
   if (e.code === "Escape") {
+    if (!calendarModal.classList.contains("hidden")) {
+      closeCalendarModal();
+      return;
+    }
     if (!npcModal.classList.contains("hidden")) {
       closeNpcModal();
       return;
@@ -4092,6 +4979,17 @@ window.addEventListener("keydown", (e) => {
   if (!keys[e.code]) {
     if (e.code === "Space" || e.code === "KeyE") {
       triggerContextAction();
+    } else if (e.code === "KeyF") {
+      const ctx = findCurrentContext();
+      if (ctx && ctx.plot) {
+        applyKaioFertilizer(ctx.plot);
+      } else {
+        showToast("🧪", "ADUBO DO KAIO", "Fique perto de um canteiro com planta crescendo e aperte F!");
+      }
+    } else if (e.code === "KeyV") {
+      toggleFirstPerson();
+    } else if (e.code === "KeyK") {
+      openCalendarModal();
     } else if (e.code === "KeyG") {
       openGuideModal();
     } else if (e.code === "KeyL") {
@@ -4192,7 +5090,11 @@ window.addEventListener("pointermove", (e) => {
     lastMouseY = e.clientY;
     const sens = e.pointerType === "touch" ? 0.0082 : 0.0065;
     state.camYaw -= dx * sens;
-    state.camPitch = THREE.MathUtils.clamp(state.camPitch + dy * 0.0052, 0.22, 1.08);
+    if (state.firstPerson) {
+      state.fpPitch = THREE.MathUtils.clamp(state.fpPitch - dy * 0.0048, -0.85, 0.85);
+    } else {
+      state.camPitch = THREE.MathUtils.clamp(state.camPitch + dy * 0.0052, 0.22, 1.08);
+    }
   }
 });
 
@@ -4349,6 +5251,7 @@ function enterFarm() {
   shopModal.classList.add("hidden");
   npcModal.classList.add("hidden");
   guideModal.classList.add("hidden");
+  calendarModal.classList.add("hidden");
   hud.classList.remove("hidden");
   state.mode = "playing";
   setActiveSceneVisibility();
@@ -4394,6 +5297,10 @@ restartPauseBtn.addEventListener("click", () => {
 });
 pauseBtn.addEventListener("click", togglePause);
 muteBtn.addEventListener("click", toggleMute);
+if (camModeBtn) camModeBtn.addEventListener("click", toggleFirstPerson);
+if (calendarHudBtn) calendarHudBtn.addEventListener("click", openCalendarModal);
+if (calendarPill) calendarPill.addEventListener("click", openCalendarModal);
+if (closeCalendarBtn) closeCalendarBtn.addEventListener("click", closeCalendarModal);
 guideHudBtn.addEventListener("click", openGuideModal);
 ordersHudBtn.addEventListener("click", openSellModal);
 shopHudBtn.addEventListener("click", openShopModal);
@@ -4408,10 +5315,16 @@ const rainySkyColor = new THREE.Color(0x526375);
 
 function updateSkyAndTime(dt) {
   state.dayMinutes += dt * 4.5;
+  if (state.dayMinutes >= WORK_END_MINUTES && !state.workEndNotifiedToday) {
+    state.workEndNotifiedToday = true;
+    showDayBanner("🌙 19:00 — EXPEDIENTE ENCERRADO! DEPOIS DAS 19H O MACHO NÃO PODE TRABALHAR!");
+    showToast("🌙", "HORA DE DESCANSAR", "Passou das 19:00! Vá para casa dormir para começar o próximo dia.");
+  }
   if (state.dayMinutes >= 22 * 60) {
     advanceToNextDay();
     return;
   }
+  syncBusModelsVisibility();
 
   rainGroup.visible = state.isRainy && state.location !== "room" && state.location !== "etec_inside";
   if (rainGroup.visible) {
@@ -4608,29 +5521,100 @@ function updateGame(dt) {
     player.facingYaw += diff * Math.min(1, 14 * dt);
   }
 
-  // Animate Macho Character
+  // Animate Macho Character (com gesto 6-7 nos braços, olhos esbugalhados vermelhos e língua p/ fora ao Coringar!)
   playerMesh.position.copy(player.pos);
+  if (state.firstPerson) {
+    player.facingYaw = state.camYaw + Math.PI;
+  }
   playerMesh.rotation.y = player.facingYaw;
-  playerMesh.rotation.z = state.isCrazy ? Math.sin(state.animTime * 15) * 0.08 : 0;
-  const { leftArm, rightArm, leftLeg, rightLeg } = playerMesh.userData;
+  playerMesh.rotation.z = state.isCrazy ? Math.sin(state.animTime * 11) * 0.08 : 0;
+
+  const {
+    leftArm,
+    rightArm,
+    leftForearm,
+    rightForearm,
+    leftLeg,
+    rightLeg,
+    canGroup,
+    leftEye,
+    rightEye,
+    crazyFaceGroup,
+    leftCrazyEye,
+    rightCrazyEye,
+    lPupil,
+    rPupil,
+    tongueGroup,
+  } = playerMesh.userData;
+
+  // Alterna rosto normal x rosto Coringando (olhos esbugalhados vermelhos + língua p/ fora!)
+  if (leftEye && rightEye && crazyFaceGroup) {
+    leftEye.visible = !state.isCrazy;
+    rightEye.visible = !state.isCrazy;
+    crazyFaceGroup.visible = state.isCrazy;
+    if (state.isCrazy) {
+      const bulge = 1.0 + Math.sin(state.animTime * 18) * 0.14;
+      leftCrazyEye.scale.set(1.0, 1.0, bulge);
+      rightCrazyEye.scale.set(1.0, 1.0, 2.0 - bulge);
+      if (lPupil && rPupil) {
+        lPupil.position.x = Math.sin(state.animTime * 23) * 0.032;
+        lPupil.position.y = Math.cos(state.animTime * 19) * 0.028;
+        rPupil.position.x = -Math.cos(state.animTime * 25) * 0.032;
+        rPupil.position.y = Math.sin(state.animTime * 21) * 0.028;
+      }
+      if (tongueGroup) {
+        tongueGroup.rotation.z = Math.sin(state.animTime * 16) * 0.24;
+        tongueGroup.rotation.x = Math.sin(state.animTime * 22) * 0.18;
+      }
+    }
+  }
+  if (canGroup) {
+    canGroup.visible = state.location === "yard" && !state.isCrazy;
+  }
 
   if (state.swingTimer > 0) {
     state.swingTimer = Math.max(0, state.swingTimer - dt);
     rightArm.rotation.x = -1.25 + Math.sin(state.swingTimer * 24) * 0.45;
-  } else if (state.isCrazy && !moving) {
-    leftArm.rotation.x = -1.8 + Math.sin(state.animTime * 16) * 0.45;
-    rightArm.rotation.x = -1.8 + Math.cos(state.animTime * 16) * 0.45;
-    leftLeg.rotation.x = Math.sin(state.animTime * 10) * 0.2;
-    rightLeg.rotation.x = -Math.sin(state.animTime * 10) * 0.2;
+    if (leftForearm) leftForearm.rotation.x = 0;
+    if (rightForearm) rightForearm.rotation.x = 0;
+  } else if (state.isCrazy) {
+    // Gesto "6-7" (67): ambos braços dobrados pra frente com palmas p/ cima subindo e descendo alternadamente!
+    const pump67 = Math.sin(state.animTime * 9.5);
+    leftArm.rotation.x = -0.58 + pump67 * 0.36;
+    rightArm.rotation.x = -0.58 - pump67 * 0.36;
+    leftArm.rotation.z = 0.14;
+    rightArm.rotation.z = -0.14;
+    if (leftForearm) {
+      leftForearm.rotation.x = -1.35 + pump67 * 0.25;
+    }
+    if (rightForearm) {
+      rightForearm.rotation.x = -1.35 - pump67 * 0.25;
+    }
+    if (moving) {
+      const legSwing = Math.sin(state.animTime * 16) * 0.85;
+      leftLeg.rotation.x = -legSwing;
+      rightLeg.rotation.x = legSwing;
+    } else {
+      leftLeg.rotation.x = Math.sin(state.animTime * 9.5) * 0.16;
+      rightLeg.rotation.x = -Math.sin(state.animTime * 9.5) * 0.16;
+    }
   } else if (moving) {
-    const swing = Math.sin(state.animTime * (state.isCrazy ? 16 : 12)) * (state.isCrazy ? 0.85 : 0.65);
+    const swing = Math.sin(state.animTime * 12) * 0.65;
     leftArm.rotation.x = swing;
     rightArm.rotation.x = -swing * 0.7;
+    leftArm.rotation.z = 0;
+    rightArm.rotation.z = 0;
+    if (leftForearm) leftForearm.rotation.x = 0;
+    if (rightForearm) rightForearm.rotation.x = 0;
     leftLeg.rotation.x = -swing;
     rightLeg.rotation.x = swing;
   } else {
     leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, 10 * dt);
     rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.2, 10 * dt);
+    leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0, 10 * dt);
+    rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, 0, 10 * dt);
+    if (leftForearm) leftForearm.rotation.x = THREE.MathUtils.lerp(leftForearm.rotation.x, 0, 10 * dt);
+    if (rightForearm) rightForearm.rotation.x = THREE.MathUtils.lerp(rightForearm.rotation.x, 0, 10 * dt);
     leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, 10 * dt);
     rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, 10 * dt);
   }
@@ -4643,31 +5627,58 @@ function updateGame(dt) {
     }
     if (coringaBubble) {
       coringaBubble.classList.remove("hidden");
-      headProjVec.set(player.pos.x, player.pos.y + 3.35, player.pos.z);
-      headProjVec.project(camera);
-      const halfPad = Math.min(155, Math.max(85, window.innerWidth * 0.34));
-      const sx = THREE.MathUtils.clamp((headProjVec.x * 0.5 + 0.5) * window.innerWidth, halfPad, window.innerWidth - halfPad);
-      const sy = THREE.MathUtils.clamp((-headProjVec.y * 0.5 + 0.5) * window.innerHeight, 92, Math.max(100, window.innerHeight - 150));
-      coringaBubble.style.left = `${sx}px`;
-      coringaBubble.style.top = `${sy}px`;
+      if (state.firstPerson) {
+        coringaBubble.style.left = `${window.innerWidth * 0.5}px`;
+        coringaBubble.style.top = `145px`;
+      } else {
+        headProjVec.set(player.pos.x, player.pos.y + 3.35, player.pos.z);
+        headProjVec.project(camera);
+        const halfPad = Math.min(155, Math.max(85, window.innerWidth * 0.34));
+        const sx = THREE.MathUtils.clamp((headProjVec.x * 0.5 + 0.5) * window.innerWidth, halfPad, window.innerWidth - halfPad);
+        const sy = THREE.MathUtils.clamp((-headProjVec.y * 0.5 + 0.5) * window.innerHeight, 92, Math.max(100, window.innerHeight - 150));
+        coringaBubble.style.left = `${sx}px`;
+        coringaBubble.style.top = `${sy}px`;
+      }
     }
   } else if (coringaBubble && !coringaBubble.classList.contains("hidden")) {
     coringaBubble.classList.add("hidden");
   }
 
-  // Update Crops Growth (Rain keeps all plots watered!)
+  // Irrigação Automática (Aspersores 3D giram e regam todos os canteiros!)
+  if (state.upgrades.autoWaterLevel >= 1) {
+    if (sprinklerGroup) sprinklerGroup.visible = true;
+    state.autoWaterAccum += dt;
+    const waterInterval = state.upgrades.autoWaterLevel >= 2 ? 1.2 : 2.6;
+    if (state.autoWaterAccum >= waterInterval) {
+      state.autoWaterAccum = 0;
+      plots.forEach((p) => {
+        if (p.unlocked && p.stage === "growing" && p.waterTimer <= 3) {
+          p.waterTimer = 18;
+          refreshPlotAppearance(p);
+        }
+      });
+      if (state.location === "yard") {
+        sprinklerHeads.forEach((sh) => {
+          spawnParticles(new THREE.Vector3(sh.x, 0.72, sh.z), 0x38bdf8, 4);
+        });
+      }
+    }
+  }
+
+  // Update Crops Growth (Rain & Auto-Water keep plots watered; Adubo do Kaio dobra a velocidade!)
   const growMult = getGrowthMultiplier();
   let anyPlotChanged = false;
   plots.forEach((p) => {
     if (!p.unlocked) return;
     if (p.stage === "growing") {
-      if (state.isRainy) {
+      if (state.isRainy || state.upgrades.autoWaterLevel >= 2) {
         p.waterTimer = Math.max(p.waterTimer, 12);
       }
       if (p.waterTimer > 0) {
         p.waterTimer = Math.max(0, p.waterTimer - dt);
         const crop = CROPS[p.cropId];
-        p.growth += (dt * growMult) / crop.growTime;
+        const fertSpeed = p.fertilized ? 2.0 : 1.0;
+        p.growth += (dt * growMult * fertSpeed) / crop.growTime;
         if (p.growth >= 1) {
           p.growth = 1;
           p.stage = "ready";
@@ -4775,6 +5786,13 @@ function updateAmbient(dt) {
     ceilingFanMesh.rotation.y += 3.2 * dt;
   }
 
+  if (sprinklerGroup && sprinklerGroup.visible && state.location === "yard") {
+    const spinSpeed = state.upgrades.autoWaterLevel >= 2 ? 7.0 : 4.2;
+    sprinklerHeads.forEach((sh) => {
+      sh.head.rotation.y += spinSpeed * dt;
+    });
+  }
+
   if (rainGroup.visible) {
     for (const drop of rainDrops) {
       drop.position.y -= 26 * dt;
@@ -4804,6 +5822,38 @@ function updateCamera(dt, immediate = false) {
   if (state.mode === "start" && !immediate) {
     state.camYaw += 0.16 * dt;
   }
+
+  if (state.firstPerson && state.mode !== "start") {
+    playerMesh.visible = false;
+    const eyeY = player.pos.y + 2.25 + (state.isCrazy ? Math.sin(state.animTime * 14) * 0.04 : 0);
+    const desiredPos = new THREE.Vector3(player.pos.x, eyeY, player.pos.z);
+    if (immediate) {
+      camera.position.copy(desiredPos);
+    } else {
+      camera.position.lerp(desiredPos, Math.min(1, 18 * dt));
+    }
+    const lookDir = new THREE.Vector3(
+      -Math.sin(state.camYaw) * Math.cos(state.fpPitch),
+      Math.sin(state.fpPitch),
+      -Math.cos(state.camYaw) * Math.cos(state.fpPitch)
+    );
+    camera.lookAt(desiredPos.clone().add(lookDir));
+
+    // Braços em 1ª pessoa fazendo o gesto "6-7" quando Coringando!
+    fpCrazyArmsGroup.visible = state.isCrazy && state.mode === "playing";
+    if (fpCrazyArmsGroup.visible) {
+      const p67 = Math.sin(state.animTime * 9.5);
+      fpCrazyArmsGroup.userData.fpLeftHand.position.y = -0.3 + p67 * 0.12;
+      fpCrazyArmsGroup.userData.fpRightHand.position.y = -0.3 - p67 * 0.12;
+      fpCrazyArmsGroup.userData.fpLeftHand.rotation.x = p67 * 0.22;
+      fpCrazyArmsGroup.userData.fpRightHand.rotation.x = -p67 * 0.22;
+    }
+    return;
+  }
+
+  playerMesh.visible = true;
+  fpCrazyArmsGroup.visible = false;
+
   const target =
     state.mode === "start"
       ? new THREE.Vector3(-1, 1.5, -1)

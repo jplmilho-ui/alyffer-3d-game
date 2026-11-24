@@ -183,6 +183,205 @@ html, body {
   border-color: rgba(56, 189, 248, 0.45);
 }
 
+.hud-pill.adubo-pill {
+  border-color: rgba(163, 230, 53, 0.5);
+}
+
+.hud-pill.adubo-pill strong {
+  color: #bef264;
+}
+
+.hud-btn.active-mode {
+  border-color: var(--gold);
+  background: rgba(250, 204, 21, 0.18);
+  color: var(--gold);
+}
+
+/* First-person crosshair & crazy vignette */
+.fp-crosshair {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 10px;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.75);
+  pointer-events: none;
+  z-index: 12;
+}
+
+.crazy-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+  box-shadow: inset 0 0 90px rgba(239, 68, 68, 0.48), inset 0 0 180px rgba(168, 85, 247, 0.28);
+  animation: crazyVigPulse 0.45s infinite alternate ease-in-out;
+}
+
+@keyframes crazyVigPulse {
+  from { opacity: 0.55; }
+  to { opacity: 1; }
+}
+
+/* Kaio Fertilizer Shop inside NPC modal */
+.kaio-shop-box {
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.kaio-shop-header {
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #86efac;
+  text-transform: uppercase;
+}
+
+/* Calendar Modal & 402 Bus Schedule */
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+  margin-bottom: 6px;
+  text-align: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 5px;
+}
+
+.cal-cell {
+  min-height: 46px;
+  border-radius: 10px;
+  padding: 5px 4px;
+  background: rgba(0, 0, 0, 0.24);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.78rem;
+}
+
+.cal-cell.empty {
+  background: transparent;
+  border-color: transparent;
+}
+
+.cal-cell.weekend {
+  background: rgba(56, 189, 248, 0.1);
+  border-color: rgba(56, 189, 248, 0.22);
+}
+
+.cal-cell.past {
+  opacity: 0.48;
+}
+
+.cal-cell.today {
+  background: rgba(74, 222, 128, 0.22);
+  border: 2px solid var(--gold);
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.3);
+}
+
+.cal-num {
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.cal-tag {
+  font-size: 0.62rem;
+  color: var(--muted);
+  line-height: 1.1;
+  text-align: center;
+}
+
+.bus-status-banner {
+  padding: 9px 12px;
+  border-radius: 11px;
+  margin-bottom: 10px;
+  font-size: 0.84rem;
+  font-weight: 700;
+  background: rgba(30, 58, 138, 0.35);
+  border: 1px solid rgba(56, 189, 248, 0.45);
+  color: #e0f2fe;
+}
+
+.bus-status-banner.available {
+  background: rgba(22, 163, 74, 0.25);
+  border-color: var(--green);
+  color: #dcfce7;
+}
+
+.bus-status-banner.blocked {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.55);
+  color: #fecaca;
+}
+
+.bus-schedule-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.bus-col-head {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: var(--gold);
+  margin-bottom: 6px;
+}
+
+.bus-times-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.bus-time-chip {
+  padding: 3px 7px;
+  border-radius: 7px;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.74rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--text);
+}
+
+.bus-time-chip.past {
+  opacity: 0.38;
+}
+
+.bus-time-chip.active {
+  background: rgba(74, 222, 128, 0.26);
+  border-color: var(--green);
+  color: #dcfce7;
+}
+
+.bus-time-chip.next {
+  background: rgba(250, 204, 21, 0.2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+@media (max-width: 580px) {
+  .bus-schedule-cols {
+    grid-template-columns: 1fr;
+  }
+}
+
 .hud-pill.insanity-pill {
   min-width: 132px;
   border-color: rgba(192, 132, 252, 0.45);

@@ -29,9 +29,9 @@
           <span class="hud-label">CAIXA</span>
           <strong id="moneyVal">R$ 30,00</strong>
         </div>
-        <div class="hud-pill">
-          <span class="hud-label">DIA / CLIMA</span>
-          <strong id="dayTimeVal">Dia 1 • 07:00 ☀️</strong>
+        <div id="calendarPill" class="hud-pill clickable" title="Clique para abrir o Calendário &amp; Horários do Ônibus 402 (K)">
+          <span class="hud-label">DATA / HORA / CLIMA</span>
+          <strong id="dayTimeVal">Seg, 01/Mar • 07:00 ☀️</strong>
         </div>
         <div class="hud-pill">
           <span class="hud-label">LOCAL</span>
@@ -44,8 +44,12 @@
           <span class="hud-label">CESTA</span>
           <strong id="basketVal">🥬 0 itens</strong>
         </div>
+        <div id="aduboPill" class="hud-pill adubo-pill" title="Adubo do Kaio (compre no Lab de Química da ETEC). Pressione F ou Espaço em canteiro crescendo para usar!">
+          <span class="hud-label">ADUBO KAIO (F)</span>
+          <strong id="aduboVal">🧪 0 • ⚗️ 0</strong>
+        </div>
         <div class="hud-pill water-pill">
-          <span class="hud-label">REGADOR</span>
+          <span id="waterLabel" class="hud-label">REGADOR</span>
           <div class="water-mini-row">
             <div class="water-bar-bg">
               <div id="waterBar" class="water-bar-fill"></div>
@@ -69,6 +73,12 @@
       </div>
 
       <div class="hud-group">
+        <button id="camModeBtn" class="hud-btn wide" type="button" title="Alternar 1ª / 3ª Pessoa (V)">
+          👁️ <span id="camModeLabel" class="btn-label">1ª Pessoa</span>
+        </button>
+        <button id="calendarHudBtn" class="hud-btn wide" type="button" title="Calendário &amp; Horários 402 (K)">
+          📅 <span class="btn-label">Calendário</span>
+        </button>
         <button id="guideHudBtn" class="hud-btn wide" type="button" title="Guia de Locais &amp; Missões (G)">
           🗺️ <span class="btn-label">Guia</span>
         </button>
@@ -82,6 +92,11 @@
         <button id="pauseBtn" class="hud-btn" type="button" title="Pausar (P)" aria-label="Pausar jogo">⏸</button>
       </div>
     </div>
+
+    <!-- Mira central de 1ª Pessoa -->
+    <div id="fpCrosshair" class="fp-crosshair hidden" aria-hidden="true"></div>
+    <!-- Efeito visual de Coringando na tela em 1ª pessoa -->
+    <div id="crazyVignette" class="crazy-vignette hidden" aria-hidden="true"></div>
 
     <!-- Toast de Notificação -->
     <div id="toastBox" class="toast-box hidden">
@@ -164,7 +179,7 @@
         </div>
 
         <div class="hud-hint">
-          WASD: Andar • Espaço / E / Clique: Agir • 1–6: Semente • G: Guia • Arraste (Esq/Dir): Câmera
+          WASD: Andar • Espaço / E: Agir • F: Adubo • V: 1ª/3ª Pessoa • K: Calendário • 1–6: Semente • Arraste: Câmera
         </div>
       </div>
     </div>
@@ -196,9 +211,9 @@
 
       <div class="controls-grid">
         <div><div class="keys-row"><kbd>W A S D</kbd> ou <kbd>Analógico</kbd></div><span>Andar (PC ou Celular)</span></div>
-        <div><div class="keys-row"><kbd>Espaço</kbd> / <kbd>E</kbd> / <kbd>AGIR</kbd></div><span>Arar, Plantar, Regar, Colher, Vender</span></div>
-        <div><div class="keys-row"><kbd>1</kbd> a <kbd>6</kbd> ou <kbd>Toque</kbd></div><span>Escolher semente (Alfaces &amp; mais)</span></div>
-        <div><div class="keys-row"><kbd>Arraste</kbd> / <kbd>Pinça</kbd></div><span>Girar câmera • Zoom (ou Scroll)</span></div>
+        <div><div class="keys-row"><kbd>Espaço</kbd> / <kbd>E</kbd> / <kbd>F</kbd></div><span>Agir, Plantar, Colher &amp; Usar Adubo</span></div>
+        <div><div class="keys-row"><kbd>V</kbd> / <kbd>K</kbd></div><span>1ª/3ª Pessoa • Calendário &amp; Ônibus 402</span></div>
+        <div><div class="keys-row"><kbd>1</kbd>–<kbd>6</kbd> / <kbd>Arraste</kbd></div><span>Sementes • Girar câmera e Zoom</span></div>
       </div>
 
       <div id="saveInfoLine" class="record-line">
@@ -258,9 +273,47 @@
           <div id="npcMissionReq" class="row-sub"></div>
           <div id="npcMissionReward" class="row-sub" style="color:var(--gold);margin-top:4px"></div>
         </div>
+        <div id="kaioShopBox" class="kaio-shop-box hidden"></div>
       </div>
       <div class="btn-stack">
         <button id="npcActionBtn" class="btn-primary" type="button">Conversar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Calendário & Horários do Ônibus 402 -->
+  <div id="calendarModal" class="overlay hidden">
+    <div class="panel wide">
+      <div class="modal-header">
+        <div>
+          <div class="badge-mini">CALENDÁRIO RURAL • PAU ARCADO &amp; LINHA 402 (JUNDMOB)</div>
+          <h2 id="calendarMonthTitle">Março • Ano 1</h2>
+        </div>
+        <button id="closeCalendarBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+
+      <div id="calendarSummaryLine" class="desc compact"></div>
+
+      <div class="modal-section">
+        <div class="calendar-weekdays">
+          <span>Dom</span><span>Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span>Sáb</span>
+        </div>
+        <div id="calendarGrid" class="calendar-grid"></div>
+      </div>
+
+      <div class="modal-section">
+        <h3 id="busScheduleTitle">🚌 Horários Oficiais Ônibus 402 (Hoje)</h3>
+        <div id="busStatusBanner" class="bus-status-banner"></div>
+        <div class="bus-schedule-cols">
+          <div>
+            <div class="bus-col-head">Saídas Pau Arcado → Terminal</div>
+            <div id="busTimesPauArcado" class="bus-times-grid"></div>
+          </div>
+          <div>
+            <div class="bus-col-head">Saídas Terminal → Pau Arcado</div>
+            <div id="busTimesTerminal" class="bus-times-grid"></div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -301,11 +354,11 @@
       <div class="modal-section">
         <h3>🗺️ Locais de Campo Limpo Paulista no Jogo</h3>
         <div class="row-sub" style="line-height:1.6">
-          • <strong>Sítio em Pau Arcado (Estrada do Garcia):</strong> Plante alfaces, tomate, cenoura e morango, colha ovos no galinheiro, use a composteira, faça carinho no Caramelo e pegue o <strong>Ônibus 402</strong> na porteira (exceto em dias de chuva!).<br/>
-          • <strong>Quarto do Alyffer:</strong> Leia mangás, veja o pôster do PAC (TazerCraft) e durma na cama para avançar o dia.<br/>
-          • <strong>Terminal Campo Limpo Paulista + Estação Linha 7-Rubi (Av. Alfried Krupp):</strong> Venda sua colheita nas bancas, tome caldo de cana com pastel e pegue o trem da Linha 7-Rubi.<br/>
-          • <strong>ETEC de Campo Limpo Paulista (Botujuru — Rua João Julião Moreira):</strong> Converse com <strong>Kaio Wendell</strong> e <strong>Muzzonline</strong>, e faça as missões do <strong>Félix</strong> e do <strong>Pão</strong>.<br/>
-          • <strong>🤡 Modo Coringando (100%):</strong> Ao chegar em <strong>100%</strong> socializando na ETEC, o Alyffer começa a <strong>coringar</strong> e falar frases cheias de besteiras! Para a barra descer, você precisa <strong>ficar sem ir para a ETEC</strong> (cada dia inteiro longe da ETEC reduz <strong>25%</strong>).
+          • <strong>Sítio em Pau Arcado (Estrada do Garcia):</strong> Plante alfaces, tomate, cenoura e morango (trabalho permitido até as <strong>19:00</strong>!), colha ovos no galinheiro, instale <strong>Irrigação Automática</strong> na Cooperativa, use a composteira, faça carinho no Caramelo e pegue o <strong>Ônibus 402</strong> nos horários oficiais da JundMob (exceto em dias de chuva!).<br/>
+          • <strong>Quarto do Alyffer:</strong> Leia mangás, veja o pôster do PAC (TazerCraft) e durma na cama para avançar o dia no <strong>Calendário</strong>.<br/>
+          • <strong>Terminal Campo Limpo Paulista + Estação Linha 7-Rubi (Av. Alfried Krupp):</strong> Venda sua colheita nas bancas (até as 19:00), tome caldo de cana com pastel e pegue o trem da Linha 7-Rubi.<br/>
+          • <strong>ETEC de Campo Limpo Paulista (Botujuru — Rua João Julião Moreira):</strong> Compre <strong>Adubo NPK e Super-Adubo</strong> com o <strong>Kaio Wendell</strong> no Lab de Química, converse com <strong>Muzzonline</strong>, e faça as missões do <strong>Félix</strong> e do <strong>Pão</strong>.<br/>
+          • <strong>🤡 Modo Coringando (100%):</strong> Ao chegar em <strong>100%</strong> socializando na ETEC, o Alyffer começa a <strong>coringar</strong> — faz 6-7 com os braços, põe a língua para fora e fica com os olhos esbugalhados e vermelhos! Para a barra descer, fique dias inteiros longe da ETEC (-25%/dia).
         </div>
       </div>
     </div>
