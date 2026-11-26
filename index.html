@@ -44,7 +44,7 @@
           <span class="hud-label">CESTA</span>
           <strong id="basketVal">🥬 0 itens</strong>
         </div>
-        <div id="aduboPill" class="hud-pill adubo-pill" title="Adubo do Kaio (compre no Lab de Química da ETEC). Pressione F ou Espaço em canteiro crescendo para usar!">
+        <div id="aduboPill" class="hud-pill adubo-pill" title="Adubo do Kaio (compre no Lab de Química da ETEC). Pressione F ou E em canteiro crescendo para usar!">
           <span class="hud-label">ADUBO KAIO (F)</span>
           <strong id="aduboVal">🧪 0 • ⚗️ 0</strong>
         </div>
@@ -75,9 +75,22 @@
             <strong id="hpText">100</strong>
           </div>
         </div>
+        <div id="tamedJagPill" class="hud-pill hp-pill hidden" title="HP da Onça Domada • Perto dela: R monta | Em cima: F viaja p/ Estação">
+          <span id="tamedJagLabel" class="hud-label">🐆 ONÇA DOMADA</span>
+          <div class="water-mini-row">
+            <div class="water-bar-bg">
+              <div id="tamedJagBar" class="hp-bar-fill"></div>
+            </div>
+            <strong id="tamedJagText">120</strong>
+          </div>
+        </div>
         <div id="buffBadge" class="hud-pill buff-pill hidden">
           <span class="hud-label">EFEITO ATIVO</span>
           <strong id="buffText">⚡ Energia</strong>
+        </div>
+        <div id="lambiPill" class="hud-pill lambi-pill hidden" title="Lambi Homem ativo! Vá à ETEC lamber alunos e NPCs (derruba por 1 dia)">
+          <span class="hud-label">MODO NOTURNO</span>
+          <strong id="lambiText">👅 LAMBI HOMEM</strong>
         </div>
       </div>
 
@@ -104,6 +117,9 @@
         <button id="ordersHudBtn" class="hud-btn wide" type="button" title="Ver Encomendas (O)">
           📦 <span class="btn-label">Pedidos</span>
         </button>
+        <button id="inventoryHudBtn" class="hud-btn wide" type="button" title="Abrir Inventário &amp; Ferramentas (I)">
+          🎒 <span class="btn-label">Inventário</span>
+        </button>
         <button id="shopHudBtn" class="hud-btn wide" type="button" title="Loja &amp; Expansão (L)">
           🛒 <span class="btn-label">Loja</span>
         </button>
@@ -114,6 +130,8 @@
 
     <!-- Mira central de 1ª Pessoa -->
     <div id="fpCrosshair" class="fp-crosshair hidden" aria-hidden="true"></div>
+    <!-- Popups flutuantes de colheita / plantio / ações -->
+    <div id="floatingFeedbackLayer" class="floating-feedback-layer" aria-hidden="true"></div>
     <!-- Efeito visual de Coringando na tela em 1ª pessoa -->
     <div id="crazyVignette" class="crazy-vignette hidden" aria-hidden="true"></div>
 
@@ -154,7 +172,7 @@
     <div class="hud-bottom-wrap">
       <div class="context-prompt-row">
         <div id="contextPrompt" class="context-prompt hidden">
-          <span id="contextKey" class="ctx-key">Espaço</span>
+          <span id="contextKey" class="ctx-key">E</span>
           <span id="contextText">Arar canteiro</span>
         </div>
         <button id="kickDogBtn" class="context-prompt danger hidden" type="button" title="Chutar o Orelha (Tecla X)">
@@ -191,54 +209,66 @@
             <span class="slot-num">1</span>
             <span class="slot-emoji">🥬</span>
             <span class="slot-name">Alface Crespa</span>
-            <span class="slot-cost">R$ 4</span>
+            <span class="slot-cost">R$ 5</span>
           </button>
           <button class="seed-slot" data-crop="alface_americana" type="button" title="Tecla 2: Alface Americana">
             <span class="slot-num">2</span>
             <span class="slot-emoji">🥗</span>
             <span class="slot-name">Alface Amer.</span>
-            <span class="slot-cost">R$ 8</span>
+            <span class="slot-cost">R$ 10</span>
           </button>
           <button class="seed-slot" data-crop="alface_roxa" type="button" title="Tecla 3: Alface Roxa">
             <span class="slot-num">3</span>
             <span class="slot-emoji">🟣</span>
             <span class="slot-name">Alface Roxa</span>
-            <span class="slot-cost">R$ 12</span>
+            <span class="slot-cost">R$ 18</span>
           </button>
           <button class="seed-slot" data-crop="tomate" type="button" title="Tecla 4: Tomate Cereja">
             <span class="slot-num">4</span>
             <span class="slot-emoji">🍅</span>
             <span class="slot-name">Tomate</span>
-            <span class="slot-cost">R$ 15</span>
+            <span class="slot-cost">R$ 24</span>
           </button>
-          <button class="seed-slot" data-crop="cenoura" type="button" title="Tecla 5: Cenoura">
+          <button class="seed-slot" data-crop="cenoura" type="button" title="Tecla 5: Cenoura (Reproduz Porco)">
             <span class="slot-num">5</span>
             <span class="slot-emoji">🥕</span>
             <span class="slot-name">Cenoura</span>
-            <span class="slot-cost">R$ 10</span>
+            <span class="slot-cost">R$ 16</span>
           </button>
           <button class="seed-slot" data-crop="morango" type="button" title="Tecla 6: Morango">
             <span class="slot-num">6</span>
             <span class="slot-emoji">🍓</span>
             <span class="slot-name">Morango</span>
-            <span class="slot-cost">R$ 18</span>
+            <span class="slot-cost">R$ 32</span>
           </button>
           <button class="seed-slot special-guloso" data-crop="alface_guloso" type="button" title="Tecla 7: Alface Guloso (colheita farta!)">
             <span class="slot-num">7</span>
             <span class="slot-emoji">😋</span>
             <span class="slot-name">Alf. Guloso</span>
-            <span class="slot-cost">R$ 30</span>
+            <span class="slot-cost">R$ 65</span>
           </button>
           <button class="seed-slot special-gold" data-crop="alface_dourado" type="button" title="Tecla 8: Alface Dourado (raro e valioso!)">
             <span class="slot-num">8</span>
             <span class="slot-emoji">✨</span>
             <span class="slot-name">Alf. Dourado</span>
-            <span class="slot-cost">R$ 45</span>
+            <span class="slot-cost">R$ 110</span>
+          </button>
+          <button class="seed-slot" data-crop="milho" type="button" title="Tecla 9: Milho (Reproduz Galinhas)">
+            <span class="slot-num">9</span>
+            <span class="slot-emoji">🌽</span>
+            <span class="slot-name">Milho</span>
+            <span class="slot-cost">R$ 14</span>
+          </button>
+          <button class="seed-slot" data-crop="trigo" type="button" title="Tecla 0: Trigo (Reproduz Vaca & Ovelha)">
+            <span class="slot-num">0</span>
+            <span class="slot-emoji">🌾</span>
+            <span class="slot-name">Trigo</span>
+            <span class="slot-cost">R$ 18</span>
           </button>
         </div>
 
         <div class="hud-hint">
-          WASD: Andar • Espaço: Pular • E: Agir / Domar • Z: Vaselina • T: Celular • R: Enxada • 1–8: Semente • F: Adubo • V: 1ª Pessoa • K: Calendário
+          WASD: Andar • Espaço: Pular • Segure E: Agir/Colher/Ordenhar/Tosar • B: Reproduzir Animais • I: Inventário • R: Enxada/Onça • 1–0: Sementes
         </div>
       </div>
     </div>
@@ -270,9 +300,9 @@
 
       <div class="controls-grid">
         <div><div class="keys-row"><kbd>W A S D</kbd> ou <kbd>Analógico</kbd></div><span>Andar (PC ou Celular)</span></div>
-        <div><div class="keys-row"><kbd>Espaço</kbd> / <kbd>E</kbd> / <kbd>F</kbd></div><span>Pular • Agir/Colher • Usar Adubo</span></div>
-        <div><div class="keys-row"><kbd>T</kbd> / <kbd>Z</kbd> / <kbd>R</kbd></div><span>Celular • Vaselina • Enxada</span></div>
-        <div><div class="keys-row"><kbd>V</kbd> / <kbd>K</kbd> / <kbd>1</kbd>–<kbd>8</kbd></div><span>1ª Pessoa • Calendário • Sementes</span></div>
+        <div><div class="keys-row"><kbd>Espaço</kbd> / <kbd>E</kbd> / <kbd>F</kbd></div><span>Pular • Agir/Ordenhar • Adubo/Onça</span></div>
+        <div><div class="keys-row"><kbd>I</kbd> / <kbd>B</kbd> / <kbd>R</kbd></div><span>Inventário • Reproduzir • Enxada/Onça</span></div>
+        <div><div class="keys-row"><kbd>V</kbd> / <kbd>K</kbd> / <kbd>1</kbd>–<kbd>0</kbd></div><span>1ª Pessoa • Calendário • Sementes</span></div>
       </div>
 
       <div id="saveInfoLine" class="record-line">
@@ -413,8 +443,10 @@
       <div class="modal-section">
         <h3>🗺️ Locais de Campo Limpo Paulista no Jogo</h3>
         <div class="row-sub" style="line-height:1.6">
-          • <strong>Fazenda Ampliada em Pau Arcado:</strong> Muito mais espaço para plantar alfaces (incluindo <strong>Alface Guloso</strong> e <strong>Alface Dourado</strong>!), expandir terrenos, criar <strong>Vacas, Ovelhas e Porcos</strong> e explorar a casa ampliada (Quarto, Sala, Cozinha e Banheiro). O <strong>Ponto do Ônibus 402</strong> fica fora da porteira, descendo a Estrada do Garcia! Se derrotar e <strong>domar a Onça</strong>, ela defende o sítio e leva você ao Terminal CLP mesmo na chuva!<br/>
-          • <strong>ETECAMP Expandida (Botujuru):</strong> Salas <strong>3AI, 2AI, 1AI, 3A, 2A, 1A</strong>, <strong>Labs Info 24, 15 e 7</strong> e <strong>Lab Enfermagem</strong>! Fale com <strong>Pão e Muzzonline</strong> (3AI), <strong>Félix</strong> (1AI), <strong>Kaio Wendell</strong> (Lab Enfermagem), <strong>B****** e T*******</strong> (Lab 24 — aumentam insanidade!) e <strong>Marcelo</strong> no corredor (segurança e vendedor de <strong>Vaselina</strong> p/ correr super rápido!).<br/>
+          • <strong>Fazenda Ampliada em Pau Arcado:</strong> Horta de até <strong>60 canteiros</strong> (segure <kbd>E</kbd> para arar, plantar, regar ou colher!). Reproduza animais (<kbd>B</kbd>): <strong>Porco + Cenoura</strong>, <strong>Galinha + Milho</strong>, <strong>Vaca/Ovelha + Trigo</strong>! Use <strong>Baldes</strong> nas Vacas e <strong>Tesoura</strong> nas Ovelhas! Aperte <kbd>I</kbd> para ver o <strong>Inventário</strong>. Com a <strong>Onça Domada</strong>: <kbd>R</kbd> monta e <kbd>F</kbd> viaja à Estação!<br/>
+          • <strong>Terminal CLP &amp; Loja da Estação:</strong> Terminal expandido com baias cobertas (402 bem lá atrás!), passarela, caixa d'água azul e <strong>Loja da Estação</strong> vendendo Enxadas, Balde e Tesoura!<br/>
+          • <strong>👅 Lambi Homem:</strong> A cada <strong>7 dias</strong>, se não dormir antes das <strong>22:00</strong>, Alyffer vira o Lambi Homem e pode lamber NPCs na ETEC derrubando-os por 1 dia!<br/>
+          • <strong>ETECAMP Completa (Botujuru):</strong> Campus murado com <strong>Estacionamento</strong> (portão automático), <strong>Quadra Aberta</strong> (cesta isolada p/ jogar basquete!), <strong>Sala de Automação</strong> nos fundos (braço robótico e CLPs!), salas <strong>3AI, 2AI, 1AI, 3A, 2A, 1A</strong>, <strong>Labs Info 24, 15 e 7</strong>, <strong>Lab Química</strong> (Kaio) e <strong>Lab Enfermagem</strong>!<br/>
           • <strong>🏆 Skins de Títulos:</strong> Cada título desbloqueado (<strong>PAC</strong>, <strong>Airfryer</strong>, <strong>Homem Guloso</strong> e <strong>Macho</strong>) transforma o visual 3D do Alyffer! Clique no título no topo ou aqui acima para trocar.<br/>
           • <strong>🤡 Modo Coringando (100%):</strong> Ao chegar em <strong>100%</strong> na ETEC, o Alyffer começa a <strong>coringar</strong>! Para descer, fique dias inteiros longe da ETEC (-25%/dia).<br/>
           • <strong>📱 Celular &amp; Only-Resenha (<kbd>T</kbd>):</strong> App <strong>Only-Resenha</strong> (<em>alfinetation • @only_resenha_</em> PF26🏅), <strong>Zap da Roça</strong>, <strong>InstaRoça</strong> e <strong>Pega-Alface</strong>!
@@ -483,6 +515,52 @@
         <button id="phoneNavHome" class="phone-nav-btn home" type="button" title="Tela Inicial do Celular">⬤ Início</button>
         <button id="phoneNavClose" class="phone-nav-btn" type="button" title="Guardar Celular (Esc)">✕ Sair</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Modal do Fogão da Cozinha (Receitas Artesanais da Roça) -->
+  <div id="cookModal" class="overlay hidden">
+    <div class="panel wide">
+      <div class="modal-header">
+        <div>
+          <div class="badge-mini">COZINHA DO SÍTIO • PAU ARCADO</div>
+          <h2>🍳 Fogão &amp; Receitas Caseiras</h2>
+        </div>
+        <button id="closeCookBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <p class="desc compact">Use ingredientes da horta e dos animais para preparar pratos valiosos (venda no Terminal CLP) ou comer na hora!</p>
+      <div id="cookRecipesList" class="shop-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal do Inventário do Macho -->
+  <div id="inventoryModal" class="overlay hidden">
+    <div class="panel wide">
+      <div class="modal-header">
+        <div>
+          <div class="badge-mini">MOCHILA DO ALYFFER • FERRAMENTAS &amp; COLHEITA</div>
+          <h2>🎒 Inventário do Macho (<kbd>I</kbd>)</h2>
+        </div>
+        <button id="closeInventoryBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="shop-balance">Caixa: <strong id="invMoneyVal">R$ 40,00</strong> • Valor da Colheita: <strong id="invBasketWorthVal">R$ 0,00</strong></div>
+      <div id="inventoryList" class="shop-list"></div>
+    </div>
+  </div>
+
+  <!-- Modal da Loja da Estação CLP (Enxadas, Balde & Tesoura) -->
+  <div id="stationShopModal" class="overlay hidden">
+    <div class="panel wide">
+      <div class="modal-header">
+        <div>
+          <div class="badge-mini">ESTAÇÃO CAMPO LIMPO PAULISTA • LINHA 7-RUBI</div>
+          <h2>🛒 Loja da Estação CLP (Ferramentas &amp; Enxadas)</h2>
+        </div>
+        <button id="closeStationShopBtn" class="close-x" type="button" aria-label="Fechar">✕</button>
+      </div>
+      <div class="shop-balance">Seu Caixa: <strong id="stationShopMoneyVal">R$ 40,00</strong></div>
+      <p class="desc compact">Compre <strong>Enxadas Especiais</strong>, <strong>Baldes Vazios</strong> p/ tirar e vender Leite das vacas e <strong>Tesoura de Lã</strong> para tosar as ovelhas!</p>
+      <div id="stationShopItemsList" class="shop-list"></div>
     </div>
   </div>
 

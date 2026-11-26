@@ -40,6 +40,10 @@ const toolModeLabel = document.getElementById("toolModeLabel");
 const jaguarHudBar = document.getElementById("jaguarHudBar");
 const jaguarHpText = document.getElementById("jaguarHpText");
 const jaguarHpFill = document.getElementById("jaguarHpFill");
+const tamedJagPill = document.getElementById("tamedJagPill");
+const tamedJagLabel = document.getElementById("tamedJagLabel");
+const tamedJagBar = document.getElementById("tamedJagBar");
+const tamedJagText = document.getElementById("tamedJagText");
 const maluquinhoBubble = document.getElementById("maluquinhoBubble");
 const maluquinhoBubbleText = document.getElementById("maluquinhoBubbleText");
 const kickDogBtn = document.getElementById("kickDogBtn");
@@ -132,6 +136,22 @@ const closePhoneBtn = document.getElementById("closePhoneBtn");
 const phoneNavBack = document.getElementById("phoneNavBack");
 const phoneNavHome = document.getElementById("phoneNavHome");
 const phoneNavClose = document.getElementById("phoneNavClose");
+const floatingFeedbackLayer = document.getElementById("floatingFeedbackLayer");
+const cookModal = document.getElementById("cookModal");
+const closeCookBtn = document.getElementById("closeCookBtn");
+const cookRecipesList = document.getElementById("cookRecipesList");
+const lambiPill = document.getElementById("lambiPill");
+const lambiText = document.getElementById("lambiText");
+const inventoryHudBtn = document.getElementById("inventoryHudBtn");
+const inventoryModal = document.getElementById("inventoryModal");
+const closeInventoryBtn = document.getElementById("closeInventoryBtn");
+const invMoneyVal = document.getElementById("invMoneyVal");
+const invBasketWorthVal = document.getElementById("invBasketWorthVal");
+const inventoryList = document.getElementById("inventoryList");
+const stationShopModal = document.getElementById("stationShopModal");
+const closeStationShopBtn = document.getElementById("closeStationShopBtn");
+const stationShopMoneyVal = document.getElementById("stationShopMoneyVal");
+const stationShopItemsList = document.getElementById("stationShopItemsList");
 
 // Crop & Product Definitions (Alface principalmente + produtos do quintal — tempo maior para valorizar o Adubo do Kaio!)
 const CROPS = {
@@ -139,8 +159,8 @@ const CROPS = {
     id: "alface_crespa",
     name: "Alface Crespa",
     emoji: "🥬",
-    seedCost: 4,
-    basePrice: 12,
+    seedCost: 5,
+    basePrice: 16,
     growTime: 42,
     color: 0x4ade80,
     leafColor: 0x22c55e,
@@ -151,8 +171,8 @@ const CROPS = {
     id: "alface_americana",
     name: "Alface Americana",
     emoji: "🥗",
-    seedCost: 8,
-    basePrice: 22,
+    seedCost: 10,
+    basePrice: 30,
     growTime: 58,
     color: 0xa3e635,
     leafColor: 0x84cc16,
@@ -163,8 +183,8 @@ const CROPS = {
     id: "alface_roxa",
     name: "Alface Roxa",
     emoji: "🟣",
-    seedCost: 12,
-    basePrice: 34,
+    seedCost: 18,
+    basePrice: 52,
     growTime: 75,
     color: 0xa855f7,
     leafColor: 0x7e22ce,
@@ -175,8 +195,8 @@ const CROPS = {
     id: "tomate",
     name: "Tomate Cereja",
     emoji: "🍅",
-    seedCost: 15,
-    basePrice: 42,
+    seedCost: 24,
+    basePrice: 68,
     growTime: 85,
     color: 0xef4444,
     leafColor: 0x16a34a,
@@ -187,9 +207,9 @@ const CROPS = {
     id: "cenoura",
     name: "Cenoura",
     emoji: "🥕",
-    seedCost: 10,
-    basePrice: 27,
-    growTime: 65,
+    seedCost: 16,
+    basePrice: 42,
+    growTime: 60,
     color: 0xf97316,
     leafColor: 0x15803d,
     style: "carrot",
@@ -199,8 +219,8 @@ const CROPS = {
     id: "morango",
     name: "Morango",
     emoji: "🍓",
-    seedCost: 18,
-    basePrice: 52,
+    seedCost: 32,
+    basePrice: 92,
     growTime: 100,
     color: 0xf43f5e,
     leafColor: 0x15803d,
@@ -211,8 +231,8 @@ const CROPS = {
     id: "alface_guloso",
     name: "Alface Guloso",
     emoji: "😋",
-    seedCost: 30,
-    basePrice: 92,
+    seedCost: 65,
+    basePrice: 185,
     growTime: 88,
     color: 0x10b981,
     leafColor: 0x047857,
@@ -223,12 +243,36 @@ const CROPS = {
     id: "alface_dourado",
     name: "Alface Dourado",
     emoji: "✨",
-    seedCost: 45,
-    basePrice: 145,
+    seedCost: 110,
+    basePrice: 310,
     growTime: 115,
     color: 0xfef08a,
     leafColor: 0xeab308,
     style: "lettuce_gold",
+    plantable: true,
+  },
+  milho: {
+    id: "milho",
+    name: "Milho",
+    emoji: "🌽",
+    seedCost: 14,
+    basePrice: 38,
+    growTime: 56,
+    color: 0xfacc15,
+    leafColor: 0x22c55e,
+    style: "corn",
+    plantable: true,
+  },
+  trigo: {
+    id: "trigo",
+    name: "Trigo",
+    emoji: "🌾",
+    seedCost: 18,
+    basePrice: 48,
+    growTime: 62,
+    color: 0xf59e0b,
+    leafColor: 0x84cc16,
+    style: "wheat",
     plantable: true,
   },
   ovo_caipira: {
@@ -236,7 +280,7 @@ const CROPS = {
     name: "Ovo Caipira",
     emoji: "🥚",
     seedCost: 0,
-    basePrice: 16,
+    basePrice: 24,
     growTime: 0,
     color: 0xfef3c7,
     leafColor: 0xfde68a,
@@ -245,10 +289,10 @@ const CROPS = {
   },
   leite_fresco: {
     id: "leite_fresco",
-    name: "Leite Fresco",
+    name: "Leite Fresco (Balde)",
     emoji: "🥛",
     seedCost: 0,
-    basePrice: 28,
+    basePrice: 95,
     growTime: 0,
     color: 0xf8fafc,
     leafColor: 0xe2e8f0,
@@ -260,7 +304,7 @@ const CROPS = {
     name: "Lã de Ovelha",
     emoji: "🧶",
     seedCost: 0,
-    basePrice: 24,
+    basePrice: 72,
     growTime: 0,
     color: 0xf1f5f9,
     leafColor: 0xcbd5e1,
@@ -272,14 +316,97 @@ const CROPS = {
     name: "Trufa da Roça",
     emoji: "🍄",
     seedCost: 0,
-    basePrice: 38,
+    basePrice: 115,
     growTime: 0,
     color: 0xa16207,
     leafColor: 0x713f12,
     style: "animal",
     plantable: false,
   },
+  salada_macho: {
+    id: "salada_macho",
+    name: "Salada Gourmet do Macho",
+    emoji: "🥗",
+    seedCost: 0,
+    basePrice: 140,
+    growTime: 0,
+    color: 0x4ade80,
+    leafColor: 0x16a34a,
+    style: "dish",
+    plantable: false,
+  },
+  omelete_caipira: {
+    id: "omelete_caipira",
+    name: "Omelete Caipira",
+    emoji: "🍳",
+    seedCost: 0,
+    basePrice: 120,
+    growTime: 0,
+    color: 0xfacc15,
+    leafColor: 0xeab308,
+    style: "dish",
+    plantable: false,
+  },
+  vitamina_morango: {
+    id: "vitamina_morango",
+    name: "Vitamina de Morango",
+    emoji: "🥤",
+    seedCost: 0,
+    basePrice: 220,
+    growTime: 0,
+    color: 0xf43f5e,
+    leafColor: 0xfb7185,
+    style: "dish",
+    plantable: false,
+  },
+  risoto_trufa: {
+    id: "risoto_trufa",
+    name: "Risoto Fino de Trufa",
+    emoji: "🍲",
+    seedCost: 0,
+    basePrice: 320,
+    growTime: 0,
+    color: 0xa855f7,
+    leafColor: 0x7e22ce,
+    style: "dish",
+    plantable: false,
+  },
 };
+
+const KITCHEN_RECIPES = [
+  {
+    id: "salada_macho",
+    emoji: "🥗",
+    name: "Salada Gourmet do Macho",
+    req: { alface_crespa: 2, tomate: 1 },
+    reqLabel: "2x Alface Crespa 🥬 + 1x Tomate 🍅",
+    eatEffect: { hp: 100, energy: 70, insanityDelta: 0, msg: "Vida cheia + 70s de Energia!" },
+  },
+  {
+    id: "omelete_caipira",
+    emoji: "🍳",
+    name: "Omelete Caipira de Pau Arcado",
+    req: { ovo_caipira: 2, alface_americana: 1 },
+    reqLabel: "2x Ovo Caipira 🥚 + 1x Alface Americana 🥗",
+    eatEffect: { hp: 100, energy: 85, insanityDelta: -5, msg: "Vida cheia + 85s de Energia + -5% Insanidade!" },
+  },
+  {
+    id: "vitamina_morango",
+    emoji: "🥤",
+    name: "Vitamina de Morango c/ Leite",
+    req: { morango: 1, leite_fresco: 1 },
+    reqLabel: "1x Morango 🍓 + 1x Leite Fresco 🥛",
+    eatEffect: { hp: 100, energy: 105, insanityDelta: -15, msg: "+105s de Energia + -15% Insanidade!" },
+  },
+  {
+    id: "risoto_trufa",
+    emoji: "🍲",
+    name: "Risoto Fino de Trufa & Alface Roxa",
+    req: { alface_roxa: 1, trufa_porco: 1, leite_fresco: 1 },
+    reqLabel: "1x Alface Roxa 🟣 + 1x Trufa 🍄 + 1x Leite 🥛",
+    eatEffect: { hp: 100, energy: 140, insanityDelta: -25, msg: "+140s Mega Energia + -25% Insanidade!" },
+  },
+];
 
 const SEED_KEYS = [
   "alface_crespa",
@@ -290,10 +417,31 @@ const SEED_KEYS = [
   "morango",
   "alface_guloso",
   "alface_dourado",
+  "milho",
+  "trigo",
 ];
 const CROP_KEYS = Object.keys(CROPS);
 
-// Catálogo de Enxadas Especiais (com efeitos em combate contra a Onça e na horta!)
+const STATION_TOOLS = {
+  balde: {
+    id: "balde",
+    name: "Balde Vazio",
+    emoji: "🪣",
+    cost: 35,
+    stackable: true,
+    desc: "Necessário para tirar leite das vacas e vender o balde de leite no Terminal CLP!",
+  },
+  tesoura: {
+    id: "tesoura",
+    name: "Tesoura de Tosa",
+    emoji: "✂️",
+    cost: 260,
+    stackable: false,
+    desc: "Ferramenta permanente para cortar lã das ovelhas (elas ficam tosquiadas!).",
+  },
+};
+
+// Catálogo de Enxadas Especiais (disponível na Loja da Estação CLP!)
 const HOES = {
   comum: {
     id: "comum",
@@ -313,7 +461,7 @@ const HOES = {
     name: "Enxada de Fogo",
     shortName: "Enxada Fogo",
     emoji: "🔥",
-    cost: 95,
+    cost: 320,
     damage: 40,
     knockback: 3.1,
     burnDamage: 18,
@@ -327,7 +475,7 @@ const HOES = {
     name: "Enxada de Gelo",
     shortName: "Enxada Gelo",
     emoji: "❄️",
-    cost: 130,
+    cost: 480,
     damage: 35,
     knockback: 3.0,
     slowDuration: 4.5,
@@ -341,7 +489,7 @@ const HOES = {
     name: "Enxada Relâmpago",
     shortName: "Enxada Raio",
     emoji: "⚡",
-    cost: 185,
+    cost: 750,
     damage: 55,
     knockback: 4.8,
     speedBoost: 1.22,
@@ -355,7 +503,7 @@ const HOES = {
     name: "Enxada de Diamante",
     shortName: "Enxada Diam.",
     emoji: "💎",
-    cost: 290,
+    cost: 1400,
     damage: 75,
     knockback: 4.2,
     aoeTill: true,
@@ -374,29 +522,32 @@ const ANIMAL_TYPES = {
     type: "cow",
     label: "Vaca Leiteira",
     emoji: "🐄",
-    cost: 85,
+    cost: 520,
     maxHp: 100,
     productId: "leite_fresco",
-    actionText: "Ordenhar Leite Fresco 🥛",
+    breedCrop: "trigo",
+    actionText: "Tirar Leite (c/ Balde) 🥛",
     names: ["Mimosa", "Estrela", "Malhada", "Pintada", "Bela", "Aurora"],
   },
   sheep: {
     type: "sheep",
     label: "Ovelha",
     emoji: "🐑",
-    cost: 70,
+    cost: 420,
     maxHp: 75,
     productId: "la_ovelha",
-    actionText: "Tosquiar Lã de Ovelha 🧶",
+    breedCrop: "trigo",
+    actionText: "Cortar Lã (c/ Tesoura) ✂️",
     names: ["Nuvem", "Algodão", "Fofinha", "Neve", "Branca", "Lãzinha"],
   },
   pig: {
     type: "pig",
     label: "Porco Caipira",
     emoji: "🐷",
-    cost: 95,
+    cost: 600,
     maxHp: 90,
     productId: "trufa_porco",
+    breedCrop: "cenoura",
     actionText: "Recolher Trufa da Roça 🍄",
     names: ["Torresmo", "Bacon", "Pipo", "Roncador", "Gorducho", "Bolinha"],
   },
@@ -523,7 +674,8 @@ function getBus402Status(direction, dayNum = state.day, nowMin = state.dayMinute
 
   for (const label of rawList) {
     const dep = parseHHMM(label);
-    if (nowMin >= dep - BUS_BOARD_BEFORE && nowMin <= dep + BUS_BOARD_AFTER) {
+    const isMidnightWrap = dep === 24 * 60 && nowMin <= BUS_BOARD_AFTER;
+    if ((nowMin >= dep - BUS_BOARD_BEFORE && nowMin <= dep + BUS_BOARD_AFTER) || isMidnightWrap) {
       activeTime = label;
     }
     if (dep > nowMin && dep - nowMin < minsUntilNext) {
@@ -543,7 +695,7 @@ function getBus402Status(direction, dayNum = state.day, nowMin = state.dayMinute
 }
 
 function isAfterWorkHours() {
-  return state.dayMinutes >= WORK_END_MINUTES;
+  return state.dayMinutes >= WORK_END_MINUTES || state.dayMinutes < 6 * 60;
 }
 
 function formatBRL(value) {
@@ -643,6 +795,17 @@ class SoundFX {
     } else if (type === "phone_notif") {
       playTone(880, 1046, 0.07, "sine", 0.09, 0);
       playTone(1174, 1318, 0.09, "sine", 0.09, 0.06);
+    } else if (type === "automation") {
+      [440, 554.37, 659.25, 880, 1108.7].forEach((f, i) => {
+        playTone(f, f * 1.04, 0.09, "square", 0.075, i * 0.055);
+      });
+    } else if (type === "goal") {
+      [587.3, 783.99, 987.77, 1174.66].forEach((f, i) => {
+        playTone(f, f * 1.05, 0.18, "triangle", 0.14, i * 0.08);
+      });
+    } else if (type === "cook") {
+      playTone(360, 540, 0.12, "triangle", 0.11, 0);
+      playTone(540, 760, 0.15, "sine", 0.12, 0.09);
     } else if (type === "error") {
       playTone(210, 140, 0.15, "sawtooth", 0.08);
     }
@@ -672,6 +835,25 @@ function showDayBanner(text) {
   bannerTimer = setTimeout(() => {
     dayBanner.classList.add("hidden");
   }, 2600);
+}
+
+const _floatProj = new THREE.Vector3();
+function spawnFloatingText(worldPos, text, borderColor = "#4ade80") {
+  if (!floatingFeedbackLayer || !camera) return;
+  _floatProj.set(worldPos.x, (worldPos.y || 0) + 1.25, worldPos.z);
+  _floatProj.project(camera);
+  if (_floatProj.z > 1) return;
+  const sx = (_floatProj.x * 0.5 + 0.5) * window.innerWidth;
+  const sy = (-_floatProj.y * 0.5 + 0.5) * window.innerHeight;
+  if (sx < 20 || sx > window.innerWidth - 20 || sy < 40 || sy > window.innerHeight - 40) return;
+  const el = document.createElement("div");
+  el.className = "float-pop";
+  el.style.left = `${sx}px`;
+  el.style.top = `${sy}px`;
+  el.style.borderColor = borderColor;
+  el.textContent = text;
+  floatingFeedbackLayer.appendChild(el);
+  setTimeout(() => el.remove(), 960);
 }
 
 // Three.js Scene & Renderer Setup (with ACES Filmic ToneMapping & sRGB)
@@ -752,7 +934,7 @@ sunLight.shadow.camera.bottom = -shadowBound;
 scene.add(sunLight);
 
 const porchLight = new THREE.PointLight(0xffb74d, 0.4, 22);
-porchLight.position.set(0, 3.6, -7.8);
+porchLight.position.set(0, 3.6, -13.5);
 scene.add(porchLight);
 
 // Procedural High-Res Textures & Sign Generators
@@ -897,6 +1079,7 @@ const obstacles = []; // Yard AABB colliders
 const interiorObstacles = []; // House AABB colliders
 const basementObstacles = []; // Secret Basement AABB colliders
 const terminalObstacles = []; // Terminal + Station AABB colliders
+const terminalRoofSlabs = []; // Coberturas do Terminal (sempre visíveis; translúcidas quando câmera sobe acima do teto)
 const etecObstacles = []; // ETEC courtyard AABB colliders
 const etecInsideObstacles = []; // ETEC large indoor school AABB colliders
 const etecNpcs = [];
@@ -931,7 +1114,11 @@ let etecAutoGateMesh = null;
 let etecAutoGateCollider = null;
 let etecAutoGateLightMat = null;
 let etecAutoGateOpen = 0;
-let etecInstRoofGroup = null;
+let etecAutoRoofGroup = null;
+let etecRobotPivot = null;
+let etecRobotArm = null;
+const etecConveyorBoxes = [];
+let etecBall = null;
 
 function addObstacleBox(cx, cz, w, d, targetList = obstacles) {
   targetList.push({
@@ -1834,15 +2021,21 @@ function buildCountrysideEnvironment() {
   dogTail.position.set(0, 0.68, -0.45);
   dogTail.rotation.x = -0.5;
   dog.add(dogTail);
+  const dogLegs = [];
   [
-    [-0.16, 0.18, 0.28],
-    [0.16, 0.18, 0.28],
-    [-0.16, 0.18, -0.28],
-    [0.16, 0.18, -0.28],
+    [-0.16, 0.34, 0.28],
+    [0.16, 0.34, 0.28],
+    [-0.16, 0.34, -0.28],
+    [0.16, 0.34, -0.28],
   ].forEach(([lx, ly, lz]) => {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.36, 0.12), carameloMat);
-    leg.position.set(lx, ly, lz);
-    dog.add(leg);
+    const lg = new THREE.Group();
+    lg.position.set(lx, ly, lz);
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.34, 0.12), carameloMat);
+    leg.position.y = -0.17;
+    lg.castShadow = true;
+    lg.add(leg);
+    dog.add(lg);
+    dogLegs.push(lg);
   });
   const dogTag = new THREE.Mesh(
     new THREE.PlaneGeometry(1.85, 0.48),
@@ -1861,6 +2054,7 @@ function buildCountrysideEnvironment() {
     tail: dogTail,
     leftEar,
     rightEar,
+    legs: dogLegs,
     home: new THREE.Vector3(6.8, 0, -12.5),
     target: new THREE.Vector3(6.8, 0, -12.5),
     wait: 1.5,
@@ -1921,21 +2115,26 @@ function buildCountrysideEnvironment() {
 
   const jagLegs = [];
   [
-    [-0.26, 0.36, 0.56],
-    [0.26, 0.36, 0.56],
-    [-0.26, 0.36, -0.56],
-    [0.26, 0.36, -0.56],
+    [-0.26, 0.68, 0.56],
+    [0.26, 0.68, 0.56],
+    [-0.26, 0.68, -0.56],
+    [0.26, 0.68, -0.56],
   ].forEach(([lx, ly, lz]) => {
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.72, 0.22), jagFurMat);
-    leg.position.set(lx, ly, lz);
+    const lg = new THREE.Group();
+    lg.position.set(lx, ly, lz);
+    lg.userData.isJagLeg = true;
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.68, 0.22), jagFurMat);
+    leg.position.y = -0.34;
     leg.castShadow = true;
-    jagGroup.add(leg);
-    jagLegs.push(leg);
+    lg.add(leg);
+    jagGroup.add(lg);
+    jagLegs.push(lg);
   });
 
   const jagTail = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 1.05), jagFurMat);
   jagTail.position.set(0, 0.96, -1.25);
   jagTail.rotation.x = 0.25;
+  jagTail.userData.isJagTail = true;
   jagGroup.add(jagTail);
 
   const jagTag = new THREE.Mesh(
@@ -1961,6 +2160,12 @@ function buildCountrysideEnvironment() {
 
   // Onça Domada do Alyffer (com coleira verde/dourada — defende a fazenda e os animais!)
   const tamedJag = jagGroup.clone();
+  const tamedJagLegs = [];
+  let tamedJagTail = null;
+  tamedJag.children.forEach((ch) => {
+    if (ch.userData && ch.userData.isJagLeg) tamedJagLegs.push(ch);
+    if (ch.userData && ch.userData.isJagTail) tamedJagTail = ch;
+  });
   const collar = new THREE.Mesh(
     new THREE.TorusGeometry(0.32, 0.06, 8, 16),
     new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x16a34a, emissiveIntensity: 0.4 })
@@ -1968,7 +2173,9 @@ function buildCountrysideEnvironment() {
   collar.position.set(0, 1.05, 0.72);
   tamedJag.add(collar);
   // Substitui a plaquinha no clone
-  tamedJag.children[tamedJag.children.length - 2].material = new THREE.MeshBasicMaterial({
+  const tamedJagTag = tamedJag.children[tamedJag.children.length - 2];
+  tamedJagTag.userData.isJagTag = true;
+  tamedJagTag.material = new THREE.MeshBasicMaterial({
     map: createWoodSignTexture("🐆 ONÇA DO MACHO", "Domada ❤️ • Guarda o Sítio", "#14532d", "#fef08a"),
     transparent: true,
     side: THREE.DoubleSide,
@@ -1978,6 +2185,9 @@ function buildCountrysideEnvironment() {
   exteriorGroup.add(tamedJag);
   tamedJaguarEntity = {
     mesh: tamedJag,
+    legs: tamedJagLegs,
+    tail: tamedJagTail,
+    tagMesh: tamedJagTag,
     home: new THREE.Vector3(9.5, 0, -12.0),
     target: new THREE.Vector3(9.5, 0, -12.0),
     wait: 1.5,
@@ -2035,12 +2245,17 @@ function buildCountrysideEnvironment() {
   const mTempleRY = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.035, 0.36), mFrameMatY);
   mTempleRY.position.set(0.34, 2.4, 0.18);
   marceloYard.add(mBridgeY, mTempleLY, mTempleRY);
-  const mLArmY = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.84, 0.26), mSkinY);
-  mLArmY.position.set(-0.63, 1.4, 0);
+  const mLArmY = new THREE.Group();
+  mLArmY.position.set(-0.63, 1.72, 0);
+  const mLArmMeshY = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.84, 0.26), mSkinY);
+  mLArmMeshY.position.y = -0.34;
+  mLArmMeshY.castShadow = true;
+  mLArmY.add(mLArmMeshY);
   const mRArmY = new THREE.Group();
   mRArmY.position.set(0.63, 1.72, 0);
   const mRArmMeshY = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.84, 0.26), mSkinY);
   mRArmMeshY.position.y = -0.34;
+  mRArmMeshY.castShadow = true;
   mRArmY.add(mRArmMeshY);
   // Enxada / Bastão caça-onça do Marcelo
   const mClub = new THREE.Mesh(
@@ -2056,15 +2271,20 @@ function buildCountrysideEnvironment() {
   mClubHead.position.set(0, -0.82, 1.25);
   mRArmY.add(mClub, mClubHead);
   marceloYard.add(mLArmY, mRArmY);
-  const mLLegY = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.8, 0.32), mPantsY);
-  mLLegY.position.set(-0.22, 0.44, 0);
-  const mRLegY = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.8, 0.32), mPantsY);
-  mRLegY.position.set(0.22, 0.44, 0);
-  const mLBootY = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.2, 0.44), mBootY);
-  mLBootY.position.set(-0.22, 0.1, 0.05);
-  const mRBootY = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.2, 0.44), mBootY);
-  mRBootY.position.set(0.22, 0.1, 0.05);
-  marceloYard.add(mLLegY, mRLegY, mLBootY, mRBootY);
+  const makeMarceloLeg = (sx) => {
+    const lg = new THREE.Group();
+    lg.position.set(sx * 0.22, 0.84, 0);
+    const pant = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.68, 0.32), mPantsY);
+    pant.position.y = -0.34;
+    pant.castShadow = true;
+    const boot = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.2, 0.44), mBootY);
+    boot.position.set(0, -0.74, 0.05);
+    lg.add(pant, boot);
+    return lg;
+  };
+  const mLLegY = makeMarceloLeg(-1);
+  const mRLegY = makeMarceloLeg(1);
+  marceloYard.add(mLLegY, mRLegY);
   const mTagY = new THREE.Mesh(
     new THREE.PlaneGeometry(2.4, 0.58),
     new THREE.MeshBasicMaterial({
@@ -2153,47 +2373,7 @@ function buildCountrysideEnvironment() {
   }
 
   // Backyard Chickens
-  for (let i = 0; i < 3; i++) {
-    const ch = new THREE.Group();
-    const body = new THREE.Mesh(
-      new THREE.BoxGeometry(0.45, 0.4, 0.6),
-      new THREE.MeshStandardMaterial({ color: i === 0 ? 0xffffff : 0xd97706, roughness: 0.8 })
-    );
-    body.position.y = 0.35;
-    body.castShadow = true;
-    ch.add(body);
-
-    const head = new THREE.Mesh(
-      new THREE.BoxGeometry(0.24, 0.26, 0.24),
-      new THREE.MeshStandardMaterial({ color: i === 0 ? 0xfef3c7 : 0xb45309, roughness: 0.8 })
-    );
-    head.position.set(0, 0.6, 0.26);
-    ch.add(head);
-
-    const comb = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 0.12, 0.16),
-      new THREE.MeshStandardMaterial({ color: 0xef4444 })
-    );
-    comb.position.set(0, 0.77, 0.26);
-    ch.add(comb);
-
-    const beak = new THREE.Mesh(
-      new THREE.BoxGeometry(0.08, 0.07, 0.12),
-      new THREE.MeshStandardMaterial({ color: 0xfacc15 })
-    );
-    beak.position.set(0, 0.58, 0.42);
-    ch.add(beak);
-
-    const home = new THREE.Vector3(i === 0 ? -27.0 : i === 1 ? -21.0 : -24.5, 0, i === 0 ? -16.5 : i === 1 ? -15.5 : -17.5);
-    ch.position.copy(home);
-    exteriorGroup.add(ch);
-    chickens.push({
-      mesh: ch,
-      home,
-      target: home.clone(),
-      wait: Math.random() * 2,
-    });
-  }
+  syncChickensToCount(3);
 
   // Sistema de Irrigação Automática 3D (Aspersores nos cruzamentos da horta — visível após compra na Loja!)
   sprinklerGroup = new THREE.Group();
@@ -2772,7 +2952,7 @@ const MACHO_ALTERNATIVES = [
     id: "clone_science",
     name: "Macho Cientista",
     sub: "Discípulo do Kaio",
-    quote: "Sintetizei o Adubo NPK Quântico junto com o Kaio Wendell no Lab de Enfermagem!",
+    quote: "Sintetizei o Adubo NPK Quântico junto com o Kaio Wendell no Lab de Química!",
     shirt: 0xf8fafc,
     pocket: 0x38bdf8,
     pants: 0x334155,
@@ -2963,94 +3143,244 @@ function buildSecretBasement() {
 }
 buildSecretBasement();
 
-// 3. TERMINAL URBANO DE CAMPO LIMPO PAULISTA & ESTAÇÃO LINHA 7-RUBI (Av. Alfried Krupp)
+// 3. TERMINAL URBANO DE CAMPO LIMPO PAULISTA & ESTAÇÃO LINHA 7-RUBI (Av. Alfried Krupp — Super Expandido)
 function buildTerminalAndStation() {
   const asphaltMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.92 });
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.94 });
   const concreteMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.85 });
-  const roofMat = new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.5, metalness: 0.25 });
+  const paverMat = new THREE.MeshStandardMaterial({ color: 0x7c7f87, roughness: 0.88 });
+  const roofMat = new THREE.MeshStandardMaterial({ color: 0x1d4ed8, roughness: 0.42, metalness: 0.28 });
+  const blueTrimMat = new THREE.MeshStandardMaterial({ color: 0x1e40af, roughness: 0.45, metalness: 0.3 });
+  const underRoofMat = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.7, metalness: 0.35 });
   const steelMat = new THREE.MeshStandardMaterial({ color: 0x475569, metalness: 0.55, roughness: 0.35 });
+  const fenceIronMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, metalness: 0.45, roughness: 0.5 });
+  const whiteWallMat = new THREE.MeshStandardMaterial({ color: 0xf1f5f9, roughness: 0.8 });
   const rubiMat = new THREE.MeshStandardMaterial({ color: 0x9f1239, roughness: 0.45 });
-  const yellowTactile = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.7 });
+  const yellowTactile = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.65 });
+  const whiteLineMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.7 });
+  const bushMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.85 });
 
-  const ground = new THREE.Mesh(new THREE.PlaneGeometry(110, 110), asphaltMat);
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(220, 220), asphaltMat);
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   terminalGroup.add(ground);
 
-  // Rio Jundiaí channel passing behind/alongside the railway corridor
+  // Rio Jundiaí channel passing behind/alongside the expanded railway corridor
   const river = new THREE.Mesh(
-    new THREE.PlaneGeometry(6.5, 90),
+    new THREE.PlaneGeometry(9.0, 150),
     new THREE.MeshStandardMaterial({ color: 0x0369a1, roughness: 0.25, metalness: 0.25 })
   );
   river.rotation.x = -Math.PI / 2;
-  river.position.set(23.5, 0.02, 0);
+  river.position.set(37.5, 0.02, 0);
   terminalGroup.add(river);
 
-  // Av. Alfried Krupp road markings & crosswalk
-  for (let x = -22; x <= 20; x += 4) {
-    const dash = new THREE.Mesh(new THREE.PlaneGeometry(2.1, 0.22), yellowTactile);
+  // Av. Alfried Krupp (2 pistas largas bem à frente do terminal expandido, z = +22..+31)
+  const avenueRoad = new THREE.Mesh(new THREE.PlaneGeometry(130, 9.0), roadMat);
+  avenueRoad.rotation.x = -Math.PI / 2;
+  avenueRoad.position.set(-6, 0.015, 26.5);
+  terminalGroup.add(avenueRoad);
+
+  for (let x = -56; x <= 42; x += 4.2) {
+    const dash = new THREE.Mesh(new THREE.PlaneGeometry(2.2, 0.24), yellowTactile);
     dash.rotation.x = -Math.PI / 2;
-    dash.position.set(x, 0.02, 12.2);
+    dash.position.set(x, 0.03, 26.5);
     terminalGroup.add(dash);
   }
-
-  // Terminal Bus Platform Island (left side: x = -14..2.5, z = -3.5..8.5)
-  const termPlatform = new THREE.Mesh(new THREE.BoxGeometry(16.5, 0.26, 12), concreteMat);
-  termPlatform.position.set(-5.75, 0.13, 2.5);
-  termPlatform.receiveShadow = true;
-  terminalGroup.add(termPlatform);
-
-  const termRoof = new THREE.Mesh(new THREE.BoxGeometry(16.8, 0.32, 10.6), roofMat);
-  termRoof.position.set(-5.75, 4.35, 2.5);
-  termRoof.castShadow = true;
-  terminalGroup.add(termRoof);
-
-  [-12.0, -5.75, 0.5].forEach((px) => {
-    [-1.4, 6.4].forEach((pz) => {
-      const col = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.18, 4.2, 10), steelMat);
-      col.position.set(px, 2.1, pz);
-      col.castShadow = true;
-      terminalGroup.add(col);
-      addObstacleBox(px, pz, 0.55, 0.55, terminalObstacles);
-    });
+  // Faixas de pedestres entrando no Terminal c/ aberturas largas
+  [-17.2, -3.0, 6.0].forEach((cx) => {
+    for (let sx = -2.2; sx <= 2.2; sx += 0.74) {
+      const stripe = new THREE.Mesh(new THREE.PlaneGeometry(0.38, 4.0), whiteLineMat);
+      stripe.rotation.x = -Math.PI / 2;
+      stripe.position.set(cx + sx, 0.032, 22.0);
+      terminalGroup.add(stripe);
+    }
   });
 
-  // Main Terminal Sign (NO "Vila Thomazina")
+  // Gradil preto sobre mureta branca ao longo da Avenida (deixando entradas enormes livres)
+  const addFenceWall = (cx, cz, lenX, lenZ, matWall = whiteWallMat) => {
+    const wall = new THREE.Mesh(new THREE.BoxGeometry(lenX, 0.5, lenZ), matWall);
+    wall.position.set(cx, 0.25, cz);
+    wall.castShadow = true;
+    terminalGroup.add(wall);
+    const topBar = new THREE.Mesh(new THREE.BoxGeometry(lenX, 0.08, lenZ * 0.45), fenceIronMat);
+    topBar.position.set(cx, 1.55, cz);
+    terminalGroup.add(topBar);
+    const isX = lenX >= lenZ;
+    const span = isX ? lenX : lenZ;
+    const count = Math.max(2, Math.floor(span / 1.1));
+    for (let i = 0; i <= count; i++) {
+      const t = -span * 0.5 + (i / count) * span;
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.1, 0.06), fenceIronMat);
+      post.position.set(isX ? cx + t : cx, 1.0, isX ? cz : cz + t);
+      terminalGroup.add(post);
+    }
+    addObstacleBox(cx, cz, lenX + 0.25, lenZ + 0.25, terminalObstacles);
+  };
+  addFenceWall(-28.0, 19.2, 16.0, 0.28);
+  addFenceWall(-11.0, 19.2, 7.0, 0.28);
+  // Mureta azul longa nos fundos da baia do 402 (z = -27.2, deixa corredor largo atrás do ônibus)
+  const blueLowWall = new THREE.Mesh(new THREE.BoxGeometry(52.0, 1.05, 0.45), blueTrimMat);
+  blueLowWall.position.set(-14.0, 0.525, -27.2);
+  blueLowWall.castShadow = true;
+  terminalGroup.add(blueLowWall);
+  addObstacleBox(-14.0, -27.2, 52.2, 0.65, terminalObstacles);
+
+  // Torre Cilíndrica Azul da Caixa d'Água (afastada para fora dos corredores centrais)
+  const waterTower = new THREE.Mesh(new THREE.CylinderGeometry(1.15, 1.2, 11.5, 16), roofMat);
+  waterTower.position.set(-24.5, 5.75, 16.5);
+  waterTower.castShadow = true;
+  terminalGroup.add(waterTower);
+  const towerRing = new THREE.Mesh(new THREE.CylinderGeometry(1.25, 1.25, 0.35, 16), steelMat);
+  towerRing.position.set(-24.5, 11.4, 16.5);
+  terminalGroup.add(towerRing);
+  addObstacleBox(-24.5, 16.5, 2.5, 2.5, terminalObstacles);
+
+  // Canteiros verdes com árvores nas extremidades do Terminal (sem atrapalhar passagem)
+  [
+    [-30.0, 16.5],
+    [5.0, 16.8],
+    [-35.2, -16.5],
+  ].forEach(([tx, tz]) => {
+    const planter = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.42, 2.6), whiteWallMat);
+    planter.position.set(tx, 0.21, tz);
+    terminalGroup.add(planter);
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.24, 0.34, 4.2, 8),
+      new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.9 })
+    );
+    trunk.position.set(tx, 2.1, tz);
+    terminalGroup.add(trunk);
+    const canopy = new THREE.Mesh(new THREE.DodecahedronGeometry(2.2, 1), bushMat);
+    canopy.position.set(tx, 5.1, tz);
+    canopy.castShadow = true;
+    terminalGroup.add(canopy);
+    addObstacleBox(tx, tz, 2.6, 2.6, terminalObstacles);
+  });
+
+  // Plataforma Coberta Super Expandida do Terminal CLP (x = -22.0..+6.0, z = -18.0..+14.0, y = 0.26)
+  // Ampla circulação livre de 28m x 32m entre bancas, baia dos fundos (402) e rampas da Estação!
+  const termMainPlaza = new THREE.Mesh(new THREE.BoxGeometry(28.0, 0.26, 32.0), paverMat);
+  termMainPlaza.position.set(-8.0, 0.13, -2.0);
+  termMainPlaza.receiveShadow = true;
+  terminalGroup.add(termMainPlaza);
+
+  const busCurbFront = new THREE.Mesh(new THREE.BoxGeometry(28.1, 0.28, 0.38), yellowTactile);
+  busCurbFront.position.set(-8.0, 0.14, 13.9);
+  terminalGroup.add(busCurbFront);
+  const busCurbNorth = new THREE.Mesh(new THREE.BoxGeometry(28.1, 0.28, 0.38), yellowTactile);
+  busCurbNorth.position.set(-8.0, 0.14, -17.9);
+  terminalGroup.add(busCurbNorth);
+  const busCurbWest = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.28, 32.1), yellowTactile);
+  busCurbWest.position.set(-21.9, 0.14, -2.0);
+  terminalGroup.add(busCurbWest);
+
+  // Cobertura Azul Metálica Alta (7.7m) p/ câmera caber embaixo sem esconder o teto
+  const termRoofMat = roofMat.clone();
+  const termUnderMat = underRoofMat.clone();
+  const addBlueCanopyWing = (cx, cz, w, d) => {
+    const under = new THREE.Mesh(new THREE.BoxGeometry(w - 0.3, 0.18, d - 0.3), termUnderMat);
+    under.position.set(cx, 7.35, cz);
+    under.userData.cutY = 7.0;
+    under.userData.baseMat = termUnderMat;
+    terminalGroup.add(under);
+    const fascia = new THREE.Mesh(new THREE.BoxGeometry(w, 0.65, d), termRoofMat);
+    fascia.position.set(cx, 7.68, cz);
+    fascia.castShadow = true;
+    fascia.userData.cutY = 7.0;
+    fascia.userData.baseMat = termRoofMat;
+    terminalGroup.add(fascia);
+    terminalRoofSlabs.push(under, fascia);
+    [-d * 0.5 + 0.14, d * 0.5 - 0.14].forEach((dz) => {
+      const beam = new THREE.Mesh(new THREE.BoxGeometry(w, 0.32, 0.28), roofMat);
+      beam.position.set(cx, 7.52, cz + dz);
+      terminalGroup.add(beam);
+    });
+    const numTrusses = Math.max(3, Math.floor(w / 6));
+    for (let i = 0; i <= numTrusses; i++) {
+      const tx = cx - w * 0.44 + (i / numTrusses) * (w * 0.88);
+      const truss = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.24, d - 0.6), steelMat);
+      truss.position.set(tx, 7.16, cz);
+      terminalGroup.add(truss);
+    }
+  };
+  addBlueCanopyWing(-8.0, 6.2, 30.0, 14.5);
+  addBlueCanopyWing(-11.0, -10.5, 32.0, 15.0);
+  addBlueCanopyWing(-15.0, -21.5, 22.0, 8.5);
+
+  // Apenas 6 colunas perimetrais bem espaçadas (centro e acessos 100% livres!)
+  [
+    [-20.8, 12.8], [-10.5, 12.8], [0.5, 12.8],
+    [-20.8, -16.8], [-8.5, -16.8], [4.2, -16.8],
+  ].forEach(([px, pz]) => {
+    const col = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 7.35, 12), blueTrimMat);
+    col.position.set(px, 3.675, pz);
+    col.castShadow = true;
+    terminalGroup.add(col);
+    addObstacleBox(px, pz, 0.55, 0.55, terminalObstacles);
+  });
+
+  // Placa Principal do Terminal
   const termSign = new THREE.Mesh(
-    new THREE.BoxGeometry(7.6, 1.25, 0.18),
+    new THREE.BoxGeometry(10.5, 1.4, 0.22),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("TERMINAL CAMPO LIMPO PTA", "Av. Alfried Krupp • Centro", "#1e3a8a", "#ffffff"),
+      map: createWoodSignTexture("TERMINAL URBANO CAMPO LIMPO PTA", "Av. Alfried Krupp • Expandido", "#1e3a8a", "#ffffff"),
     })
   );
-  termSign.position.set(-5.75, 5.05, 7.85);
+  termSign.position.set(-7.5, 8.05, 13.55);
   terminalGroup.add(termSign);
 
-  // Bus 402 at Bay 1 (back to Pau Arcado — só aparece nos horários da JundMob!)
-  const busTerm402 = createBusModel("402 PAU ARCADO", "Via Estrada do Garcia", 0x1d4ed8);
-  busTerm402.position.set(-8.6, 0, -5.9);
+  // Painel Eletrônico Azul de Horários embaixo do teto perto da baia
+  const ledBoard = new THREE.Mesh(
+    new THREE.BoxGeometry(4.0, 1.2, 0.22),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("PAINEL DE HORÁRIOS CLP", "402 Pau Arcado • 401 Botujuru", "#0f172a", "#38bdf8"),
+    })
+  );
+  ledBoard.position.set(-14.5, 5.4, -16.2);
+  terminalGroup.add(ledBoard);
+
+  // Guarita Azul & Branca deslocada p/ entrada frontal sul (fora das rampas e praça)
+  const guarita = new THREE.Group();
+  guarita.position.set(3.2, 0, 15.6);
+  const gBase = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.25, 2.2), blueTrimMat);
+  gBase.position.y = 0.625;
+  const gTop = new THREE.Mesh(new THREE.BoxGeometry(2.4, 1.35, 2.2), whiteWallMat);
+  gTop.position.y = 1.925;
+  guarita.add(gBase, gTop);
+  terminalGroup.add(guarita);
+  addObstacleBox(3.2, 15.6, 2.5, 2.3, terminalObstacles);
+
+  // Ônibus 402 PAU ARCADO na baia dos fundos bem espaçosa at (-15.0, 0, -22.2)
+  const busTerm402 = createBusModel("402 PAU ARCADO", "Via Estrada do Garcia", 0x16a34a);
+  busTerm402.position.set(-15.0, 0, -22.2);
   busTerm402.rotation.y = Math.PI / 2;
   terminalGroup.add(busTerm402);
   bus402TermMesh = busTerm402;
-  addObstacleBox(-8.6, -5.9, 6.7, 2.7, terminalObstacles);
-
-  // Bus 401 Botujuru parked at Bay 2 (left side for realism)
-  const busTerm401 = createBusModel("401 BOTUJURU", "Rápido Campinas", 0x0284c7);
-  busTerm401.position.set(-16.2, 0, 2.5);
-  terminalGroup.add(busTerm401);
-  addObstacleBox(-16.2, 2.5, 2.7, 6.7, terminalObstacles);
+  addObstacleBox(-15.0, -22.2, 6.8, 2.7, terminalObstacles);
 
   const baySign = new THREE.Mesh(
-    new THREE.BoxGeometry(3.5, 0.85, 0.14),
+    new THREE.BoxGeometry(4.6, 0.96, 0.16),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("BAIA 1 • ÔNIBUS 402", "Voltar p/ Pau Arcado", "#0f172a", "#facc15"),
+      map: createWoodSignTexture("BAIA FUNDOS • 402 PAU ARCADO", "Embarque p/ Estrada do Garcia", "#14532d", "#facc15"),
     })
   );
-  baySign.position.set(-8.6, 2.8, -2.5);
+  baySign.position.set(-15.0, 3.85, -18.5);
   terminalGroup.add(baySign);
 
-  // Bancas do Produtor no Terminal (Sell crops & fulfill orders) at (-1.6, 0.26, 2.5)
+  // Ônibus 401 Botujuru & Ônibus Municipal bem espaçados na pista oeste (x = -28.5)
+  const busTerm401 = createBusModel("401 BOTUJURU", "Rápido Luxo Campinas", 0xea580c);
+  busTerm401.position.set(-28.5, 0, 6.5);
+  terminalGroup.add(busTerm401);
+  addObstacleBox(-28.5, 6.5, 2.7, 6.8, terminalObstacles);
+
+  const busMun = createBusModel("206 VILA SÃO JOSÉ", "Circular CLP", 0x0284c7);
+  busMun.position.set(-28.5, 0, -6.5);
+  terminalGroup.add(busMun);
+  addObstacleBox(-28.5, -6.5, 2.7, 6.8, terminalObstacles);
+
+  // Bancas do Produtor no Terminal at (-1.0, 0.26, 5.2) — 8.7m de corredor até o Pastel!
   const stall = new THREE.Group();
-  stall.position.set(-1.6, 0.26, 2.5);
+  stall.position.set(-1.0, 0.26, 5.2);
   const counter = new THREE.Mesh(
     new THREE.BoxGeometry(4.4, 1.15, 1.7),
     new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 })
@@ -3074,119 +3404,216 @@ function buildTerminalAndStation() {
     stall.add(veg);
   });
   const stallSign = new THREE.Mesh(
-    new THREE.BoxGeometry(4.1, 0.9, 0.14),
+    new THREE.BoxGeometry(4.3, 0.92, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("BANCAS DO TERMINAL", "Vender Alface & Encomendas", "#14532d", "#fef08a"),
+      map: createWoodSignTexture("BANCAS DO TERMINAL", "Vender Colheita & Encomendas", "#14532d", "#fef08a"),
     })
   );
   stallSign.position.set(0, 3.25, 0.2);
   stall.add(stallSign);
   terminalGroup.add(stall);
-  addObstacleBox(-1.6, 2.5, 4.5, 2.0, terminalObstacles);
+  addObstacleBox(-1.0, 5.2, 4.5, 2.0, terminalObstacles);
 
-  // Barraca do Pastel & Caldo de Cana no Terminal at (-9.2, 0.26, 2.5)
+  // Quiosque Madeira do Pastel & Caldo de Cana at (-13.8, 0.26, 5.2)
   const pastelStall = new THREE.Group();
-  pastelStall.position.set(-9.2, 0.26, 2.5);
+  pastelStall.position.set(-13.8, 0.26, 5.2);
   const pCounter = new THREE.Mesh(
-    new THREE.BoxGeometry(3.2, 1.1, 1.5),
-    new THREE.MeshStandardMaterial({ color: 0xb45309, roughness: 0.75 })
+    new THREE.BoxGeometry(3.6, 1.15, 1.6),
+    new THREE.MeshStandardMaterial({ color: 0x92400e, roughness: 0.78 })
   );
-  pCounter.position.y = 0.55;
+  pCounter.position.y = 0.575;
   pCounter.castShadow = true;
   pastelStall.add(pCounter);
   const pAwning = new THREE.Mesh(
-    new THREE.BoxGeometry(3.5, 0.2, 2.0),
+    new THREE.BoxGeometry(3.9, 0.22, 2.2),
     new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.6 })
   );
-  pAwning.position.set(0, 2.5, 0.1);
+  pAwning.position.set(0, 2.55, 0.12);
   pastelStall.add(pAwning);
   const pSign = new THREE.Mesh(
-    new THREE.BoxGeometry(3.3, 0.82, 0.12),
+    new THREE.BoxGeometry(3.5, 0.85, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("PASTEL & CALDO DE CANA", "R$ 8 • +Energia & -Insanidade", "#991b1b", "#fef08a"),
+      map: createWoodSignTexture("PASTEL & CALDO DE CANA", "Energia + Insanidade -", "#991b1b", "#fef08a"),
     })
   );
-  pSign.position.set(0, 3.1, 0.15);
+  pSign.position.set(0, 3.15, 0.18);
   pastelStall.add(pSign);
   terminalGroup.add(pastelStall);
-  addObstacleBox(-9.2, 2.5, 3.4, 1.8, terminalObstacles);
+  addObstacleBox(-13.8, 5.2, 3.7, 1.85, terminalObstacles);
 
-  // Integrated Train Station: ESTAÇÃO CAMPO LIMPO PAULISTA (LINHA 7-RUBI)
-  const stationPlatform = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.95, 24), concreteMat);
-  stationPlatform.position.set(8.5, 0.475, -1);
+  // Estação Ferroviária Campo Limpo Paulista Larga (x = 10.0..21.5, z = -24.0..+22.0, y = 0.95)
+  const stationPlatform = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.95, 46.0), concreteMat);
+  stationPlatform.position.set(15.75, 0.475, -1.0);
   stationPlatform.receiveShadow = true;
   terminalGroup.add(stationPlatform);
 
-  const termRamp = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.25, 4.2), concreteMat);
-  termRamp.position.set(4.5, 0.46, 0.5);
-  termRamp.rotation.z = 0.34;
-  terminalGroup.add(termRamp);
-  addObstacleBox(5.9, -7.3, 0.6, 11.4, terminalObstacles);
-  addObstacleBox(5.9, 6.8, 0.6, 8.4, terminalObstacles);
-  addObstacleBox(12.8, -1, 3.5, 24, terminalObstacles);
+  // DUAS Rampas Largas & Suaves conectando Praça (y = 0.26 em x = 6.0) à Estação (y = 0.95 em x = 10.0)
+  // Rampa Principal Central (10.2m largura: z = -5.6..+4.6) + Rampa Sul (5.2m largura: z = +8.4..+13.6)
+  const addStationRamp = (cz, lenZ) => {
+    const rMesh = new THREE.Mesh(new THREE.BoxGeometry(4.12, 0.22, lenZ), concreteMat);
+    rMesh.position.set(8.0, 0.495, cz);
+    rMesh.rotation.z = 0.171;
+    rMesh.receiveShadow = true;
+    terminalGroup.add(rMesh);
+  };
+  addStationRamp(-0.5, 10.2);
+  addStationRamp(11.0, 5.2);
 
-  const tactile = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.04, 24), yellowTactile);
-  tactile.position.set(10.95, 0.97, -1);
+  // Guarda-corpos visuais apenas entre/fora das rampas p/ sinalizar claramente as aberturas de acesso
+  const addStationRail = (cz, lenZ) => {
+    const curb = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.72, lenZ), concreteMat);
+    curb.position.set(9.8, 0.62, cz);
+    terminalGroup.add(curb);
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.12, lenZ), rubiMat);
+    bar.position.set(9.8, 1.38, cz);
+    terminalGroup.add(bar);
+    addObstacleBox(9.8, cz, 0.55, lenZ, terminalObstacles);
+  };
+  addStationRail(-14.8, 18.4); // z = -24.0..-5.6
+  addStationRail(6.5, 3.8);    // z = +4.6..+8.4
+  addStationRail(17.8, 8.4);   // z = +13.6..+22.0
+  // Limite leste da plataforma junto aos trilhos (deixa ~10.8m úteis de plataforma!)
+  addObstacleBox(23.1, -1.0, 3.6, 48.0, terminalObstacles);
+
+  // Prédio Histórico Creme & Tijolinho nos fundos da Estação
+  const oldStationBody = new THREE.Mesh(
+    new THREE.BoxGeometry(6.8, 4.4, 6.0),
+    new THREE.MeshStandardMaterial({ color: 0xfef3c7, roughness: 0.82 })
+  );
+  oldStationBody.position.set(16.0, 3.15, -20.5);
+  oldStationBody.castShadow = true;
+  terminalGroup.add(oldStationBody);
+  const oldStationRoof = new THREE.Mesh(
+    new THREE.BoxGeometry(7.6, 0.55, 6.8),
+    new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.8 })
+  );
+  oldStationRoof.position.set(16.0, 5.55, -20.5);
+  terminalGroup.add(oldStationRoof);
+  addObstacleBox(16.0, -20.5, 7.0, 6.2, terminalObstacles);
+
+  // Fachada Branca Sul da Estação (posicionada ao sul sem obstruir a Rampa Sul)
+  const whiteStHall = new THREE.Mesh(new THREE.BoxGeometry(4.4, 3.8, 4.6), whiteWallMat);
+  whiteStHall.position.set(14.2, 2.85, 19.0);
+  terminalGroup.add(whiteStHall);
+  addObstacleBox(14.2, 19.0, 4.6, 4.8, terminalObstacles);
+
+  // LOJA DA ESTAÇÃO CLP (Enxadas Especiais, Balde Vazio & Tesoura de Lã!) at (14.2, 0.95, -9.8) c/ amplo espaço ao redor
+  const stShopGroup = new THREE.Group();
+  stShopGroup.position.set(14.2, 0.95, -9.8);
+  const stShopCounter = new THREE.Mesh(
+    new THREE.BoxGeometry(3.6, 1.15, 1.8),
+    new THREE.MeshStandardMaterial({ color: 0x1e3a8a, roughness: 0.65 })
+  );
+  stShopCounter.position.y = 0.575;
+  stShopCounter.castShadow = true;
+  stShopGroup.add(stShopCounter);
+  const stShopTop = new THREE.Mesh(
+    new THREE.BoxGeometry(3.8, 0.14, 2.0),
+    new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 })
+  );
+  stShopTop.position.y = 1.2;
+  stShopGroup.add(stShopTop);
+  const stShopAwning = new THREE.Mesh(new THREE.BoxGeometry(4.1, 0.24, 2.4), rubiMat);
+  stShopAwning.position.set(0, 2.75, 0);
+  stShopGroup.add(stShopAwning);
+  const dispBucket = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.2, 0.14, 0.34, 10),
+    new THREE.MeshStandardMaterial({ color: 0xe2e8f0, metalness: 0.75, roughness: 0.25 })
+  );
+  dispBucket.position.set(-0.9, 1.44, 0.2);
+  const dispBlade = new THREE.Mesh(
+    new THREE.BoxGeometry(0.32, 0.08, 0.32),
+    new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.6, roughness: 0.25 })
+  );
+  dispBlade.position.set(0.05, 1.32, 0.2);
+  const dispShear = new THREE.Mesh(
+    new THREE.BoxGeometry(0.34, 0.06, 0.16),
+    new THREE.MeshStandardMaterial({ color: 0xdc2626, metalness: 0.4, roughness: 0.35 })
+  );
+  dispShear.position.set(0.95, 1.31, 0.2);
+  stShopGroup.add(dispBucket, dispBlade, dispShear);
+
+  const stShopSign = new THREE.Mesh(
+    new THREE.BoxGeometry(3.9, 0.95, 0.14),
+    new THREE.MeshBasicMaterial({
+      map: createWoodSignTexture("LOJA DA ESTAÇÃO CLP", "Enxadas • Balde Leite • Tesoura", "#7f1d1d", "#fef08a"),
+    })
+  );
+  stShopSign.position.set(0, 3.4, 0);
+  stShopGroup.add(stShopSign);
+  terminalGroup.add(stShopGroup);
+  addObstacleBox(14.2, -9.8, 3.8, 2.0, terminalObstacles);
+
+  const tactile = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.04, 46.0), yellowTactile);
+  tactile.position.set(21.1, 0.97, -1.0);
   terminalGroup.add(tactile);
 
-  const stRoof = new THREE.Mesh(new THREE.BoxGeometry(5.4, 0.24, 18), steelMat);
-  stRoof.position.set(8.3, 4.5, -1);
+  const stRoofMat = steelMat.clone();
+  const stRoof = new THREE.Mesh(new THREE.BoxGeometry(8.5, 0.26, 30.0), stRoofMat);
+  stRoof.position.set(15.6, 7.0, -1.0);
+  stRoof.userData.cutY = 6.7;
+  stRoof.userData.baseMat = stRoofMat;
   terminalGroup.add(stRoof);
+  terminalRoofSlabs.push(stRoof);
 
-  [-6, 0, 6].forEach((pz) => {
-    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.28, 3.6, 0.28), steelMat);
-    pillar.position.set(7.5, 2.7, pz);
+  [-13.5, -6.2, 5.2, 14.2].forEach((pz) => {
+    const pillar = new THREE.Mesh(new THREE.BoxGeometry(0.28, 6.05, 0.28), steelMat);
+    pillar.position.set(11.8, 3.975, pz);
     terminalGroup.add(pillar);
-    addObstacleBox(7.5, pz, 0.48, 0.48, terminalObstacles);
+    addObstacleBox(11.8, pz, 0.4, 0.4, terminalObstacles);
   });
 
   const rubiBoard = new THREE.Mesh(
-    new THREE.BoxGeometry(0.25, 1.25, 6.2),
+    new THREE.BoxGeometry(0.25, 1.05, 7.2),
     new THREE.MeshBasicMaterial({
       map: createWoodSignTexture("CAMPO LIMPO PAULISTA", "Linha 7-Rubi • Sentido Botujuru", "#881337", "#ffffff"),
     })
   );
-  rubiBoard.position.set(7.5, 3.5, 1.5);
+  rubiBoard.position.set(11.8, 5.4, 0);
   rubiBoard.rotation.y = -Math.PI / 2;
   terminalGroup.add(rubiBoard);
 
-  // Overpass & Elevator Tower (Passarela e Elevador da Estação CLP)
-  const overpassDeck = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.38, 2.8), concreteMat);
-  overpassDeck.position.set(11.5, 5.6, -7.5);
+  // Passarela Elevada de Concreto deslocada ao setor norte (sem bloquear rampas)
+  const overpassDeck = new THREE.Mesh(new THREE.BoxGeometry(19.0, 0.4, 2.9), concreteMat);
+  overpassDeck.position.set(19.2, 6.2, -16.0);
   terminalGroup.add(overpassDeck);
-  const overpassRail = new THREE.Mesh(new THREE.BoxGeometry(11.5, 0.9, 0.14), rubiMat);
-  overpassRail.position.set(11.5, 6.2, -6.15);
+  const overpassRail = new THREE.Mesh(new THREE.BoxGeometry(19.0, 0.95, 0.14), rubiMat);
+  overpassRail.position.set(19.2, 6.85, -14.6);
   terminalGroup.add(overpassRail);
-  const elevTower = new THREE.Mesh(new THREE.BoxGeometry(2.1, 6.6, 2.1), steelMat);
-  elevTower.position.set(6.2, 3.3, -7.5);
+  const elevTower = new THREE.Mesh(new THREE.BoxGeometry(2.0, 7.2, 2.0), steelMat);
+  elevTower.position.set(10.8, 3.6, -16.0);
   terminalGroup.add(elevTower);
-  addObstacleBox(6.2, -7.5, 2.2, 2.2, terminalObstacles);
+  addObstacleBox(10.8, -16.0, 2.1, 2.1, terminalObstacles);
+  const stairSlope = new THREE.Mesh(new THREE.BoxGeometry(5.6, 0.32, 2.2), concreteMat);
+  stairSlope.position.set(7.8, 3.3, -16.0);
+  stairSlope.rotation.z = 0.82;
+  terminalGroup.add(stairSlope);
 
   const railMat = new THREE.MeshStandardMaterial({ color: 0x64748b, metalness: 0.7 });
   const ballast = new THREE.Mesh(
-    new THREE.BoxGeometry(7.5, 0.1, 44),
+    new THREE.BoxGeometry(9.0, 0.1, 80),
     new THREE.MeshStandardMaterial({ color: 0x57534e, roughness: 1 })
   );
-  ballast.position.set(15.2, 0.05, 0);
+  ballast.position.set(26.8, 0.05, 0);
   terminalGroup.add(ballast);
 
-  [12.7, 14.1, 16.5, 17.9].forEach((rx) => {
-    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 44), railMat);
+  [24.3, 25.7, 28.1, 29.5].forEach((rx) => {
+    const rail = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.16, 80), railMat);
     rail.position.set(rx, 0.16, 0);
     terminalGroup.add(rail);
   });
 
   const trainTerm = createTrain7RubiModel("7-RUBI • BOTUJURU");
-  trainTerm.position.set(13.4, 0.1, 0);
+  trainTerm.position.set(25.0, 0.1, 0);
   terminalGroup.add(trainTerm);
 
   // Menino Maluquinho 3D (aparece no Terminal à noite para perseguir e atormentar o Alyffer!)
   const malu = new THREE.Group();
   const mSkin = new THREE.MeshStandardMaterial({ color: 0xf4cfa8, roughness: 0.65 });
-  const mShirt = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.7 }); // Camisa amarela
-  const mShorts = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.75 }); // Bermudinha azul
+  const mShirt = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.7 });
+  const mShorts = new THREE.MeshStandardMaterial({ color: 0x2563eb, roughness: 0.75 });
   const mShoe = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.55 });
-  const potMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.65, roughness: 0.25 }); // Panela icônica
+  const potMat = new THREE.MeshStandardMaterial({ color: 0x38bdf8, metalness: 0.65, roughness: 0.25 });
   const handleMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.8 });
 
   const mTorso = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.84, 0.4), mShirt);
@@ -3199,7 +3626,6 @@ function buildTerminalAndStation() {
   mHead.castShadow = true;
   malu.add(mHead);
 
-  // Olhos travessos + sorrisão
   const mBlack = new THREE.MeshBasicMaterial({ color: 0x111111 });
   const mLEye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.09, 0.05), mBlack);
   mLEye.position.set(-0.12, 1.8, 0.29);
@@ -3209,7 +3635,6 @@ function buildTerminalAndStation() {
   mSmile.position.set(0, 1.62, 0.29);
   malu.add(mLEye, mREye, mSmile);
 
-  // Panela icônica na cabeça com cabo pro lado!
   const potGroup = new THREE.Group();
   potGroup.position.set(0, 2.12, 0);
   potGroup.rotation.z = -0.18;
@@ -3261,10 +3686,17 @@ function buildTerminalAndStation() {
     rLeg: mRLeg,
   };
 
-  // Onça Domada estacionada na entrada do Terminal (para voltar de Onça para Pau Arcado!)
+  // Onça Domada estacionada na praça ampla do Terminal (y = 0.26 sobre o piso)
   if (tamedJaguarEntity && tamedJaguarEntity.mesh) {
     termJaguarMesh = tamedJaguarEntity.mesh.clone();
-    termJaguarMesh.position.set(-11.8, 0, -5.8);
+    const tjLegs = [];
+    let tjTail = null;
+    termJaguarMesh.traverse((ch) => {
+      if (ch.userData && ch.userData.isJagLeg) tjLegs.push(ch);
+      if (ch.userData && ch.userData.isJagTail) tjTail = ch;
+    });
+    termJaguarMesh.userData = { legs: tjLegs, tail: tjTail };
+    termJaguarMesh.position.set(1.5, 0.26, -10.0);
     termJaguarMesh.rotation.y = Math.PI * 0.35;
     termJaguarMesh.visible = false;
     terminalGroup.add(termJaguarMesh);
@@ -3518,7 +3950,7 @@ function createNpcModel({
   return npc;
 }
 
-// 4. CAMPUS COMPLETO DA ETECAMP (Fiel à foto aérea: muros, entrada principal, estacionamento com portão automático, quadra aberta, fundos, entrada aberta do corredor e sala de instrumentos!)
+// 4. CAMPUS COMPLETO DA ETECAMP (Fiel à foto aérea: muros, entrada principal, estacionamento com portão automático, quadra aberta, fundos, entrada aberta do corredor e sala de automação!)
 function buildEtecCampus() {
   const concreteMat = new THREE.MeshStandardMaterial({ color: 0xb8bec6, roughness: 0.9 });
   const yardMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8, roughness: 0.9 });
@@ -3742,15 +4174,13 @@ function buildEtecCampus() {
   court.receiveShadow = true;
   etecGroup.add(court);
 
-  // Marcações brancas da quadra (bordas, linha central, círculo central e áreas)
+  // Marcações brancas da quadra (bordas, linha central e círculo central)
   [
     [23.2, 15.6, 15.4, 0.16],
     [23.2, -3.2, 15.4, 0.16],
     [15.5, 6.2, 0.16, 18.8],
     [30.9, 6.2, 0.16, 18.8],
     [23.2, 6.2, 15.4, 0.16],
-    [23.2, 13.0, 7.6, 0.14],
-    [23.2, -0.6, 7.6, 0.14],
   ].forEach(([lx, lz, lw, ld]) => {
     const ln = new THREE.Mesh(new THREE.PlaneGeometry(lw, ld), whiteMat);
     ln.rotation.x = -Math.PI / 2;
@@ -3762,40 +4192,72 @@ function buildEtecCampus() {
   centerRing.position.set(23.2, 0.155, 6.2);
   etecGroup.add(centerRing);
 
-  // Traves de futsal + tabelas de basquete nas pontas norte e sul da quadra
-  [-2.8, 15.2].forEach((gz) => {
-    const goal = new THREE.Group();
-    goal.position.set(23.2, 0.12, gz);
-    const pL = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 0.12), whiteMat);
-    pL.position.set(-1.6, 1.05, 0);
-    const pR = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.1, 0.12), whiteMat);
-    pR.position.set(1.6, 1.05, 0);
-    const topBar = new THREE.Mesh(new THREE.BoxGeometry(3.32, 0.12, 0.12), whiteMat);
-    topBar.position.set(0, 2.1, 0);
-    // Tabela de basquete acima da trave
-    const bPole = new THREE.Mesh(new THREE.BoxGeometry(0.16, 3.6, 0.16), steelMat);
-    bPole.position.set(0, 1.8, gz < 6 ? -0.45 : 0.45);
-    const bBoard = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.05, 0.1), whiteMat);
-    bBoard.position.set(0, 3.35, gz < 6 ? -0.25 : 0.25);
-    const bRim = new THREE.Mesh(
-      new THREE.TorusGeometry(0.28, 0.035, 8, 14),
-      new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.4 })
-    );
-    bRim.rotation.x = Math.PI / 2;
-    bRim.position.set(0, 3.05, gz < 6 ? 0.1 : -0.1);
-    goal.add(pL, pR, topBar, bPole, bBoard, bRim);
-    etecGroup.add(goal);
-  });
+  // Tabela e Cesta de Basquete ISOLADA ao lado da janela da parede leste (sem traves/outras cestas!)
+  const hoopGroup = new THREE.Group();
+  hoopGroup.position.set(12.6, 0.12, 1.6);
+  const hoopPad = new THREE.Mesh(new THREE.BoxGeometry(0.68, 0.18, 0.68), darkMetalMat);
+  hoopPad.position.set(0, 0.09, 0);
+  const hoopPole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.11, 3.62, 12), steelMat);
+  hoopPole.position.set(0, 1.84, 0);
+  hoopPole.castShadow = true;
+  const hoopArm = new THREE.Mesh(new THREE.BoxGeometry(0.72, 0.13, 0.13), steelMat);
+  hoopArm.position.set(0.36, 3.45, 0);
+  const hoopFrame = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.22, 1.90), darkMetalMat);
+  hoopFrame.position.set(0.65, 3.48, 0);
+  const hoopBoard = new THREE.Mesh(
+    new THREE.BoxGeometry(0.09, 1.12, 1.80),
+    new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.35 })
+  );
+  hoopBoard.position.set(0.71, 3.48, 0);
+  hoopBoard.castShadow = true;
+  const rimOrangeMat = new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.4 });
+  const sqTop = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.05, 0.62), rimOrangeMat);
+  sqTop.position.set(0.76, 3.66, 0);
+  const sqBot = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.05, 0.62), rimOrangeMat);
+  sqBot.position.set(0.76, 3.20, 0);
+  const sqL = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.50, 0.05), rimOrangeMat);
+  sqL.position.set(0.76, 3.43, -0.29);
+  const sqR = new THREE.Mesh(new THREE.BoxGeometry(0.025, 0.50, 0.05), rimOrangeMat);
+  sqR.position.set(0.76, 3.43, 0.29);
+  const hoopRim = new THREE.Mesh(new THREE.TorusGeometry(0.32, 0.04, 10, 20), rimOrangeMat);
+  hoopRim.rotation.x = Math.PI / 2;
+  hoopRim.position.set(1.06, 3.12, 0);
+  const hoopNet = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.30, 0.19, 0.44, 12, 2, true),
+    new THREE.MeshBasicMaterial({ color: 0xf8fafc, wireframe: true })
+  );
+  hoopNet.position.set(1.06, 2.88, 0);
+  hoopGroup.add(hoopPad, hoopPole, hoopArm, hoopFrame, hoopBoard, sqTop, sqBot, sqL, sqR, hoopRim, hoopNet);
+  etecGroup.add(hoopGroup);
+  addObstacleBox(12.6, 1.6, 0.78, 0.78, etecObstacles);
 
   const courtSign = new THREE.Mesh(
     new THREE.BoxGeometry(4.6, 0.9, 0.12),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("QUADRA ETECAMP", "Área Aberta • Futsal & Basquete", "#14532d", "#fef08a"),
+      map: createWoodSignTexture("QUADRA ETECAMP", "Área Aberta • Arremesse na Cesta! 🏀", "#14532d", "#fef08a"),
     })
   );
   courtSign.position.set(33.4, 2.35, 6.2);
   courtSign.rotation.y = -Math.PI / 2;
   etecGroup.add(courtSign);
+
+  // Bola de Basquete 3D interativa no centro da Quadra Aberta!
+  const ballGroup = new THREE.Group();
+  ballGroup.position.set(23.2, 0.405, 6.2);
+  const bballMat = new THREE.MeshStandardMaterial({ color: 0xea580c, roughness: 0.62 });
+  const ballSphere = new THREE.Mesh(new THREE.SphereGeometry(0.26, 18, 16), bballMat);
+  ballSphere.castShadow = true;
+  ballGroup.add(ballSphere);
+  const seamMat = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.85 });
+  const seamRingGeo = new THREE.TorusGeometry(0.261, 0.011, 6, 24);
+  const seam1 = new THREE.Mesh(seamRingGeo, seamMat);
+  const seam2 = new THREE.Mesh(seamRingGeo, seamMat);
+  seam2.rotation.y = Math.PI / 2;
+  const seam3 = new THREE.Mesh(seamRingGeo, seamMat);
+  seam3.rotation.x = Math.PI / 2;
+  ballGroup.add(seam1, seam2, seam3);
+  etecGroup.add(ballGroup);
+  etecBall = { mesh: ballGroup, vx: 0, vy: 0, vz: 0, scoredCd: 0 };
 
   // ===================== PRÉDIO PRINCIPAL DA ETECAMP (BLOCOS + CORREDOR CENTRAL) =====================
   // Prédio central x = -11..+11, z = -16..+8 (corredor comprido no meio + blocos de salas nas laterais igual à foto!)
@@ -3957,26 +4419,25 @@ function buildEtecCampus() {
     if (inside) addObstacleBox(tx, tz, 1.0, 1.0, etecObstacles);
   });
 
-  // ===================== SALA DE INSTRUMENTOS (FUNDO-DIREITA — WALK-IN 3D!) =====================
+  // ===================== SALA DE AUTOMAÇÃO (FUNDO-DIREITA — WALK-IN 3D!) =====================
   // Posicionada entre a Quadra e os Fundos (x = 16.5..32.5, z = -27.0..-14.5), porta aberta em x = 16.5, z = -20.7
-  const instFloor = new THREE.Mesh(
+  const autoFloor = new THREE.Mesh(
     new THREE.BoxGeometry(15.6, 0.16, 12.1),
-    new THREE.MeshStandardMaterial({ color: 0x78350f, roughness: 0.8 })
+    new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.55, metalness: 0.15 })
   );
-  instFloor.position.set(24.5, 0.14, -20.75);
-  instFloor.receiveShadow = true;
-  etecGroup.add(instFloor);
+  autoFloor.position.set(24.5, 0.14, -20.75);
+  autoFloor.receiveShadow = true;
+  etecGroup.add(autoFloor);
 
-  const stageRug = new THREE.Mesh(
-    new THREE.PlaneGeometry(9.6, 6.4),
-    new THREE.MeshStandardMaterial({ color: 0x7f1d1d, roughness: 0.9 })
-  );
-  stageRug.rotation.x = -Math.PI / 2;
-  stageRug.position.set(25.2, 0.23, -20.75);
-  etecGroup.add(stageRug);
+  // Faixas amarelas de segurança industrial em volta da célula robótica
+  const safetyZone = new THREE.Mesh(new THREE.RingGeometry(2.35, 2.55, 4), yellowMat);
+  safetyZone.rotation.x = -Math.PI / 2;
+  safetyZone.rotation.z = Math.PI / 4;
+  safetyZone.position.set(25.2, 0.23, -20.75);
+  etecGroup.add(safetyZone);
 
-  // Paredes da Sala de Instrumentos (porta aberta de 4.2m na parede oeste)
-  function addInstWall(cx, cz, w, d) {
+  // Paredes da Sala de Automação (porta aberta de 4.2m na parede oeste)
+  function addAutoWall(cx, cz, w, d) {
     const wM = new THREE.Mesh(new THREE.BoxGeometry(w, 3.8, d), buildingMat);
     wM.position.set(cx, 1.9, cz);
     wM.castShadow = true;
@@ -3984,101 +4445,120 @@ function buildEtecCampus() {
     etecGroup.add(wM);
     addObstacleBox(cx, cz, w, d, etecObstacles);
   }
-  addInstWall(24.5, -27.0, 16.0, 0.42); // Norte
-  addInstWall(24.5, -14.5, 16.0, 0.42); // Sul
-  addInstWall(32.5, -20.75, 0.42, 12.5); // Leste
-  addInstWall(16.5, -24.9, 0.42, 4.2); // Oeste (lado norte da porta)
-  addInstWall(16.5, -16.55, 0.42, 4.1); // Oeste (lado sul da porta)
-  // Verga acima da porta aberta
-  const instLint = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.9, 4.4), buildingMat);
-  instLint.position.set(16.5, 3.35, -20.7);
-  etecGroup.add(instLint);
+  addAutoWall(24.5, -27.0, 16.0, 0.42); // Norte
+  addAutoWall(24.5, -14.5, 16.0, 0.42); // Sul
+  addAutoWall(32.5, -20.75, 0.42, 12.5); // Leste
+  addAutoWall(16.5, -24.9, 0.42, 4.2); // Oeste (lado norte da porta)
+  addAutoWall(16.5, -16.55, 0.42, 4.1); // Oeste (lado sul da porta)
+  const autoLint = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.9, 4.4), buildingMat);
+  autoLint.position.set(16.5, 3.35, -20.7);
+  etecGroup.add(autoLint);
 
-  // Telhado de fibrocimento da Sala de Instrumentos (oculta ao entrar para visão limpa!)
-  etecInstRoofGroup = new THREE.Group();
-  const instRoof = new THREE.Mesh(new THREE.BoxGeometry(16.8, 0.26, 13.4), roofCorrugMat);
-  instRoof.position.set(24.5, 3.95, -20.75);
-  instRoof.castShadow = true;
-  etecInstRoofGroup.add(instRoof);
-  etecGroup.add(etecInstRoofGroup);
+  // Telhado de fibrocimento da Sala de Automação (oculta ao entrar para visão limpa!)
+  etecAutoRoofGroup = new THREE.Group();
+  const autoRoof = new THREE.Mesh(new THREE.BoxGeometry(16.8, 0.26, 13.4), roofCorrugMat);
+  autoRoof.position.set(24.5, 3.95, -20.75);
+  autoRoof.castShadow = true;
+  etecAutoRoofGroup.add(autoRoof);
+  etecGroup.add(etecAutoRoofGroup);
 
-  const instSign = new THREE.Mesh(
-    new THREE.BoxGeometry(0.14, 0.95, 5.2),
+  const autoSign = new THREE.Mesh(
+    new THREE.BoxGeometry(0.14, 0.95, 5.4),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("SALA DE INSTRUMENTOS", "Banda & Música • Entre para tocar!", "#581c87", "#fef08a"),
+      map: createWoodSignTexture("SALA DE AUTOMAÇÃO", "Robótica, CLPs & Esteira Industrial", "#0f172a", "#38bdf8"),
     })
   );
-  instSign.position.set(16.18, 3.45, -20.7);
-  etecGroup.add(instSign);
+  autoSign.position.set(16.18, 3.45, -20.7);
+  etecGroup.add(autoSign);
 
-  // --- Instrumentos Musicais 3D dentro da sala ---
-  // 1. Bateria completa (centro-fundo)
-  const drumGroup = new THREE.Group();
-  drumGroup.position.set(27.5, 0.22, -21.0);
-  const drumRedMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, metalness: 0.35, roughness: 0.4 });
-  const cymbalMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, metalness: 0.75, roughness: 0.25 });
-  const bassDrum = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.56, 16), drumRedMat);
-  bassDrum.rotation.z = Math.PI / 2;
-  bassDrum.position.set(0, 0.62, 0);
-  const bassHead = new THREE.Mesh(new THREE.CylinderGeometry(0.58, 0.58, 0.58, 16), whiteMat);
-  bassHead.rotation.z = Math.PI / 2;
-  bassHead.position.set(0, 0.62, 0);
-  const snare = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.18, 12), whiteMat);
-  snare.position.set(0.45, 0.92, 0.58);
-  const tom1 = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.28, 12), drumRedMat);
-  tom1.position.set(0.05, 1.25, -0.25);
-  const tom2 = new THREE.Mesh(new THREE.CylinderGeometry(0.26, 0.26, 0.3, 12), drumRedMat);
-  tom2.position.set(0.05, 1.25, 0.28);
-  const floorTom = new THREE.Mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.58, 12), drumRedMat);
-  floorTom.position.set(0.45, 0.52, -0.78);
-  drumGroup.add(bassDrum, bassHead, snare, tom1, tom2, floorTom);
-  [
-    [0.15, 1.55, 0.98, 0.38],
-    [0.05, 1.65, -0.95, 0.44],
-  ].forEach(([cx, cy, cz, cr]) => {
-    const stand = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, cy, 6), steelMat);
-    stand.position.set(cx, cy * 0.5, cz);
-    const cym = new THREE.Mesh(new THREE.CylinderGeometry(cr, cr, 0.03, 14), cymbalMat);
-    cym.position.set(cx, cy, cz);
-    drumGroup.add(stand, cym);
-  });
-  etecGroup.add(drumGroup);
-  addObstacleBox(27.5, -21.0, 1.9, 2.2, etecObstacles);
+  // --- Equipamentos 3D do Laboratório de Automação Industrial ---
+  const robotYellowMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b, metalness: 0.45, roughness: 0.35 });
+  const hmiScreenMat = new THREE.MeshStandardMaterial({ color: 0x0ea5e9, emissive: 0x0284c7, emissiveIntensity: 0.65 });
+  const ledGreenMat = new THREE.MeshStandardMaterial({ color: 0x22c55e, emissive: 0x16a34a, emissiveIntensity: 0.8 });
+  const ledRedMat = new THREE.MeshStandardMaterial({ color: 0xef4444, emissive: 0xdc2626, emissiveIntensity: 0.7 });
 
-  // 2. Teclado / Sintetizador (parede norte)
-  const kbGroup = new THREE.Group();
-  kbGroup.position.set(23.5, 0.22, -25.2);
-  const kbStand = new THREE.Mesh(new THREE.BoxGeometry(1.7, 0.82, 0.42), darkMetalMat);
-  kbStand.position.y = 0.41;
-  const kbBody = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.16, 0.58), darkMetalMat);
-  kbBody.position.y = 0.88;
-  const kbKeys = new THREE.Mesh(new THREE.BoxGeometry(1.85, 0.05, 0.24), whiteMat);
-  kbKeys.position.set(0, 0.97, 0.12);
-  kbGroup.add(kbStand, kbBody, kbKeys);
-  etecGroup.add(kbGroup);
-  addObstacleBox(23.5, -25.2, 2.2, 0.8, etecObstacles);
+  // 1. Braço Robótico Industrial Articulado (centro da célula — anima ao vivo!)
+  const robotPedestal = new THREE.Mesh(new THREE.CylinderGeometry(0.68, 0.82, 0.72, 16), darkMetalMat);
+  robotPedestal.position.set(25.2, 0.58, -20.75);
+  robotPedestal.castShadow = true;
+  etecGroup.add(robotPedestal);
 
-  // 3. Guitarras & Violões no suporte (parede sul)
-  [21.0, 23.0, 25.0].forEach((gx, idx) => {
-    const gCol = [0xef4444, 0x2563eb, 0xd97706][idx];
-    const gBody = new THREE.Mesh(
-      new THREE.BoxGeometry(0.46, 0.62, 0.14),
-      new THREE.MeshStandardMaterial({ color: gCol, roughness: 0.45 })
+  etecRobotPivot = new THREE.Group();
+  etecRobotPivot.position.set(25.2, 0.96, -20.75);
+  const turret = new THREE.Mesh(new THREE.CylinderGeometry(0.46, 0.5, 0.36, 14), robotYellowMat);
+  turret.position.y = 0.18;
+  etecRobotPivot.add(turret);
+
+  etecRobotArm = new THREE.Group();
+  etecRobotArm.position.set(0, 0.36, 0);
+  const lowerBoom = new THREE.Mesh(new THREE.BoxGeometry(0.28, 1.25, 0.28), robotYellowMat);
+  lowerBoom.position.set(0, 0.55, 0.15);
+  lowerBoom.rotation.x = 0.28;
+  const elbowJoint = new THREE.Mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.36, 12), darkMetalMat);
+  elbowJoint.rotation.z = Math.PI / 2;
+  elbowJoint.position.set(0, 1.12, 0.32);
+  const upperBoom = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.22, 1.15), robotYellowMat);
+  upperBoom.position.set(0, 1.12, 0.85);
+  const clawL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.32), steelMat);
+  clawL.position.set(-0.14, 1.08, 1.48);
+  const clawR = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.14, 0.32), steelMat);
+  clawR.position.set(0.14, 1.08, 1.48);
+  etecRobotArm.add(lowerBoom, elbowJoint, upperBoom, clawL, clawR);
+  etecRobotPivot.add(etecRobotArm);
+  etecGroup.add(etecRobotPivot);
+  addObstacleBox(25.2, -20.75, 1.8, 1.8, etecObstacles);
+
+  // 2. Esteira Transportadora Industrial com sensor óptico e caixas deslizantes
+  const beltFrame = new THREE.Mesh(new THREE.BoxGeometry(1.3, 0.78, 6.4), steelMat);
+  beltFrame.position.set(28.6, 0.6, -20.75);
+  beltFrame.castShadow = true;
+  const beltTrack = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.08, 6.2), darkMetalMat);
+  beltTrack.position.set(28.6, 1.02, -20.75);
+  const sensorArch = new THREE.Mesh(new THREE.BoxGeometry(1.48, 0.95, 0.18), robotYellowMat);
+  sensorArch.position.set(28.6, 1.45, -20.75);
+  const towerLamp = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.34, 10), ledGreenMat);
+  towerLamp.position.set(29.2, 2.1, -20.75);
+  etecGroup.add(beltFrame, beltTrack, sensorArch, towerLamp);
+  addObstacleBox(28.6, -20.75, 1.5, 6.5, etecObstacles);
+
+  etecConveyorBoxes.length = 0;
+  [-2.2, 0.0, 2.2].forEach((oz) => {
+    const crate = new THREE.Mesh(
+      new THREE.BoxGeometry(0.56, 0.44, 0.56),
+      new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.75 })
     );
-    gBody.position.set(gx, 0.62, -15.3);
-    const gNeck = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.92, 0.08), woodMat);
-    gNeck.position.set(gx, 1.35, -15.3);
-    etecGroup.add(gBody, gNeck);
+    crate.position.set(28.6, 1.28, -20.75 + oz);
+    crate.castShadow = true;
+    etecGroup.add(crate);
+    etecConveyorBoxes.push(crate);
   });
 
-  // 4. Amplificadores & Caixas de Som (parede leste)
-  [-24.2, -17.2].forEach((az) => {
-    const amp = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.35, 1.0), darkMetalMat);
-    amp.position.set(31.2, 0.88, az);
-    const grille = new THREE.Mesh(new THREE.BoxGeometry(0.06, 1.1, 0.82), steelMat);
-    grille.position.set(30.78, 0.88, az);
-    etecGroup.add(amp, grille);
-    addObstacleBox(31.2, az, 1.0, 1.2, etecObstacles);
+  // 3. Painéis Elétricos de CLP & Telas IHM (parede norte e parede leste)
+  [21.5, 25.0, 28.5].forEach((px) => {
+    const cab = new THREE.Mesh(new THREE.BoxGeometry(2.1, 2.35, 0.72), steelMat);
+    cab.position.set(px, 1.4, -26.2);
+    cab.castShadow = true;
+    const hmi = new THREE.Mesh(new THREE.BoxGeometry(0.95, 0.62, 0.06), hmiScreenMat);
+    hmi.position.set(px - 0.3, 1.75, -25.82);
+    const eStop = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.09, 0.08, 10), ledRedMat);
+    eStop.rotation.x = Math.PI / 2;
+    eStop.position.set(px + 0.55, 1.45, -25.82);
+    const okLed = new THREE.Mesh(new THREE.SphereGeometry(0.06, 8, 8), ledGreenMat);
+    okLed.position.set(px + 0.55, 1.85, -25.82);
+    etecGroup.add(cab, hmi, eStop, okLed);
+    addObstacleBox(px, -26.2, 2.2, 0.9, etecObstacles);
+  });
+
+  // 4. Bancadas Didáticas de Pneumática, Sensores & Eletrônica (parede sul)
+  [21.5, 26.5].forEach((bx) => {
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(3.4, 0.92, 1.1), darkMetalMat);
+    bench.position.set(bx, 0.68, -15.4);
+    const rack = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.85, 0.16), whiteMat);
+    rack.position.set(bx, 1.55, -14.95);
+    const scope = new THREE.Mesh(new THREE.BoxGeometry(0.65, 0.42, 0.36), hmiScreenMat);
+    scope.position.set(bx - 0.8, 1.35, -15.35);
+    etecGroup.add(bench, rack, scope);
+    addObstacleBox(bx, -15.4, 3.5, 1.2, etecObstacles);
   });
 
   // ===================== ESTAÇÃO BOTUJURU (LINHA 7-RUBI — FRENTE SUL DA RUA!) =====================
@@ -4121,10 +4601,10 @@ function buildEtecCampus() {
 }
 buildEtecCampus();
 
-// 5. INTERIOR EXPANDIDO DA ETECAMP (32m x 66m — 12 Salas fiéis à foto real!)
-// Salas: 3AI (Pão & Muzzonline), 2AI, 1AI (Félix), 3A, 2A, 1A,
+// 5. INTERIOR EXPANDIDO DA ETECAMP (32m x 77m — 14 Salas fiéis à foto real!)
+// Salas: 3AI (Pão & Muzzonline), 2AI, 1AI (Félix), 3A, 2A, 1A, Convivência,
 // Lab Info 24 (B****** & T*******), Lab Info 15, Lab Info 7,
-// Lab Enfermagem (Kaio Wendell + Bancada NPK), Cantina & Convivência + Marcelo no Corredor!
+// Lab Química (Kaio Wendell + Bancada NPK), Lab Enfermagem, Cantina & Sala de Projetos + Marcelo!
 function buildEtecInside() {
   const concreteTex = createTileFloorTexture("#9aa09c", "#8d938f", 32);
   const floorMat = new THREE.MeshStandardMaterial({ map: concreteTex, roughness: 0.72 });
@@ -4171,8 +4651,8 @@ function buildEtecInside() {
   const gKeyboard = new THREE.BoxGeometry(0.44, 0.025, 0.16);
   const gCpu = new THREE.BoxGeometry(0.18, 0.38, 0.36);
 
-  // Iluminação fluorescente ao longo dos 66m do prédio
-  [-27.5, -16.5, -5.5, 5.5, 16.5, 27.5].forEach((lz) => {
+  // Iluminação fluorescente ao longo dos 77m do prédio
+  [-27.5, -16.5, -5.5, 5.5, 16.5, 27.5, 38.5].forEach((lz) => {
     const ptC = new THREE.PointLight(0xffffff, 0.42, 26);
     ptC.position.set(0, 4.4, lz);
     etecInsideGroup.add(ptC);
@@ -4186,25 +4666,25 @@ function buildEtecInside() {
     });
   });
 
-  // Piso Geral (32m x 66m: x = -16..16, z = -33..33)
-  const floor = new THREE.Mesh(new THREE.BoxGeometry(32.4, 0.24, 66.4), floorMat);
-  floor.position.y = -0.12;
+  // Piso Geral (32m x 77m: x = -16..16, z = -33..44)
+  const floor = new THREE.Mesh(new THREE.BoxGeometry(32.4, 0.24, 77.4), floorMat);
+  floor.position.set(0, -0.12, 5.5);
   floor.receiveShadow = true;
   etecInsideGroup.add(floor);
 
   // Piso claro no Corredor Central (x = -3.8..+3.8)
-  const corridorFloor = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 66.0), corridorTileMat);
+  const corridorFloor = new THREE.Mesh(new THREE.PlaneGeometry(7.6, 77.0), corridorTileMat);
   corridorFloor.rotation.x = -Math.PI / 2;
-  corridorFloor.position.set(0, 0.012, 0);
+  corridorFloor.position.set(0, 0.012, 5.5);
   etecInsideGroup.add(corridorFloor);
 
   // Teto interno da ETEC (FrontSide voltado p/ baixo: visível em 1ª pessoa)
   const etecCeiling = new THREE.Mesh(
-    new THREE.PlaneGeometry(32.4, 66.4),
+    new THREE.PlaneGeometry(32.4, 77.4),
     new THREE.MeshStandardMaterial({ color: 0xe2e8f0, roughness: 0.9, side: THREE.FrontSide })
   );
   etecCeiling.rotation.x = Math.PI / 2;
-  etecCeiling.position.set(0, 4.8, 0);
+  etecCeiling.position.set(0, 4.8, 5.5);
   etecInsideGroup.add(etecCeiling);
 
   // Paredes Externas (Norte, Oeste, Leste, Sul)
@@ -4212,16 +4692,16 @@ function buildEtecInside() {
   backWall.position.set(0, 2.4, -33.15);
   const redStripeBack = new THREE.Mesh(new THREE.BoxGeometry(32.2, 0.5, 0.34), cpsRedMat);
   redStripeBack.position.set(0, 4.15, -33.12);
-  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 66.4), classGreenWallMat);
-  leftWall.position.set(-16.15, 2.4, 0);
-  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 66.4), classGreenWallMat);
-  rightWall.position.set(16.15, 2.4, 0);
+  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 77.4), classGreenWallMat);
+  leftWall.position.set(-16.15, 2.4, 5.5);
+  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.3, 4.8, 77.4), classGreenWallMat);
+  rightWall.position.set(16.15, 2.4, 5.5);
   const frontWall = new THREE.Mesh(
     new THREE.PlaneGeometry(32.4, 4.8),
     new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.85, side: THREE.FrontSide })
   );
   frontWall.rotation.y = Math.PI;
-  frontWall.position.set(0, 2.4, 33.15);
+  frontWall.position.set(0, 2.4, 44.15);
   etecInsideGroup.add(backWall, redStripeBack, leftWall, rightWall, frontWall);
 
   function addInteriorWall(cx, cz, w, d, mat = classGreenWallMat) {
@@ -4306,7 +4786,7 @@ function buildEtecInside() {
     const outerX = isWest ? -15.95 : 15.95;
 
     // Parede divisória Sul da sala (se não for a última)
-    if (bandIndex < 5) {
+    if (bandIndex < 6) {
       addInteriorWall(xCenter, zMax, 12.1, 0.26, classGreenWallMat);
     }
 
@@ -4329,7 +4809,12 @@ function buildEtecInside() {
     const hallPlaque = new THREE.Mesh(
       new THREE.BoxGeometry(0.1, 0.72, 2.7),
       new THREE.MeshBasicMaterial({
-        map: createWoodSignTexture(code, subtitle, isComputerLab ? "#1e3a8a" : customKind === "nurse" ? "#065f46" : "#14532d", "#fef08a"),
+        map: createWoodSignTexture(
+          code,
+          subtitle,
+          isComputerLab ? "#1e3a8a" : customKind === "chem" ? "#0f766e" : customKind === "nurse" ? "#065f46" : "#14532d",
+          "#fef08a"
+        ),
       })
     );
     hallPlaque.position.set(corrX + (isWest ? 0.2 : -0.2), 2.95, doorMidZ);
@@ -4415,38 +4900,24 @@ function buildEtecInside() {
     classroomFans.push(fanSpinner);
     etecInsideGroup.add(conduit, switchBox, fanGrate, fanSpinner);
 
-    if (customKind === "nurse") {
-      // --- LABORATÓRIO DE ENFERMAGEM (Kaio Wendell + Maca + Armário + Bancada NPK!) ---
-      const nurseBanner = new THREE.Mesh(
+    if (customKind === "chem") {
+      // --- LABORATÓRIO DE QUÍMICA (Kaio Wendell + Bancada NPK + Reagentes!) ---
+      const chemBanner = new THREE.Mesh(
         new THREE.BoxGeometry(4.2, 1.25, 0.06),
         new THREE.MeshBasicMaterial({
-          map: createWoodSignTexture("LAB. DE ENFERMAGEM • ETECAMP", "Kaio Wendell • Saúde & Adubo NPK", "#065f46", "#fef08a"),
+          map: createWoodSignTexture("LAB. DE QUÍMICA • ETECAMP", "Kaio Wendell • Síntese NPK", "#0f766e", "#fef08a"),
         })
       );
-      nurseBanner.position.set(xCenter + 0.9, 2.15, zMin + 0.28);
-      etecInsideGroup.add(nurseBanner);
+      chemBanner.position.set(xCenter + 0.9, 2.15, zMin + 0.28);
+      etecInsideGroup.add(chemBanner);
 
-      // Maca hospitalar de enfermagem
-      const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.72, 1.05), silverMat);
-      bedFrame.position.set(xCenter - 1.2, 0.36, zCenter + 2.4);
-      const bedSheet = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.2, 0.96), nurseWhiteMat);
-      bedSheet.position.set(xCenter - 1.2, 0.8, zCenter + 2.4);
-      const bedPillow = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.14, 0.72), nurseMintMat);
-      bedPillow.position.set(xCenter - 2.0, 0.94, zCenter + 2.4);
-      etecInsideGroup.add(bedFrame, bedSheet, bedPillow);
-      addObstacleBox(xCenter - 1.2, zCenter + 2.4, 2.3, 1.15, etecInsideObstacles);
+      // Armário de reagentes e capela química
+      const reagentCab = new THREE.Mesh(new THREE.BoxGeometry(2.6, 2.1, 0.7), labGranite);
+      reagentCab.position.set(xCenter - 2.6, 1.05, zCenter + 3.2);
+      etecInsideGroup.add(reagentCab);
+      addObstacleBox(xCenter - 2.6, zCenter + 3.2, 2.7, 0.8, etecInsideObstacles);
 
-      // Armário de medicamentos + Cruz verde
-      const medCab = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.1, 0.65), nurseWhiteMat);
-      medCab.position.set(xCenter + 4.4, 1.05, zCenter + 2.6);
-      const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.56, 0.05), nurseMintMat);
-      crossV.position.set(xCenter + 4.4, 1.55, zCenter + 2.25);
-      const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.16, 0.05), nurseMintMat);
-      crossH.position.set(xCenter + 4.4, 1.55, zCenter + 2.25);
-      etecInsideGroup.add(medCab, crossV, crossH);
-      addObstacleBox(xCenter + 4.4, zCenter + 2.6, 1.5, 0.75, etecInsideObstacles);
-
-      // Bancada Química/Enfermagem NPK interativa em (12.4, 0, 2.2)!
+      // Bancada Química NPK interativa em (12.4, 0, 2.2)!
       const benchX = 12.4;
       const benchZ = 2.2;
       const chemBench = new THREE.Mesh(new THREE.BoxGeometry(4.4, 1.02, 1.35), labGranite);
@@ -4478,6 +4949,49 @@ function buildEtecInside() {
       return;
     }
 
+    if (customKind === "nurse") {
+      // --- LABORATÓRIO DE ENFERMAGEM (Maca Hospitalar + Armário Cruz Verde + Curativos!) ---
+      const nurseBanner = new THREE.Mesh(
+        new THREE.BoxGeometry(4.2, 1.25, 0.06),
+        new THREE.MeshBasicMaterial({
+          map: createWoodSignTexture("LAB. DE ENFERMAGEM • ETECAMP", "Saúde & Primeiros Socorros", "#065f46", "#fef08a"),
+        })
+      );
+      nurseBanner.position.set(xCenter + 0.9, 2.15, zMin + 0.28);
+      etecInsideGroup.add(nurseBanner);
+
+      // Maca hospitalar de enfermagem (interativa em (8.7, 0, 18.9)!)
+      const bedFrame = new THREE.Mesh(new THREE.BoxGeometry(2.2, 0.72, 1.05), silverMat);
+      bedFrame.position.set(xCenter - 1.2, 0.36, zCenter + 2.4);
+      const bedSheet = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.2, 0.96), nurseWhiteMat);
+      bedSheet.position.set(xCenter - 1.2, 0.8, zCenter + 2.4);
+      const bedPillow = new THREE.Mesh(new THREE.BoxGeometry(0.45, 0.14, 0.72), nurseMintMat);
+      bedPillow.position.set(xCenter - 2.0, 0.94, zCenter + 2.4);
+      const bedSign = new THREE.Mesh(
+        new THREE.BoxGeometry(2.4, 0.52, 0.08),
+        new THREE.MeshBasicMaterial({
+          map: createWoodSignTexture("ENFERMARIA • CURATIVO", "Tecla E: Recuperar Vida (+HP)", "#065f46", "#fef08a"),
+        })
+      );
+      bedSign.position.set(xCenter - 1.2, 1.55, zCenter + 2.4);
+      etecInsideGroup.add(bedFrame, bedSheet, bedPillow, bedSign);
+      addObstacleBox(xCenter - 1.2, zCenter + 2.4, 2.3, 1.15, etecInsideObstacles);
+
+      // Armário de medicamentos + Cruz verde + Mesa de triagem
+      const medCab = new THREE.Mesh(new THREE.BoxGeometry(1.4, 2.1, 0.65), nurseWhiteMat);
+      medCab.position.set(xCenter + 4.4, 1.05, zCenter + 2.6);
+      const crossV = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.56, 0.05), nurseMintMat);
+      crossV.position.set(xCenter + 4.4, 1.55, zCenter + 2.25);
+      const crossH = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.16, 0.05), nurseMintMat);
+      crossH.position.set(xCenter + 4.4, 1.55, zCenter + 2.25);
+      const triageDesk = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.85, 1.0), nurseWhiteMat);
+      triageDesk.position.set(xCenter + 2.2, 0.425, zCenter - 1.6);
+      etecInsideGroup.add(medCab, crossV, crossH, triageDesk);
+      addObstacleBox(xCenter + 4.4, zCenter + 2.6, 1.5, 0.75, etecInsideObstacles);
+      addObstacleBox(xCenter + 2.2, zCenter - 1.6, 2.5, 1.1, etecInsideObstacles);
+      return;
+    }
+
     // 4. Fileiras de Carteiras + Cadeira ATRÁS (3 colunas x 3 fileiras = 9 mesas por sala!)
     const colOffsets = [-3.1, 0.0, 3.1];
     const rowZ = [zMin + 4.3, zMin + 6.65, zMin + 9.0];
@@ -4488,27 +5002,29 @@ function buildEtecInside() {
     });
   }
 
-  // ===================== ALA OESTE: SALAS 3AI, 2AI, 1AI, 3A, 2A, 1A =====================
+  // ===================== ALA OESTE: SALAS 3AI, 2AI, 1AI, 3A, 2A, 1A, CONVIVÊNCIA =====================
   buildPhotoRoom({ side: "west", bandIndex: 0, code: "SALA 3AI", subtitle: "Pão & Muzzonline" });
   buildPhotoRoom({ side: "west", bandIndex: 1, code: "SALA 2AI", subtitle: "Ensino Médio + Info" });
   buildPhotoRoom({ side: "west", bandIndex: 2, code: "SALA 1AI", subtitle: "Félix • Missões PAC" });
   buildPhotoRoom({ side: "west", bandIndex: 3, code: "SALA 3A", subtitle: "3º Ano A • ETECAMP" });
   buildPhotoRoom({ side: "west", bandIndex: 4, code: "SALA 2A", subtitle: "2º Ano A • ETECAMP" });
   buildPhotoRoom({ side: "west", bandIndex: 5, code: "SALA 1A", subtitle: "1º Ano A • ETECAMP" });
+  buildPhotoRoom({ side: "west", bandIndex: 6, code: "CONVIVÊNCIA CPS", subtitle: "Armários & Mural", customKind: "lounge" });
 
-  // ===================== ALA LESTE: LABS 24, 15, 7, ENFERMAGEM, CANTINA, CONVIVÊNCIA =====================
+  // ===================== ALA LESTE: LABS 24, 15, 7, QUÍMICA, ENFERMAGEM, CANTINA, PROJETOS =====================
   buildPhotoRoom({ side: "east", bandIndex: 0, code: "LAB. INFO 24", subtitle: "B****** & T*******", isComputerLab: true });
   buildPhotoRoom({ side: "east", bandIndex: 1, code: "LAB. INFO 15", subtitle: "Informática • PCs", isComputerLab: true });
   buildPhotoRoom({ side: "east", bandIndex: 2, code: "LAB. INFO 7", subtitle: "Informática • Redes", isComputerLab: true });
-  buildPhotoRoom({ side: "east", bandIndex: 3, code: "LAB. ENFERMAGEM", subtitle: "Kaio Wendell • Adubo", customKind: "nurse" });
-  buildPhotoRoom({ side: "east", bandIndex: 4, code: "CANTINA ETECAMP", subtitle: "Salgados & Resenha", customKind: "cantina" });
-  buildPhotoRoom({ side: "east", bandIndex: 5, code: "CONVIVÊNCIA CPS", subtitle: "Armários & Mural", customKind: "lounge" });
+  buildPhotoRoom({ side: "east", bandIndex: 3, code: "LAB. QUÍMICA", subtitle: "Kaio Wendell • Adubo", customKind: "chem" });
+  buildPhotoRoom({ side: "east", bandIndex: 4, code: "LAB. ENFERMAGEM", subtitle: "Saúde & Curativos", customKind: "nurse" });
+  buildPhotoRoom({ side: "east", bandIndex: 5, code: "CANTINA ETECAMP", subtitle: "Salgados & Resenha", customKind: "cantina" });
+  buildPhotoRoom({ side: "east", bandIndex: 6, code: "SALA PROJETOS", subtitle: "TCC & Feira CPS" });
 
-  // Letreiro Principal no Fundo do Corredor + Saída no Sul (z = +31.4)
+  // Letreiro Principal no Fundo do Corredor + Saída no Sul (z = +42.4)
   const cpsCenterSign = new THREE.Mesh(
     new THREE.BoxGeometry(6.8, 1.5, 0.14),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("ETECAMP • CAMPO LIMPO PAULISTA", "3AI • 2AI • 1AI • 3A • 2A • 1A • Labs 24/15/7", "#7f1d1d", "#ffffff"),
+      map: createWoodSignTexture("ETECAMP • CAMPO LIMPO PAULISTA", "3AI..1AI • Labs Info • Química • Enfermagem", "#7f1d1d", "#ffffff"),
     })
   );
   cpsCenterSign.position.set(0, 2.85, -32.92);
@@ -4518,7 +5034,7 @@ function buildEtecInside() {
     new THREE.BoxGeometry(3.2, 0.05, 1.4),
     new THREE.MeshStandardMaterial({ color: 0xb91c1c, roughness: 0.85 })
   );
-  exitMat.position.set(0, 0.025, 31.4);
+  exitMat.position.set(0, 0.025, 42.4);
   etecInsideGroup.add(exitMat);
 
   const exitBoard = new THREE.Mesh(
@@ -4527,7 +5043,7 @@ function buildEtecInside() {
       map: createWoodSignTexture("SAIR P/ ENTRADA PRINCIPAL", "Pátio Aberto • Quadra • Estação", "#7f1d1d", "#fef08a"),
     })
   );
-  exitBoard.position.set(0, 0.65, 32.5);
+  exitBoard.position.set(0, 0.65, 43.5);
   etecInsideGroup.add(exitBoard);
 
   // Saída Aberta nos Fundos do Corredor (z = -31.4 -> Parte Externa Fundos)
@@ -4541,18 +5057,18 @@ function buildEtecInside() {
   const exitBackBoard = new THREE.Mesh(
     new THREE.BoxGeometry(4.2, 0.72, 0.1),
     new THREE.MeshBasicMaterial({
-      map: createWoodSignTexture("ENTRADA ABERTA • SAIR P/ FUNDOS", "Parte Externa Fundos & Sala de Instrumentos", "#1e3a8a", "#ffffff"),
+      map: createWoodSignTexture("ENTRADA ABERTA • SAIR P/ FUNDOS", "Parte Externa Fundos & Sala de Automação", "#1e3a8a", "#ffffff"),
     })
   );
   exitBackBoard.position.set(0, 0.95, -32.6);
   etecInsideGroup.add(exitBackBoard);
 
-  // Saída Lateral do Corredor para o Estacionamento (x = -3.4, z = 29.2)
+  // Saída Lateral do Corredor para o Estacionamento (x = -3.4, z = 40.2)
   const exitParkMat = new THREE.Mesh(
     new THREE.BoxGeometry(1.1, 0.05, 2.2),
     new THREE.MeshStandardMaterial({ color: 0x0f766e, roughness: 0.85 })
   );
-  exitParkMat.position.set(-3.15, 0.025, 29.2);
+  exitParkMat.position.set(-3.15, 0.025, 40.2);
   etecInsideGroup.add(exitParkMat);
 
   const exitParkBoard = new THREE.Mesh(
@@ -4561,7 +5077,7 @@ function buildEtecInside() {
       map: createWoodSignTexture("SAIR P/ ESTACIONAMENTO", "Acesso lateral ao estacionamento (E)", "#0f766e", "#fef08a"),
     })
   );
-  exitParkBoard.position.set(-3.62, 2.15, 29.2);
+  exitParkBoard.position.set(-3.62, 2.15, 40.2);
   etecInsideGroup.add(exitParkBoard);
 
   // ===================== TODOS OS NPCs DA ETECAMP NAS SUAS SALAS EXATAS =====================
@@ -4610,8 +5126,8 @@ function buildEtecInside() {
     {
       id: "kaio",
       name: "Kaio Wendell",
-      roleSub: "Lab Enfermagem • Adubo",
-      pos: new THREE.Vector3(7.6, 0, 2.8), // Lab Enfermagem (East Band 3)
+      roleSub: "Lab Química • Adubo",
+      pos: new THREE.Vector3(7.6, 0, 2.8), // Lab Química (East Band 3)
       yaw: -0.3,
       skinColor: 0xf3d2b8,
       shirtColor: 0x1e293b,
@@ -4857,6 +5373,60 @@ function createMachoPlayerModel() {
   hatBand.position.y = 2.77;
   group.add(hatBand);
 
+  // Visual do Lambi Homem (sem camisa, sem chapéu, olhos vermelhos, língua gigante até os joelhos!)
+  const lambiHairTop = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.16, 0.7), hairMat);
+  lambiHairTop.position.set(0, 2.73, 0);
+  lambiHairTop.visible = false;
+  group.add(lambiHairTop);
+
+  const bareChestGroup = new THREE.Group();
+  bareChestGroup.visible = false;
+  const bareShade = new THREE.MeshStandardMaterial({ color: 0xa66b46, roughness: 0.72 });
+  [-0.2, 0.2].forEach((px) => {
+    const pecLine = new THREE.Mesh(new THREE.BoxGeometry(0.32, 0.22, 0.05), skinMat);
+    pecLine.position.set(px, 1.62, 0.26);
+    const nip = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.04), bareShade);
+    nip.position.set(px * 1.1, 1.56, 0.29);
+    bareChestGroup.add(pecLine, nip);
+  });
+  const bellyLine = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.48, 0.04), bareShade);
+  bellyLine.position.set(0, 1.24, 0.26);
+  bareChestGroup.add(bellyLine);
+  group.add(bareChestGroup);
+
+  const lambiRedEyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+  const lambiSocketMat = new THREE.MeshBasicMaterial({ color: 0x2a0606 });
+  const lambiEyeGroup = new THREE.Group();
+  lambiEyeGroup.visible = false;
+  [-0.14, 0.14].forEach((ex) => {
+    const rim = new THREE.Mesh(new THREE.BoxGeometry(0.145, 0.13, 0.055), lambiSocketMat);
+    rim.position.set(ex, 2.38, 0.34);
+    const re = new THREE.Mesh(new THREE.BoxGeometry(0.11, 0.095, 0.075), lambiRedEyeMat);
+    re.position.set(ex, 2.38, 0.352);
+    lambiEyeGroup.add(rim, re);
+  });
+  group.add(lambiEyeGroup);
+
+  // Língua enorme do Lambi Homem chegando até o joelho (boca y=2.12 -> joelho y=0.32!)
+  const lambiTongueGroup = new THREE.Group();
+  lambiTongueGroup.position.set(0, 2.12, 0.36);
+  lambiTongueGroup.visible = false;
+  const ltBase = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.12, 0.24), tongueMat);
+  ltBase.position.set(0, -0.04, 0.1);
+  const ltLongShaft = new THREE.Mesh(new THREE.BoxGeometry(0.22, 1.72, 0.09), tongueMat);
+  ltLongShaft.position.set(0, -0.9, 0.16);
+  ltLongShaft.rotation.x = -0.04;
+  const ltLongTip = new THREE.Mesh(new THREE.SphereGeometry(0.135, 10, 10), tongueMat);
+  ltLongTip.scale.set(1.05, 1.2, 0.65);
+  ltLongTip.position.set(0, -1.78, 0.2);
+  const ltGroove = new THREE.Mesh(
+    new THREE.BoxGeometry(0.035, 1.56, 0.03),
+    new THREE.MeshBasicMaterial({ color: 0x9f1239 })
+  );
+  ltGroove.position.set(0, -0.88, 0.21);
+  lambiTongueGroup.add(ltBase, ltLongShaft, ltLongTip, ltGroove);
+  group.add(lambiTongueGroup);
+
   // Braços articulados (ombro + antebraço + palma) para o gesto "6-7" ao coringar!
   const upperArmGeo = new THREE.BoxGeometry(0.25, 0.44, 0.25);
   const forearmGeo = new THREE.BoxGeometry(0.23, 0.42, 0.23);
@@ -4938,35 +5508,47 @@ function createMachoPlayerModel() {
   rightArmGroup.add(rightForearmGroup);
   group.add(rightArmGroup);
 
-  const legGeo = new THREE.BoxGeometry(0.32, 0.8, 0.32);
-  const leftLeg = new THREE.Mesh(legGeo, jeansMat);
-  leftLeg.position.set(-0.23, 0.44, 0);
-  leftLeg.castShadow = true;
-  group.add(leftLeg);
-
-  const rightLeg = new THREE.Mesh(legGeo, jeansMat);
-  rightLeg.position.set(0.23, 0.44, 0);
-  rightLeg.castShadow = true;
-  group.add(rightLeg);
-
+  const thighGeo = new THREE.BoxGeometry(0.32, 0.42, 0.32);
+  const shinGeo = new THREE.BoxGeometry(0.3, 0.36, 0.3);
   const bootGeo = new THREE.BoxGeometry(0.35, 0.2, 0.44);
-  const leftBoot = new THREE.Mesh(bootGeo, bootsMat);
-  leftBoot.position.set(-0.23, 0.1, 0.05);
-  group.add(leftBoot);
 
-  const rightBoot = new THREE.Mesh(bootGeo, bootsMat);
-  rightBoot.position.set(0.23, 0.1, 0.05);
-  group.add(rightBoot);
+  const makeBaseLeg = (sx) => {
+    const hip = new THREE.Group();
+    hip.position.set(sx * 0.23, 0.86, 0);
+    const thigh = new THREE.Mesh(thighGeo, jeansMat);
+    thigh.position.y = -0.21;
+    thigh.castShadow = true;
+    hip.add(thigh);
+
+    const shinGroup = new THREE.Group();
+    shinGroup.position.set(0, -0.42, 0);
+    const shin = new THREE.Mesh(shinGeo, jeansMat);
+    shin.position.y = -0.17;
+    shin.castShadow = true;
+    const boot = new THREE.Mesh(bootGeo, bootsMat);
+    boot.position.set(0, -0.34, 0.05);
+    boot.castShadow = true;
+    shinGroup.add(shin, boot);
+    hip.add(shinGroup);
+    group.add(hip);
+    return { hip, shinGroup, boot };
+  };
+
+  const lL = makeBaseLeg(-1);
+  const rL = makeBaseLeg(1);
 
   group.userData = {
+    modelRoot: group,
     leftArm: leftArmGroup,
     rightArm: rightArmGroup,
     leftForearm: leftForearmGroup,
     rightForearm: rightForearmGroup,
-    leftLeg,
-    rightLeg,
-    leftBoot,
-    rightBoot,
+    leftLeg: lL.hip,
+    rightLeg: rL.hip,
+    leftShin: lL.shinGroup,
+    rightShin: rL.shinGroup,
+    leftBoot: lL.boot,
+    rightBoot: rL.boot,
     canGroup,
     hoeGroup,
     leftEye,
@@ -4984,6 +5566,15 @@ function createMachoPlayerModel() {
     bootsMat,
     strawMat,
     hatBandMat,
+    torsoMesh: torso,
+    chestDetail,
+    hatBrim,
+    hatCrown,
+    hatBand,
+    lambiHairTop,
+    bareChestGroup,
+    lambiEyeGroup,
+    lambiTongueGroup,
   };
   return group;
 }
@@ -5216,22 +5807,38 @@ function createPacMinecraftModel() {
   const makeLeg = (sx) => {
     const lg = new THREE.Group();
     lg.position.set(sx * 0.22, 0.84, 0);
-    const pant = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.68, 0.38), jeansMat);
-    pant.position.y = -0.34;
-    pant.castShadow = true;
+    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.36, 0.36, 0.38), jeansMat);
+    thigh.position.y = -0.18;
+    thigh.castShadow = true;
+    const sg = new THREE.Group();
+    sg.position.y = -0.36;
+    const shin = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.32, 0.36), jeansMat);
+    shin.position.y = -0.16;
+    shin.castShadow = true;
     const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.16, 0.44), shoeMat);
-    shoe.position.set(0, -0.74, 0.03);
+    shoe.position.set(0, -0.38, 0.03);
     const sole = new THREE.Mesh(new THREE.BoxGeometry(0.39, 0.05, 0.45), soleMat);
-    sole.position.set(0, -0.82, 0.03);
-    lg.add(pant, shoe, sole);
-    return lg;
+    sole.position.set(0, -0.46, 0.03);
+    sg.add(shin, shoe, sole);
+    lg.add(thigh, sg);
+    return { lg, sg };
   };
-  const leftLeg = makeLeg(-1);
-  const rightLeg = makeLeg(1);
-  g.add(leftLeg, rightLeg);
+  const lLeg = makeLeg(-1);
+  const rLeg = makeLeg(1);
+  g.add(lLeg.lg, rLeg.lg);
 
   g.visible = false;
-  g.userData = { leftArm, rightArm, leftForearm: null, rightForearm: null, leftLeg, rightLeg };
+  g.userData = {
+    modelRoot: g,
+    leftArm,
+    rightArm,
+    leftForearm: null,
+    rightForearm: null,
+    leftLeg: lLeg.lg,
+    rightLeg: rLeg.lg,
+    leftShin: lLeg.sg,
+    rightShin: rLeg.sg,
+  };
   return g;
 }
 
@@ -5371,19 +5978,34 @@ function createHomemGulosoModel() {
   const makeLeg = (sx) => {
     const lg = new THREE.Group();
     lg.position.set(sx * 0.26, 0.72, 0);
-    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.56, 0.4), skinMat);
-    thigh.position.y = -0.28;
+    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.32, 0.4), skinMat);
+    thigh.position.y = -0.16;
+    const sg = new THREE.Group();
+    sg.position.y = -0.32;
+    const calf = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.24, 0.36), skinMat);
+    calf.position.y = -0.12;
     const boot = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.22, 0.48), bootMat);
-    boot.position.set(0, -0.62, 0.05);
-    lg.add(thigh, boot);
-    return lg;
+    boot.position.set(0, -0.3, 0.05);
+    sg.add(calf, boot);
+    lg.add(thigh, sg);
+    return { lg, sg };
   };
-  const leftLeg = makeLeg(-1);
-  const rightLeg = makeLeg(1);
-  g.add(leftLeg, rightLeg);
+  const lLeg = makeLeg(-1);
+  const rLeg = makeLeg(1);
+  g.add(lLeg.lg, rLeg.lg);
 
   g.visible = false;
-  g.userData = { leftArm: lA.ag, rightArm: rA.ag, leftForearm: lA.fg, rightForearm: rA.fg, leftLeg, rightLeg };
+  g.userData = {
+    modelRoot: g,
+    leftArm: lA.ag,
+    rightArm: rA.ag,
+    leftForearm: lA.fg,
+    rightForearm: rA.fg,
+    leftLeg: lLeg.lg,
+    rightLeg: rLeg.lg,
+    leftShin: lLeg.sg,
+    rightShin: rLeg.sg,
+  };
   return g;
 }
 
@@ -5463,20 +6085,36 @@ function createMachoHairyBuffModel() {
   const makeLeg = (sx) => {
     const lg = new THREE.Group();
     lg.position.set(sx * 0.28, 0.84, 0);
-    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.68, 0.44), jeansMat);
-    leg.position.y = -0.34;
-    leg.castShadow = true;
+    const thigh = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.36, 0.44), jeansMat);
+    thigh.position.y = -0.18;
+    thigh.castShadow = true;
+    const sg = new THREE.Group();
+    sg.position.y = -0.36;
+    const shin = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.32, 0.4), jeansMat);
+    shin.position.y = -0.16;
+    shin.castShadow = true;
     const boot = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.22, 0.52), bootMat);
-    boot.position.set(0, -0.74, 0.05);
-    lg.add(leg, boot);
-    return lg;
+    boot.position.set(0, -0.38, 0.05);
+    sg.add(shin, boot);
+    lg.add(thigh, sg);
+    return { lg, sg };
   };
-  const leftLeg = makeLeg(-1);
-  const rightLeg = makeLeg(1);
-  g.add(leftLeg, rightLeg);
+  const lLeg = makeLeg(-1);
+  const rLeg = makeLeg(1);
+  g.add(lLeg.lg, rLeg.lg);
 
   g.visible = false;
-  g.userData = { leftArm: lA.ag, rightArm: rA.ag, leftForearm: lA.fg, rightForearm: rA.fg, leftLeg, rightLeg };
+  g.userData = {
+    modelRoot: g,
+    leftArm: lA.ag,
+    rightArm: rA.ag,
+    leftForearm: lA.fg,
+    rightForearm: rA.fg,
+    leftLeg: lLeg.lg,
+    rightLeg: rLeg.lg,
+    leftShin: lLeg.sg,
+    rightShin: rLeg.sg,
+  };
   return g;
 }
 
@@ -5503,11 +6141,28 @@ scene.add(playerMesh);
 function syncPlayerTitleSkin() {
   if (!playerMesh || !playerMesh.userData || !playerMesh.userData.titleModels) return;
   const models = playerMesh.userData.titleModels;
-  const key = models[state.activeTitle] ? state.activeTitle : "Estudante ETEC";
+  const key = !state.isLambiHomem && models[state.activeTitle] ? state.activeTitle : "Estudante ETEC";
   Object.entries(models).forEach(([k, m]) => {
     m.visible = k === key;
+    if (k !== key) {
+      m.position.y = 0;
+      m.rotation.set(0, 0, 0);
+    }
   });
-  playerMesh.userData.activeRig = models[key].userData;
+  const activeRig = models[key].userData;
+  playerMesh.userData.activeRig = activeRig;
+  // Reanexa Regador e Enxada na mão direita da skin ativa para que apareçam em todas as skins!
+  const { canGroup, hoeGroup } = playerMesh.userData;
+  if (canGroup && hoeGroup && !activeRig.isStatic) {
+    const handHost = activeRig.rightForearm || activeRig.rightArm;
+    if (handHost) {
+      const yOff = activeRig.rightForearm ? -0.34 : -0.78;
+      if (canGroup.parent !== handHost) handHost.add(canGroup);
+      if (hoeGroup.parent !== handHost) handHost.add(hoeGroup);
+      canGroup.position.set(0, yOff, 0.24);
+      hoeGroup.position.set(0, yOff, 0.16);
+    }
+  }
   syncHeldToolVisibility();
 }
 
@@ -5614,6 +6269,7 @@ const SHARED_GEOS = {
   frond2: new THREE.ConeGeometry(0.06, 0.25, 5),
   frond3: new THREE.ConeGeometry(0.09, 0.38, 5),
   carrotRoot: new THREE.ConeGeometry(0.11, 0.22, 8),
+  cornCob: new THREE.CylinderGeometry(0.065, 0.075, 0.24, 8),
 };
 
 const SHARED_MATS = {};
@@ -5673,6 +6329,15 @@ function createPlotMesh(index, x, z) {
   readyHalo.visible = false;
   group.add(readyHalo);
 
+  // Indicador 3D de planta precisando de água (gotinha azul flutuante)
+  const dryDrop = new THREE.Mesh(
+    new THREE.ConeGeometry(0.13, 0.28, 8),
+    new THREE.MeshBasicMaterial({ color: 0x38bdf8 })
+  );
+  dryDrop.position.y = 1.12;
+  dryDrop.visible = false;
+  group.add(dryDrop);
+
   exteriorGroup.add(group);
   soilMesh.userData.plotIndex = index;
   frameOuter.userData.plotIndex = index;
@@ -5690,6 +6355,8 @@ function createPlotMesh(index, x, z) {
     lockGroup,
     cropGroup,
     readyHalo,
+    dryDrop,
+    popTimer: 0,
     unlocked: index < 6,
     stage: "raw",
     cropId: null,
@@ -5744,6 +6411,19 @@ function createLivestockMesh(animal) {
   const g = new THREE.Group();
   const type = animal.type;
   const legMeshes = [];
+  let headRef = null;
+  let woolGroup = null;
+
+  function addPivotedAnimalLeg(lx, hipY, lz, w, h, d, mat) {
+    const lg = new THREE.Group();
+    lg.position.set(lx, hipY, lz);
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat);
+    mesh.position.y = -h * 0.5;
+    mesh.castShadow = true;
+    lg.add(mesh);
+    g.add(lg);
+    legMeshes.push(lg);
+  }
 
   if (type === "cow") {
     const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.78 });
@@ -5767,60 +6447,69 @@ function createLivestockMesh(animal) {
     const udder = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.24, 0.44), pinkMat);
     udder.position.set(0, 0.56, -0.28);
     g.add(udder);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.6, 0.64), whiteMat);
+    const head = new THREE.Group();
     head.position.set(0, 1.38, 1.02);
-    g.add(head);
+    const skull = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.6, 0.64), whiteMat);
     const snout = new THREE.Mesh(new THREE.BoxGeometry(0.56, 0.28, 0.24), pinkMat);
-    snout.position.set(0, 1.24, 1.38);
-    g.add(snout);
+    snout.position.set(0, -0.14, 0.36);
+    head.add(skull, snout);
     [-0.24, 0.24].forEach((hx) => {
       const horn = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.26, 6), hornMat);
-      horn.position.set(hx, 1.76, 0.95);
+      horn.position.set(hx, 0.38, -0.07);
       horn.rotation.z = hx < 0 ? 0.3 : -0.3;
-      g.add(horn);
       const eye = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.05), spotMat);
-      eye.position.set(hx * 0.7, 1.46, 1.35);
-      g.add(eye);
+      eye.position.set(hx * 0.7, 0.08, 0.33);
+      head.add(horn, eye);
     });
+    g.add(head);
+    headRef = head;
     [
-      [-0.32, 0.38, 0.58],
-      [0.32, 0.38, 0.58],
-      [-0.32, 0.38, -0.58],
-      [0.32, 0.38, -0.58],
-    ].forEach(([lx, ly, lz]) => {
-      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.76, 0.2), spotMat);
-      leg.position.set(lx, ly, lz);
-      g.add(leg);
-      legMeshes.push(leg);
-    });
+      [-0.32, 0.76, 0.58],
+      [0.32, 0.76, 0.58],
+      [-0.32, 0.76, -0.58],
+      [0.32, 0.76, -0.58],
+    ].forEach(([lx, ly, lz]) => addPivotedAnimalLeg(lx, ly, lz, 0.2, 0.76, 0.2, spotMat));
   } else if (type === "sheep") {
     const woolMat = new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.95 });
+    const shavedMat = new THREE.MeshStandardMaterial({ color: 0xebb3a4, roughness: 0.88 });
     const darkMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.8 });
+    // Corpo tosquiado (sem lã, visível quando animal.sheared === true!)
+    const shavedBody = new THREE.Mesh(new THREE.BoxGeometry(0.62, 0.54, 0.98), shavedMat);
+    shavedBody.position.y = 0.78;
+    shavedBody.castShadow = true;
+    g.add(shavedBody);
+
+    // Camada de Lã (oculta após tosquia com a tesoura!)
+    woolGroup = new THREE.Group();
     const body = new THREE.Mesh(new THREE.BoxGeometry(0.84, 0.72, 1.15), woolMat);
     body.position.y = 0.82;
     body.castShadow = true;
-    g.add(body);
     const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45, 1), woolMat);
     puff.position.set(0, 1.02, 0);
     puff.scale.set(1.05, 0.72, 1.25);
-    g.add(puff);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.44, 0.48), darkMat);
+    woolGroup.add(body, puff);
+
+    const head = new THREE.Group();
     head.position.set(0, 1.0, 0.72);
-    g.add(head);
+    const skull = new THREE.Mesh(new THREE.BoxGeometry(0.44, 0.44, 0.48), darkMat);
+    const sEyeL = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.06, 0.04), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    sEyeL.position.set(-0.12, 0.06, 0.24);
+    const sEyeR = sEyeL.clone();
+    sEyeR.position.x = 0.12;
     const topWool = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.16, 0.42), woolMat);
+    topWool.position.set(0, 0.25, -0.04);
+    head.add(skull, sEyeL, sEyeR);
+    woolGroup.add(topWool);
     topWool.position.set(0, 1.25, 0.68);
-    g.add(topWool);
+    woolGroup.visible = !animal.sheared;
+    g.add(woolGroup, head);
+    headRef = head;
     [
-      [-0.24, 0.26, 0.38],
-      [0.24, 0.26, 0.38],
-      [-0.24, 0.26, -0.38],
-      [0.24, 0.26, -0.38],
-    ].forEach(([lx, ly, lz]) => {
-      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.52, 0.15), darkMat);
-      leg.position.set(lx, ly, lz);
-      g.add(leg);
-      legMeshes.push(leg);
-    });
+      [-0.24, 0.52, 0.38],
+      [0.24, 0.52, 0.38],
+      [-0.24, 0.52, -0.38],
+      [0.24, 0.52, -0.38],
+    ].forEach(([lx, ly, lz]) => addPivotedAnimalLeg(lx, ly, lz, 0.15, 0.52, 0.15, darkMat));
   } else {
     // Porco Caipira
     const pigMat = new THREE.MeshStandardMaterial({ color: 0xf472b6, roughness: 0.72 });
@@ -5830,31 +6519,28 @@ function createLivestockMesh(animal) {
     body.position.y = 0.66;
     body.castShadow = true;
     g.add(body);
-    const head = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.5, 0.52), pigMat);
+    const head = new THREE.Group();
     head.position.set(0, 0.84, 0.72);
-    g.add(head);
+    const skull = new THREE.Mesh(new THREE.BoxGeometry(0.54, 0.5, 0.52), pigMat);
     const snout = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.2, 0.18), snoutMat);
-    snout.position.set(0, 0.76, 1.02);
-    g.add(snout);
+    snout.position.set(0, -0.08, 0.3);
+    head.add(skull, snout);
     [-0.14, 0.14].forEach((ex) => {
       const eye = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.07, 0.05), eyeMat);
-      eye.position.set(ex, 0.92, 0.99);
-      g.add(eye);
+      eye.position.set(ex, 0.08, 0.27);
+      head.add(eye);
     });
+    g.add(head);
+    headRef = head;
     const tail = new THREE.Mesh(new THREE.TorusGeometry(0.09, 0.03, 6, 10), pigMat);
     tail.position.set(0, 0.76, -0.6);
     g.add(tail);
     [
-      [-0.24, 0.2, 0.36],
-      [0.24, 0.2, 0.36],
-      [-0.24, 0.2, -0.36],
-      [0.24, 0.2, -0.36],
-    ].forEach(([lx, ly, lz]) => {
-      const leg = new THREE.Mesh(new THREE.BoxGeometry(0.16, 0.4, 0.16), pigMat);
-      leg.position.set(lx, ly, lz);
-      g.add(leg);
-      legMeshes.push(leg);
-    });
+      [-0.24, 0.4, 0.36],
+      [0.24, 0.4, 0.36],
+      [-0.24, 0.4, -0.36],
+      [0.24, 0.4, -0.36],
+    ].forEach(([lx, ly, lz]) => addPivotedAnimalLeg(lx, ly, lz, 0.16, 0.4, 0.16, pigMat));
   }
 
   const readyHalo = new THREE.Mesh(
@@ -5878,7 +6564,51 @@ function createLivestockMesh(animal) {
   g.add(tag);
 
   g.position.set(animal.x, 0, animal.z);
-  return { mesh: g, legs: legMeshes, readyHalo, animal };
+  if (animal.isBaby) g.scale.setScalar(0.65);
+  return { mesh: g, legs: legMeshes, head: headRef, woolGroup, readyHalo, animal };
+}
+
+function spawnYardChicken(idx, isBaby = false) {
+  const henMat = new THREE.MeshStandardMaterial({ color: 0xfef9ef, roughness: 0.8 });
+  const combMat = new THREE.MeshStandardMaterial({ color: 0xdc2626 });
+  const beakMat = new THREE.MeshStandardMaterial({ color: 0xf59e0b });
+  const hen = new THREE.Group();
+  const hBody = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.34, 0.54), henMat);
+  hBody.position.y = 0.28;
+  hBody.castShadow = true;
+  const hHead = new THREE.Mesh(new THREE.BoxGeometry(0.24, 0.24, 0.24), henMat);
+  hHead.position.set(0, 0.52, 0.24);
+  const hComb = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.1, 0.14), combMat);
+  hComb.position.set(0, 0.67, 0.24);
+  const hBeak = new THREE.Mesh(new THREE.ConeGeometry(0.06, 0.14, 4), beakMat);
+  hBeak.rotation.x = Math.PI / 2;
+  hBeak.position.set(0, 0.5, 0.4);
+  hen.add(hBody, hHead, hComb, hBeak);
+  if (isBaby) hen.scale.setScalar(0.65);
+
+  const hx = THREE.MathUtils.clamp(-27.2 + (idx % 4) * 2.1 + (Math.random() - 0.5) * 0.6, -29.2, -18.8);
+  const hz = THREE.MathUtils.clamp(-22.8 + Math.floor(idx / 4) * 2.2 + (Math.random() - 0.5) * 0.6, -25.2, -14.2);
+  hen.position.set(hx, 0, hz);
+  exteriorGroup.add(hen);
+  chickens.push({
+    mesh: hen,
+    home: new THREE.Vector3(-24.2, 0, -19.2),
+    target: new THREE.Vector3(hx, 0, hz),
+    wait: Math.random() * 2,
+    isBaby,
+  });
+}
+
+function syncChickensToCount(targetCount = 3, babyCount = 0) {
+  const count = THREE.MathUtils.clamp(Math.round(targetCount || 3), 1, 12);
+  while (chickens.length > 0) {
+    const c = chickens.pop();
+    if (c && c.mesh) exteriorGroup.remove(c.mesh);
+  }
+  for (let i = 0; i < count; i++) {
+    const isBaby = babyCount > 0 && i >= count - babyCount;
+    spawnYardChicken(i, isBaby);
+  }
 }
 
 function rebuildLivestockMeshes() {
@@ -5915,10 +6645,10 @@ function buildCropVisual(plot) {
   plot.visualCropId = plot.cropId;
 
   const offsets = [
-    [-0.5, -0.5],
-    [0.5, -0.5],
-    [-0.5, 0.5],
-    [0.5, 0.5],
+    [-0.36, -0.36],
+    [0.36, -0.36],
+    [-0.36, 0.36],
+    [0.36, 0.36],
   ];
 
   offsets.forEach(([ox, oz]) => {
@@ -6015,6 +6745,36 @@ function buildCropVisual(plot) {
         root.position.y = 0.07;
         plant.add(root);
       }
+    } else if (crop.style === "corn") {
+      const isFull = stageLevel === 3;
+      const scale = isFull ? 1.0 : 0.68;
+      const stalk = new THREE.Mesh(isFull ? SHARED_GEOS.stem3 : SHARED_GEOS.stem2, getCachedMat(0x16a34a, 0.8));
+      stalk.position.y = 0.38 * scale;
+      stalk.scale.y = 1.25;
+      plant.add(stalk);
+      const leafMat = getCachedMat(crop.leafColor, 0.78);
+      [-1, 1].forEach((side) => {
+        const leaf = new THREE.Mesh(SHARED_GEOS.lettuceLeaf2, leafMat);
+        leaf.position.set(side * 0.11, 0.34 * scale, 0);
+        leaf.rotation.z = side * -0.7;
+        plant.add(leaf);
+      });
+      if (isFull) {
+        const cob = new THREE.Mesh(SHARED_GEOS.cornCob, getCachedMat(crop.color, 0.5));
+        cob.position.set(0.08, 0.45, 0.04);
+        cob.rotation.z = -0.35;
+        plant.add(cob);
+      }
+    } else if (crop.style === "wheat") {
+      const isFull = stageLevel === 3;
+      const stalkH = isFull ? 1.0 : 0.6;
+      const wMat = getCachedMat(isFull ? crop.color : crop.leafColor, 0.72);
+      [-0.08, 0, 0.08].forEach((wx, idx) => {
+        const reed = new THREE.Mesh(isFull ? SHARED_GEOS.frond3 : SHARED_GEOS.frond2, wMat);
+        reed.position.set(wx, 0.24 * stalkH, (idx - 1) * 0.04);
+        reed.rotation.z = (idx - 1) * 0.12;
+        plant.add(reed);
+      });
     }
 
     plot.cropGroup.add(plant);
@@ -6040,6 +6800,14 @@ function refreshPlotAppearance(plot) {
   }
 
   plot.readyHalo.visible = plot.unlocked && plot.stage === "ready";
+  if (plot.dryDrop) {
+    plot.dryDrop.visible =
+      plot.unlocked &&
+      plot.stage === "growing" &&
+      plot.waterTimer <= 0 &&
+      !state.isRainy &&
+      state.upgrades.autoWaterLevel < 2;
+  }
 
   const desiredStage = !plot.unlocked
     ? -1
@@ -6116,13 +6884,17 @@ const state = {
   basementStep: 0,
   basementUnlocked: false,
   machoSkin: "clone_classic",
-  money: 30,
+  money: 40,
   day: 1,
   dayMinutes: 7 * 60, // 07:00
   isRainy: false,
   reputation: 1,
   insanity: 0,
   isCrazy: false,
+  isLambiHomem: false,
+  lambiTriggeredDay: 0,
+  lambiUntilDay: 0,
+  knockedNpcs: {},
   visitedEtecToday: false,
   coringaTimer: 0,
   currentCoringaLine: "",
@@ -6130,9 +6902,12 @@ const state = {
   vaselina: 0, // Frascos de Vaselina do Marcelo
   vaselinaTimer: 0, // Boost turbinado de velocidade da Vaselina!
   npkDoneToday: false,
-  musicPlayedToday: false,
+  automationDoneToday: false,
+  goalScoredToday: false,
   compostDoneToday: false,
   coopEggs: 2, // Fresh eggs ready in the chicken coop
+  chickenCount: 3,
+  chickenLove: 0,
   felixStep: 0,
   paoStep: 0,
   titles: ["Estudante ETEC"],
@@ -6158,6 +6933,11 @@ const state = {
   jaguarDownPos: { x: 0, z: 0 },
   jaguarDownTimer: 0,
   hasTamedJaguar: false,
+  tamedJaguarHp: 120,
+  tamedJaguarMaxHp: 120,
+  tamedJaguarDown: false,
+  tamedJaguarRecoverTimer: 0,
+  ridingJaguar: false,
   marceloHired: false,
   marceloDaysLeft: 0,
   ownedHoes: ["comum"],
@@ -6195,10 +6975,18 @@ const state = {
     morango: 0,
     alface_guloso: 0,
     alface_dourado: 0,
+    milho: 0,
+    trigo: 0,
     ovo_caipira: 0,
     leite_fresco: 0,
     la_ovelha: 0,
     trufa_porco: 0,
+    salada_macho: 0,
+    omelete_caipira: 0,
+    vitamina_morango: 0,
+    risoto_trufa: 0,
+    balde: 0,
+    tesoura: 0,
   },
   dailyMult: {},
   hotCropId: "alface_crespa",
@@ -6212,7 +7000,7 @@ const state = {
 };
 
 const player = {
-  pos: new THREE.Vector3(0, 0, -6.5),
+  pos: new THREE.Vector3(0, 0, -11.5),
   facingYaw: 0,
   radius: 0.45,
   vy: 0,
@@ -6256,7 +7044,7 @@ function getAnimalPenBounds(type) {
 }
 
 function getMaxAnimals() {
-  return state.landLevel >= 2 ? 12 : state.landLevel >= 1 ? 8 : 4;
+  return 6 + state.landLevel * 5;
 }
 
 function getAnimalSpawnPos(type = "cow") {
@@ -6302,9 +7090,10 @@ function rollDailyMarket() {
   CROP_KEYS.forEach((id) => {
     state.dailyMult[id] = 0.92 + Math.random() * 0.28;
   });
-  const pool = ["alface_crespa", "alface_americana", "alface_roxa", "alface_crespa", "tomate", "cenoura", "morango"];
+  const pool = ["alface_crespa", "alface_americana", "alface_roxa", "tomate", "cenoura", "morango", "milho", "trigo"];
   state.hotCropId = pool[Math.floor(Math.random() * pool.length)];
   state.dailyMult[state.hotCropId] = 1.4;
+  updateSeedHotbarUI();
 }
 
 function generateCityOrders() {
@@ -6315,7 +7104,7 @@ function generateCityOrders() {
     "Mercadinho de Pau Arcado",
     "Restaurante Av. Alfried Krupp",
   ];
-  const orderPool = ["alface_crespa", "alface_americana", "alface_roxa", "tomate", "cenoura", "morango"];
+  const orderPool = ["alface_crespa", "alface_americana", "alface_roxa", "tomate", "cenoura", "morango", "milho", "trigo"];
   const orders = [];
   for (let i = 0; i < 3; i++) {
     const cropId = i === 0 ? "alface_crespa" : orderPool[Math.floor(Math.random() * orderPool.length)];
@@ -6363,10 +7152,17 @@ function saveGame() {
       reputation: state.reputation,
       insanity: state.insanity,
       isCrazy: state.isCrazy,
+      isLambiHomem: state.isLambiHomem,
+      lambiTriggeredDay: state.lambiTriggeredDay,
+      lambiUntilDay: state.lambiUntilDay,
+      knockedNpcs: state.knockedNpcs,
       visitedEtecToday: state.visitedEtecToday,
       coopEggs: state.coopEggs,
+      chickenCount: state.chickenCount,
+      chickenLove: state.chickenLove,
       npkDoneToday: state.npkDoneToday,
-      musicPlayedToday: state.musicPlayedToday,
+      automationDoneToday: state.automationDoneToday,
+      goalScoredToday: state.goalScoredToday,
       compostDoneToday: state.compostDoneToday,
       felixStep: state.felixStep,
       paoStep: state.paoStep,
@@ -6375,6 +7171,9 @@ function saveGame() {
       kaioAdubo: state.kaioAdubo,
       kaioSuperAdubo: state.kaioSuperAdubo,
       hasTamedJaguar: state.hasTamedJaguar,
+      tamedJaguarHp: state.tamedJaguarHp,
+      tamedJaguarDown: state.tamedJaguarDown,
+      tamedJaguarRecoverTimer: state.tamedJaguarRecoverTimer,
       marceloHired: state.marceloHired,
       marceloDaysLeft: state.marceloDaysLeft,
       basementStep: state.basementStep,
@@ -6414,10 +7213,21 @@ function loadSavedGame() {
     if (typeof data.reputation === "number") state.reputation = data.reputation;
     if (typeof data.insanity === "number") state.insanity = data.insanity;
     state.isCrazy = state.insanity >= 100;
+    if (typeof data.isLambiHomem === "boolean") state.isLambiHomem = data.isLambiHomem;
+    if (typeof data.lambiTriggeredDay === "number") state.lambiTriggeredDay = data.lambiTriggeredDay;
+    if (typeof data.lambiUntilDay === "number") state.lambiUntilDay = data.lambiUntilDay;
+    if (data.knockedNpcs && typeof data.knockedNpcs === "object") state.knockedNpcs = { ...data.knockedNpcs };
     if (typeof data.visitedEtecToday === "boolean") state.visitedEtecToday = data.visitedEtecToday;
     if (typeof data.coopEggs === "number") state.coopEggs = data.coopEggs;
+    if (typeof data.chickenCount === "number") {
+      state.chickenCount = THREE.MathUtils.clamp(data.chickenCount, 1, 12);
+      syncChickensToCount(state.chickenCount);
+    }
+    if (typeof data.chickenLove === "number") state.chickenLove = data.chickenLove;
     if (typeof data.npkDoneToday === "boolean") state.npkDoneToday = data.npkDoneToday;
-    if (typeof data.musicPlayedToday === "boolean") state.musicPlayedToday = data.musicPlayedToday;
+    if (typeof data.automationDoneToday === "boolean") state.automationDoneToday = data.automationDoneToday;
+    else if (typeof data.musicPlayedToday === "boolean") state.automationDoneToday = data.musicPlayedToday;
+    if (typeof data.goalScoredToday === "boolean") state.goalScoredToday = data.goalScoredToday;
     if (typeof data.compostDoneToday === "boolean") state.compostDoneToday = data.compostDoneToday;
     if (typeof data.felixStep === "number") state.felixStep = data.felixStep;
     if (typeof data.paoStep === "number") state.paoStep = data.paoStep;
@@ -6426,6 +7236,13 @@ function loadSavedGame() {
     if (typeof data.kaioAdubo === "number") state.kaioAdubo = data.kaioAdubo;
     if (typeof data.kaioSuperAdubo === "number") state.kaioSuperAdubo = data.kaioSuperAdubo;
     if (typeof data.hasTamedJaguar === "boolean") state.hasTamedJaguar = data.hasTamedJaguar;
+    if (typeof data.tamedJaguarHp === "number") state.tamedJaguarHp = THREE.MathUtils.clamp(data.tamedJaguarHp, 0, state.tamedJaguarMaxHp);
+    if (typeof data.tamedJaguarDown === "boolean") state.tamedJaguarDown = data.tamedJaguarDown;
+    if (typeof data.tamedJaguarRecoverTimer === "number") state.tamedJaguarRecoverTimer = Math.max(0, data.tamedJaguarRecoverTimer);
+    if (state.tamedJaguarDown && tamedJaguarEntity) {
+      tamedJaguarEntity.mesh.rotation.z = Math.PI / 2;
+      tamedJaguarEntity.mesh.position.y = 0.45;
+    }
     if (typeof data.marceloHired === "boolean") state.marceloHired = data.marceloHired;
     if (typeof data.marceloDaysLeft === "number") state.marceloDaysLeft = data.marceloDaysLeft;
     if (typeof data.basementStep === "number") state.basementStep = data.basementStep;
@@ -6504,6 +7321,12 @@ function setActiveSceneVisibility() {
   }
   if (tamedJaguarEntity) {
     tamedJaguarEntity.mesh.visible = state.location === "yard" && state.hasTamedJaguar;
+    if (state.tamedJaguarDown) {
+      tamedJaguarEntity.mesh.rotation.z = Math.PI / 2;
+      tamedJaguarEntity.mesh.position.y = 0.45;
+    } else if (!state.ridingJaguar) {
+      tamedJaguarEntity.mesh.rotation.z = 0;
+    }
   }
   if (termJaguarMesh) {
     termJaguarMesh.visible = state.location === "terminal" && state.hasTamedJaguar;
@@ -6529,12 +7352,16 @@ function resetToNewFarm() {
   localStorage.removeItem(STORAGE_KEY);
   state.location = "yard";
   state.isRainy = false;
-  state.money = 30;
+  state.money = 40;
   state.day = 1;
   state.dayMinutes = 7 * 60;
   state.reputation = 1;
   state.insanity = 0;
   state.isCrazy = false;
+  state.isLambiHomem = false;
+  state.lambiTriggeredDay = 0;
+  state.lambiUntilDay = 0;
+  state.knockedNpcs = {};
   state.visitedEtecToday = false;
   state.coringaTimer = 0;
   state.currentCoringaLine = "";
@@ -6542,9 +7369,13 @@ function resetToNewFarm() {
   state.vaselina = 0;
   state.vaselinaTimer = 0;
   state.npkDoneToday = false;
-  state.musicPlayedToday = false;
+  state.automationDoneToday = false;
+  state.goalScoredToday = false;
   state.compostDoneToday = false;
   state.coopEggs = 2;
+  state.chickenCount = 3;
+  state.chickenLove = 0;
+  syncChickensToCount(3);
   state.felixStep = 0;
   state.paoStep = 0;
   state.titles = ["Estudante ETEC"];
@@ -6560,6 +7391,15 @@ function resetToNewFarm() {
   state.jaguarDefeated = false;
   state.jaguarDownTimer = 0;
   state.hasTamedJaguar = false;
+  state.tamedJaguarHp = 120;
+  state.tamedJaguarMaxHp = 120;
+  state.tamedJaguarDown = false;
+  state.tamedJaguarRecoverTimer = 0;
+  state.ridingJaguar = false;
+  if (tamedJaguarEntity) {
+    tamedJaguarEntity.mesh.rotation.z = 0;
+    tamedJaguarEntity.mesh.position.y = 0;
+  }
   state.marceloHired = false;
   state.marceloDaysLeft = 0;
   state.basementStep = 0;
@@ -6582,6 +7422,8 @@ function resetToNewFarm() {
   state.upgrades = { plotTier: 0, canLevel: 1, fertLevel: 1, standLevel: 1, autoWaterLevel: 0 };
   state.water = getMaxWater();
   CROP_KEYS.forEach((k) => (state.inventory[k] = 0));
+  state.inventory.balde = 0;
+  state.inventory.tesoura = 0;
   plots.forEach((p, idx) => {
     p.stage = idx === 2 || idx === 3 ? "tilled" : "raw";
     p.cropId = null;
@@ -6606,7 +7448,21 @@ function resetToNewFarm() {
 // HUD Updates
 function updateSeedHotbarUI() {
   document.querySelectorAll(".seed-slot").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.crop === state.selectedCrop);
+    const cropId = btn.dataset.crop;
+    btn.classList.toggle("active", cropId === state.selectedCrop);
+    const isHot = cropId === state.hotCropId;
+    btn.classList.toggle("hot-today", isHot);
+    let badge = btn.querySelector(".seed-hot-tag");
+    if (isHot) {
+      if (!badge) {
+        badge = document.createElement("span");
+        badge.className = "seed-hot-tag";
+        badge.textContent = "🔥 +40%";
+        btn.appendChild(badge);
+      }
+    } else if (badge) {
+      badge.remove();
+    }
   });
 }
 
@@ -6624,11 +7480,10 @@ function updateHUD() {
   titleBadge.textContent = state.isCrazy ? `🤡 CORINGANDO (${state.activeTitle})` : state.activeTitle;
   moneyVal.textContent = formatBRL(state.money);
   const cal = getCalendarInfo(state.day);
-  const hh = String(Math.floor(state.dayMinutes / 60)).padStart(2, "0");
-  const mm = String(Math.floor(state.dayMinutes % 60)).padStart(2, "0");
+  const clockStr = formatHHMM(state.dayMinutes);
   const dayStr = String(cal.dayOfMonth).padStart(2, "0");
   const weatherIcon = state.isRainy ? "🌧️" : isAfterWorkHours() ? "🌙" : "☀️";
-  dayTimeVal.textContent = `${cal.weekdayShort}, ${dayStr}/${cal.monthShort} • ${hh}:${mm} ${weatherIcon}`;
+  dayTimeVal.textContent = `${cal.weekdayShort}, ${dayStr}/${cal.monthShort} • ${clockStr} ${weatherIcon}`;
   locationVal.textContent = LOCATION_LABELS[state.location] || "Pau Arcado";
 
   const totalItems = getTotalBasketCount();
@@ -6671,6 +7526,23 @@ function updateHUD() {
     hpPill.classList.toggle("hidden", !showHp);
     hpText.textContent = `${Math.max(0, Math.round(state.playerHp))}`;
     hpBar.style.width = `${Math.max(0, Math.min(100, (state.playerHp / state.maxHp) * 100))}%`;
+  }
+  if (tamedJagPill && tamedJagBar && tamedJagText) {
+    tamedJagPill.classList.toggle("hidden", !state.hasTamedJaguar);
+    if (state.hasTamedJaguar) {
+      const hp = Math.max(0, Math.round(state.tamedJaguarHp));
+      const maxHp = Math.max(1, state.tamedJaguarMaxHp || 120);
+      if (state.tamedJaguarDown) {
+        tamedJagText.textContent = `💤 CAÍDA (${Math.ceil(state.tamedJaguarRecoverTimer)}s)`;
+        tamedJagBar.style.width = "0%";
+      } else {
+        tamedJagText.textContent = `${hp}/${maxHp}`;
+        tamedJagBar.style.width = `${Math.min(100, (hp / maxHp) * 100)}%`;
+      }
+      if (tamedJagLabel) {
+        tamedJagLabel.textContent = state.ridingJaguar ? "🐆 MONTADA" : "🐆 ONÇA";
+      }
+    }
   }
   if (jaguarHudBar && jaguarHpFill && jaguarHpText) {
     const showJag = state.location === "yard" && state.jaguar.active && state.mode === "playing";
@@ -6719,6 +7591,16 @@ function updateHUD() {
     buffText.textContent = `🌙 Após 19h (Sem trabalho)`;
   } else {
     buffBadge.classList.add("hidden");
+  }
+
+  if (lambiPill && lambiText) {
+    lambiPill.classList.toggle("hidden", !state.isLambiHomem);
+    if (state.isLambiHomem) {
+      lambiText.textContent =
+        state.location === "etec_inside"
+          ? "👅 LAMBI HOMEM! Aperte F nos alunos/NPCs"
+          : "👅 LAMBI HOMEM! Vá à ETEC lamber NPCs (F)";
+    }
   }
 }
 
@@ -6792,6 +7674,7 @@ const BED_POS = new THREE.Vector3(-7.0, 0, -5.0);
 const MANGA_POS = new THREE.Vector3(-3.6, 0, -7.0);
 const ETEC_POS = new THREE.Vector3(-8.2, 0, -0.55);
 const COFFEE_POS = new THREE.Vector3(5.4, 0, -2.6);
+const STOVE_POS = new THREE.Vector3(5.75, 0, -6.4);
 const TOILET_POS = new THREE.Vector3(9.1, 0, 2.5);
 const SECRET_SWITCH_1_POS = new THREE.Vector3(7.55, 0, -7.4);
 const SECRET_SWITCH_2_POS = new THREE.Vector3(9.1, 0, 7.1);
@@ -6800,22 +7683,25 @@ const EXIT_POS = new THREE.Vector3(0, 0, 7.2);
 
 const BASEMENT_EXIT_POS = new THREE.Vector3(0, 0, 7.8);
 
-const TERM_BUS_BACK_POS = new THREE.Vector3(-8.6, 0, -3.2);
-const TERM_JAGUAR_POS = new THREE.Vector3(-11.8, 0, -5.8);
-const TERM_SELL_POS = new THREE.Vector3(-1.6, 0, 4.4);
-const TERM_PASTEL_POS = new THREE.Vector3(-9.2, 0, 4.2);
-const TERM_TRAIN_POS = new THREE.Vector3(9.4, 0, 0);
+const TERM_BUS_BACK_POS = new THREE.Vector3(-15.0, 0, -18.6);
+const TERM_JAGUAR_POS = new THREE.Vector3(1.5, 0.26, -10.0);
+const TERM_SELL_POS = new THREE.Vector3(-1.0, 0.26, 7.2);
+const TERM_PASTEL_POS = new THREE.Vector3(-13.8, 0.26, 7.1);
+const TERM_STATION_SHOP_POS = new THREE.Vector3(14.2, 0.95, -7.6);
+const TERM_TRAIN_POS = new THREE.Vector3(19.6, 0.95, 0);
 
 const ETEC_TRAIN_BACK_POS = new THREE.Vector3(0, 0, 29.6);
 const ETEC_DOOR_IN_POS = new THREE.Vector3(0, 0, 9.2);
 const ETEC_PARKING_DOOR_POS = new THREE.Vector3(-12.2, 0, 1.0);
 const ETEC_BACK_DOOR_POS = new THREE.Vector3(0, 0, -17.6);
-const ETEC_INSTRUMENTS_POS = new THREE.Vector3(24.5, 0, -21.0);
+const ETEC_AUTOMATION_POS = new THREE.Vector3(24.5, 0, -21.0);
 
-const ETEC_EXIT_POS = new THREE.Vector3(0, 0, 31.4);
+const ETEC_EXIT_POS = new THREE.Vector3(0, 0, 42.4);
 const ETEC_EXIT_BACK_POS = new THREE.Vector3(0, 0, -31.4);
-const ETEC_EXIT_PARKING_POS = new THREE.Vector3(-2.8, 0, 29.2);
+const ETEC_EXIT_PARKING_POS = new THREE.Vector3(-2.8, 0, 40.2);
 const CHEM_BENCH_POS = new THREE.Vector3(12.4, 0, 2.2);
+const NURSE_BED_POS = new THREE.Vector3(8.7, 0, 18.9);
+const ETEC_HOOP_RIM = new THREE.Vector3(13.66, 3.24, 1.6);
 
 function distXZ(a, b) {
   return Math.hypot(a.x - b.x, a.z - b.z);
@@ -6823,9 +7709,11 @@ function distXZ(a, b) {
 
 function getFloorYAt(x, z) {
   if (state.location === "terminal") {
-    if (x >= 5.7 && x <= 11.4 && z >= -13 && z <= 11) return 0.95;
-    if (x >= 3.1 && x < 5.7 && z >= -1.6 && z <= 2.6) return ((x - 3.1) / 2.6) * 0.95;
-    if (x >= -14.0 && x <= 2.5 && z >= -3.5 && z <= 8.5) return 0.26;
+    if (x >= 10.0 && x <= 22.0 && z >= -24.0 && z <= 22.0) return 0.95;
+    if (x >= 6.0 && x < 10.0 && ((z >= -5.6 && z <= 4.6) || (z >= 8.4 && z <= 13.6))) {
+      return 0.26 + ((x - 6.0) / 4.0) * 0.69;
+    }
+    if (x >= -22.0 && x <= 6.0 && z >= -18.0 && z <= 14.0) return 0.26;
     return 0;
   }
   if (state.location === "etec") {
@@ -6839,8 +7727,11 @@ function getFloorYAt(x, z) {
   return 0;
 }
 
-function switchLocation(loc, x, z, facingYaw, camYaw, camPitch, camDist) {
+function switchLocation(loc, x, z, facingYaw, camYaw, camPitch, camDist, keepJaguarMount = false) {
   state.location = loc;
+  if (!keepJaguarMount && state.ridingJaguar) {
+    state.ridingJaguar = false;
+  }
   if (loc === "etec" || loc === "etec_inside") {
     state.visitedEtecToday = true;
   }
@@ -6895,6 +7786,7 @@ function toggleEquippedTool() {
 function triggerPlayerDeath(reason) {
   if (state.mode === "dead") return;
   clearActiveInputs();
+  state.ridingJaguar = false;
   state.mode = "dead";
   state.isSleeping = false;
   if (sleepOverlay) {
@@ -6904,6 +7796,9 @@ function triggerPlayerDeath(reason) {
   if (jaguarHudBar) jaguarHudBar.classList.add("hidden");
   if (maluquinhoBubble) maluquinhoBubble.classList.add("hidden");
   if (kickDogBtn) kickDogBtn.classList.add("hidden");
+  if (phoneModal) phoneModal.classList.add("hidden");
+  if (cookModal) cookModal.classList.add("hidden");
+  if (typeof stopMiniArcade === "function") stopMiniArcade();
 
   sfx.play("death");
   if (reason === "orelha") {
@@ -7055,15 +7950,19 @@ function tameJaguar() {
     showToast("🌳", "ONÇA SOLTA NA MATA", "Você soltou a Onça longe da fazenda e ganhou R$ 40 do IBAMA de Pau Arcado!");
   } else {
     state.hasTamedJaguar = true;
+    state.tamedJaguarHp = state.tamedJaguarMaxHp || 120;
+    state.tamedJaguarDown = false;
+    state.tamedJaguarRecoverTimer = 0;
     if (tamedJaguarEntity) {
       tamedJaguarEntity.mesh.position.set(state.jaguarDownPos.x, 0, state.jaguarDownPos.z);
+      tamedJaguarEntity.mesh.rotation.z = 0;
       tamedJaguarEntity.target.copy(tamedJaguarEntity.mesh.position);
       tamedJaguarEntity.mesh.visible = state.location === "yard";
     }
     sfx.play("upgrade");
     spawnParticles(new THREE.Vector3(state.jaguarDownPos.x, 1.2, state.jaguarDownPos.z), 0xf472b6, 22);
-    showDayBanner("❤️ ONÇA DOMADA! AGORA ELA É A GUARDIÃ DA FAZENDA DO MACHO!");
-    showToast("🐆", "ONÇA DOMADA!", "Ela segue você e ataca qualquer Onça selvagem que tentar pegar os animais!");
+    showDayBanner("❤️ ONÇA DOMADA! APERTE R PERTO DELA P/ MONTAR E F MONTADA P/ IR À ESTAÇÃO!");
+    showToast("🐆", "ONÇA DOMADA!", "Defende os animais, tem HP própria e te leva à Estação CLP (R monta, F viaja)!");
   }
   updateHUD();
   saveGame();
@@ -7150,6 +8049,9 @@ function buyAnimal(type) {
     hp: info.maxHp,
     alive: true,
     hasProduct: true,
+    sheared: false,
+    isBaby: false,
+    inLove: false,
   };
   state.animals.push(animal);
   rebuildLivestockMeshes();
@@ -7161,8 +8063,24 @@ function collectAnimalProduct(ent) {
   const info = ANIMAL_TYPES[a.type];
   if (blockAfterWorkHours()) return;
   if (!a.hasProduct) {
-    showToast(info.emoji, a.name.toUpperCase(), `${a.name} ainda não está pronta(o). Volte amanhã!`);
+    showToast(info.emoji, a.name.toUpperCase(), `${a.name} ainda não está pronta(o). Volte amanhã! (Use B com ${CROPS[info.breedCrop].emoji} para reproduzir)`);
     return;
+  }
+  if (a.type === "cow") {
+    if ((state.inventory.balde || 0) <= 0) {
+      sfx.play("error");
+      showToast("🪣", "PRECISA DE BALDE!", "Compre Balde Vazio na Loja da Estação CLP para tirar leite das vacas!");
+      return;
+    }
+    state.inventory.balde -= 1;
+  } else if (a.type === "sheep") {
+    if ((state.inventory.tesoura || 0) <= 0) {
+      sfx.play("error");
+      showToast("✂️", "PRECISA DE TESOURA!", "Compre a Tesoura de Tosa na Loja da Estação CLP para cortar a lã das ovelhas!");
+      return;
+    }
+    a.sheared = true;
+    if (ent.woolGroup) ent.woolGroup.visible = false;
   }
   a.hasProduct = false;
   ent.readyHalo.visible = false;
@@ -7171,9 +8089,157 @@ function collectAnimalProduct(ent) {
   sfx.play("harvest");
   spawnParticles(ent.mesh.position.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xfacc15, 12);
   const product = CROPS[info.productId];
-  showToast(product.emoji, info.label.toUpperCase(), `+1 ${product.name} de ${a.name}! Venda no Terminal.`);
+  showToast(
+    product.emoji,
+    info.label.toUpperCase(),
+    a.type === "cow"
+      ? `+1 ${product.name} de ${a.name} (usou 1 Balde 🪣)! Venda no Terminal.`
+      : a.type === "sheep"
+        ? `+1 ${product.name} de ${a.name} (tosquiada ✂️)! A lã cresce amanhã.`
+        : `+1 ${product.name} de ${a.name}! Venda no Terminal.`
+  );
   updateHUD();
   saveGame();
+}
+
+function breedLivestock(ent) {
+  if (blockAfterWorkHours()) return;
+  const a = ent.animal;
+  const info = ANIMAL_TYPES[a.type];
+  const cropId = info.breedCrop;
+  const crop = CROPS[cropId];
+  if (a.isBaby) {
+    showToast("🐣", a.name.toUpperCase(), `${a.name} ainda é filhote! Cresce amanhã para poder reproduzir.`);
+    return;
+  }
+  const aliveCount = state.animals.filter((x) => x.alive).length;
+  if (aliveCount >= getMaxAnimals()) {
+    showToast("🐄", "CURRAL LOTADO", `Máximo de ${getMaxAnimals()} animais! Compre Pasto Oeste/Leste na Cooperativa.`);
+    return;
+  }
+  const sameAdults = state.animals.filter((x) => x.alive && !x.isBaby && x.type === a.type);
+  if (sameAdults.length < 2) {
+    showToast(info.emoji, "PRECISA DE UM PAR!", `Compre ou tenha 2 adultos de ${info.label} para reproduzir!`);
+    return;
+  }
+  if ((state.inventory[cropId] || 0) < 1) {
+    sfx.play("error");
+    showToast(crop.emoji, `PRECISA DE ${crop.name.toUpperCase()}!`, `Colha ${crop.name} na horta para alimentar ${info.label} (aperte B)!`);
+    return;
+  }
+  if (a.inLove) {
+    showToast("❤️", a.name.toUpperCase(), `${a.name} já está apaixonada(o)! Alimente outro(a) ${info.label} com ${crop.emoji} ${crop.name}!`);
+    return;
+  }
+  state.inventory[cropId] -= 1;
+  state.swingTimer = 0.22;
+  spawnParticles(ent.mesh.position.clone().add(new THREE.Vector3(0, 1.3, 0)), 0xf472b6, 14);
+  const partner = sameAdults.find((x) => x.id !== a.id && x.inLove);
+  if (partner) {
+    partner.inLove = false;
+    a.inLove = false;
+    const bx = (a.x + partner.x) * 0.5;
+    const bz = (a.z + partner.z) * 0.5;
+    const used = state.animals.filter((x) => x.type === a.type).length;
+    const baby = {
+      id: state.nextAnimalId++,
+      type: a.type,
+      name: `${info.names[used % info.names.length]} Jr.`,
+      x: bx,
+      z: bz,
+      hp: Math.round(info.maxHp * 0.75),
+      alive: true,
+      hasProduct: false,
+      sheared: false,
+      isBaby: true,
+      inLove: false,
+    };
+    state.animals.push(baby);
+    rebuildLivestockMeshes();
+    sfx.play("upgrade");
+    showDayBanner(`💕 NASCEU UM FILHOTE DE ${info.label.toUpperCase()} (${baby.name})!`);
+    showToast("💕", "REPRODUÇÃO CONCLUÍDA!", `+1 ${info.emoji} ${baby.name} com ${crop.emoji} ${crop.name}! Cresce amanhã.`);
+  } else {
+    a.inLove = true;
+    sfx.play("plant");
+    showToast("❤️", `${a.name.toUpperCase()} ALIMENTADA(O)!`, `Comeu 1 ${crop.emoji} ${crop.name}! Agora aperte B em outro(a) ${info.label} adulto.`);
+  }
+  updateHUD();
+  saveGame();
+}
+
+function breedChicken() {
+  if (blockAfterWorkHours()) return;
+  if (state.chickenCount >= 12) {
+    showToast("🐔", "GALINHEIRO LOTADO", "Você já tem o máximo de 12 galinhas no galinheiro!");
+    return;
+  }
+  if ((state.inventory.milho || 0) < 1) {
+    sfx.play("error");
+    showToast("🌽", "PRECISA DE MILHO!", "Plante e colha Milho (tecla 9) para alimentar e reproduzir as galinhas com B!");
+    return;
+  }
+  state.inventory.milho -= 1;
+  state.swingTimer = 0.22;
+  spawnParticles(new THREE.Vector3(COOP_POS.x, 1.0, COOP_POS.z), 0xfacc15, 14);
+  if (state.chickenLove <= 0) {
+    state.chickenLove = 1;
+    sfx.play("plant");
+    showToast("🌽", "GALINHA ALIMENTADA!", "1 galinha comeu Milho! Aperte B com mais 1 🌽 Milho no galinheiro para chocar um pintinho!");
+  } else {
+    state.chickenLove = 0;
+    state.chickenCount = Math.min(12, state.chickenCount + 1);
+    state.coopEggs = Math.min(6, state.coopEggs + 1);
+    syncChickensToCount(state.chickenCount, 1);
+    syncCoopEggsVisual();
+    sfx.play("upgrade");
+    showDayBanner(`🐣 NASCEU UM PINTINHO NO GALINHEIRO! (${state.chickenCount} Galinhas)`);
+    showToast("🐣", "GALINHAS REPRODUZIRAM!", `Agora há ${state.chickenCount} galinhas no quintal botando mais ovos!`);
+  }
+  updateHUD();
+  saveGame();
+}
+
+function getCurrentAbsMinutes() {
+  return state.day * 1440 + Math.floor(state.dayMinutes);
+}
+
+function isNpcKnockedOut(npcId) {
+  return Boolean(state.knockedNpcs && state.knockedNpcs[npcId] > getCurrentAbsMinutes());
+}
+
+function activateLambiHomem() {
+  state.isLambiHomem = true;
+  state.lambiTriggeredDay = state.day;
+  state.lambiUntilDay = state.day + 1;
+  syncPlayerTitleSkin();
+  sfx.play("roar");
+  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.5, 0)), 0xf43f5e, 24);
+  showDayBanner("👅 PASSOU DAS 22:00 NO DIA 7! ALYFFER VIROU O LAMBI HOMEM!");
+  showToast(
+    "👅",
+    "TRANSFORMAÇÃO: LAMBI HOMEM!",
+    "Você não dormiu antes das 22:00! Sem camisa, olhos vermelhos e língua gigante até amanhã à noite — vá à ETEC e aperte F para lamber alunos e NPCs!"
+  );
+  updateHUD();
+  saveGame();
+}
+
+function lambiLickNpc(npc) {
+  if (!state.isLambiHomem) return false;
+  if (isNpcKnockedOut(npc.id)) {
+    showToast("👅", `${npc.name.toUpperCase()} JÁ DERRUBADO(A)!`, "Já tomou uma lambida e vai ficar caído(a) por 1 dia inteiro.");
+    return false;
+  }
+  state.knockedNpcs[npc.id] = getCurrentAbsMinutes() + 1440;
+  state.swingTimer = 0.34;
+  sfx.play("roar");
+  spawnParticles(npc.pos.clone().add(new THREE.Vector3(0, 1.3, 0)), 0xfb7185, 22);
+  spawnFloatingText(npc.pos.clone().add(new THREE.Vector3(0, 2.0, 0)), "👅 LAMBIDO! (-1 Dia)", "#fb7185");
+  showDayBanner(`👅 LAMBI HOMEM LAMBEU ${npc.name.toUpperCase()}! FICOU DERRUBADO(A) POR 1 DIA!`);
+  showToast("😈", "LAMBIDA CERTEIRA!", `${npc.name} desabou no chão da ETECAMP por 24 horas (1 dia)!`);
+  saveGame();
+  return true;
 }
 
 function killAnimal(ent) {
@@ -7197,6 +8263,7 @@ function killAnimal(ent) {
 function startSleepTransition(fromBed = false) {
   if (state.isSleeping || state.mode === "dead") return;
   clearActiveInputs();
+  state.ridingJaguar = false;
   state.isSleeping = true;
   state.mode = "sleeping";
 
@@ -7207,6 +8274,9 @@ function startSleepTransition(fromBed = false) {
   npcModal.classList.add("hidden");
   guideModal.classList.add("hidden");
   calendarModal.classList.add("hidden");
+  if (phoneModal) phoneModal.classList.add("hidden");
+  if (cookModal) cookModal.classList.add("hidden");
+  if (typeof stopMiniArcade === "function") stopMiniArcade();
 
   // Deita o Alyffer na cama se estiver no quarto!
   if (fromBed && state.location === "room") {
@@ -7276,25 +8346,142 @@ function exitBasement() {
   showToast("🪜", "DE VOLTA AO QUARTO", "Você subiu a escada do porão secreto.");
 }
 
-function rideJaguarToTerminal() {
-  if (!state.hasTamedJaguar) return;
-  sfx.play("roar");
-  switchLocation("terminal", -10.0, -4.6, Math.PI / 2, 0.2, 0.45, 16.5);
-  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 18);
-  showDayBanner("🐆 CHEGOU DE ONÇA NO TERMINAL DE CAMPO LIMPO PAULISTA! (SEM ESPERAR O 402!)");
-  showToast("🐆", "CARONA DE ONÇA!", "Sua Onça Domada te trouxe direto ao Terminal CLP, ignorando chuva e horários!");
+function getActiveTamedJaguar() {
+  if (!state.hasTamedJaguar) return null;
+  if (state.location === "terminal" && typeof termJaguarMesh !== "undefined" && termJaguarMesh) {
+    return { mesh: termJaguarMesh, legs: termJaguarMesh.userData.legs || [], tail: termJaguarMesh.userData.tail || null };
+  }
+  if (state.location === "yard" && tamedJaguarEntity) {
+    return tamedJaguarEntity;
+  }
+  return null;
 }
 
-function rideJaguarToYard() {
-  if (!state.hasTamedJaguar) return;
-  sfx.play("roar");
-  switchLocation("yard", 12.5, 25.0, Math.PI, 0.2, 0.48, 16.5);
-  if (tamedJaguarEntity) {
-    tamedJaguarEntity.mesh.position.set(15.0, 0, 25.2);
-    tamedJaguarEntity.target.set(15.0, 0, 25.2);
+function canMountTamedJaguar() {
+  if (!state.hasTamedJaguar || state.tamedJaguarDown || state.ridingJaguar) return false;
+  const tj = getActiveTamedJaguar();
+  return !!(tj && tj.mesh.visible && distXZ(player.pos, tj.mesh.position) < 2.9);
+}
+
+function setJagTagVisible(jagEnt, visible) {
+  if (!jagEnt || !jagEnt.mesh) return;
+  if (jagEnt.tagMesh) {
+    jagEnt.tagMesh.visible = visible;
+    return;
   }
-  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 18);
-  showToast("🐆", "VOLTOU DE ONÇA P/ PAU ARCADO!", "A Onça Domada voou baixo na Estrada do Garcia!");
+  jagEnt.mesh.children.forEach((ch) => {
+    if (ch.userData && ch.userData.isJagTag) ch.visible = visible;
+  });
+}
+
+function mountTamedJaguar() {
+  if (!state.hasTamedJaguar) return false;
+  if (state.tamedJaguarDown) {
+    showToast("💤", "ONÇA CAÍDA!", `Ela apanhou muito e está descansando no chão (${Math.ceil(state.tamedJaguarRecoverTimer)}s)!`);
+    return false;
+  }
+  const tj = getActiveTamedJaguar();
+  if (!tj || !tj.mesh.visible) return false;
+  state.ridingJaguar = true;
+  setJagTagVisible(tj, false);
+  player.pos.x = tj.mesh.position.x;
+  player.pos.z = tj.mesh.position.z;
+  player.pos.y = getFloorYAt(player.pos.x, player.pos.z);
+  player.vy = 0;
+  player.grounded = true;
+  playerMesh.position.set(player.pos.x, player.pos.y + 0.62, player.pos.z);
+  sfx.play("roar");
+  spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 14);
+  showToast("🐆", "MONTADO NA ONÇA!", "Aperte F em cima dela p/ Fast Travel até a Estação CLP, ou R para descer!");
+  updateHUD();
+  return true;
+}
+
+function dismountTamedJaguar(silent = false) {
+  if (!state.ridingJaguar) return false;
+  state.ridingJaguar = false;
+  const floorY = getFloorYAt(player.pos.x, player.pos.z);
+  const tj = getActiveTamedJaguar();
+  if (tj) {
+    setJagTagVisible(tj, true);
+    tj.mesh.position.set(player.pos.x, floorY, player.pos.z);
+    tj.mesh.rotation.z = 0;
+    if (tj.target) tj.target.copy(tj.mesh.position);
+    for (const leg of tj.legs || []) leg.rotation.x = 0;
+  }
+  const sideX = Math.cos(player.facingYaw) * 1.35;
+  const sideZ = -Math.sin(player.facingYaw) * 1.35;
+  const b = state.location === "terminal"
+    ? { minX: -38.0, maxX: 21.2, minZ: -26.6, maxZ: 24.0 }
+    : { ...getFarmBounds(), minZ: -28.5, maxZ: 48.5 };
+  player.pos.x = THREE.MathUtils.clamp(player.pos.x + sideX, b.minX, b.maxX);
+  player.pos.z = THREE.MathUtils.clamp(player.pos.z + sideZ, b.minZ, b.maxZ);
+  player.pos.y = getFloorYAt(player.pos.x, player.pos.z);
+  playerMesh.position.copy(player.pos);
+  if (!silent) {
+    showToast("🐆", "DESCEU DA ONÇA", "Aperte R perto dela para montar novamente.");
+  }
+  updateHUD();
+  return true;
+}
+
+function fastTravelJaguarToStation() {
+  if (!state.hasTamedJaguar || !state.ridingJaguar || state.tamedJaguarDown) return false;
+  sfx.play("roar");
+  if (state.location === "yard") {
+    switchLocation("terminal", TERM_JAGUAR_POS.x, TERM_JAGUAR_POS.z, 0.35, 0.15, 0.24, 15.0, true);
+    if (typeof termJaguarMesh !== "undefined" && termJaguarMesh) {
+      termJaguarMesh.position.set(TERM_JAGUAR_POS.x, getFloorYAt(TERM_JAGUAR_POS.x, TERM_JAGUAR_POS.z), TERM_JAGUAR_POS.z);
+      termJaguarMesh.rotation.y = 0.35;
+      termJaguarMesh.rotation.z = 0;
+      setJagTagVisible({ mesh: termJaguarMesh }, false);
+    }
+    spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 22);
+    showDayBanner("🚉 FAST TRAVEL DE ONÇA: ESTAÇÃO CAMPO LIMPO PAULISTA (LINHA 7-RUBI)!");
+    showToast("🐆", "ESTAÇÃO CLP!", "Chegou na Estação! Aperte F montado para voltar ao Pau Arcado ou R para descer.");
+  } else if (state.location === "terminal") {
+    switchLocation("yard", 12.5, 25.0, Math.PI, 0.2, 0.48, 16.5, true);
+    if (tamedJaguarEntity) {
+      tamedJaguarEntity.mesh.position.set(12.5, 0, 25.0);
+      tamedJaguarEntity.mesh.rotation.y = Math.PI;
+      tamedJaguarEntity.mesh.rotation.z = 0;
+      tamedJaguarEntity.target.set(12.5, 0, 25.0);
+    }
+    spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.0, 0)), 0xfacc15, 22);
+    showToast("🐆", "VOLTOU P/ PAU ARCADO!", "A Onça Domada voou baixo na Estrada do Garcia!");
+  } else {
+    showToast("🐆", "SEM CAMINHO", "Saia do cômodo antes do Fast Travel com a Onça!");
+    return false;
+  }
+  updateHUD();
+  return true;
+}
+
+function damageTamedJaguar(amount) {
+  if (!state.hasTamedJaguar || state.tamedJaguarDown) return;
+  const maxHp = state.tamedJaguarMaxHp || 120;
+  state.tamedJaguarHp = Math.max(0, state.tamedJaguarHp - amount);
+  const tj = getActiveTamedJaguar();
+  if (tj) {
+    spawnParticles(tj.mesh.position.clone().add(new THREE.Vector3(0, 0.8, 0)), 0xef4444, 8);
+    spawnFloatingText(tj.mesh.position.clone().add(new THREE.Vector3(0, 1.6, 0)), `-${amount} HP`, "#fca5a5");
+  }
+  if (state.tamedJaguarHp <= 0) {
+    state.tamedJaguarDown = true;
+    state.tamedJaguarRecoverTimer = 45;
+    if (state.ridingJaguar) {
+      dismountTamedJaguar(true);
+    }
+    if (tamedJaguarEntity) {
+      tamedJaguarEntity.mesh.rotation.z = Math.PI / 2;
+      tamedJaguarEntity.mesh.position.y = 0.45;
+      for (const leg of tamedJaguarEntity.legs || []) leg.rotation.x = 0;
+    }
+    sfx.play("death");
+    showDayBanner("💤 SUA ONÇA APANHOU DEMAIS E CAIU INATIVA NO CHÃO!");
+    showToast("🩹", "ONÇA INATIVA!", "Ela ficou deitada se recuperando (45s ou durma na cama para curar 100%).");
+  }
+  updateHUD();
 }
 
 function takeBus402ToTerminal() {
@@ -7312,7 +8499,7 @@ function takeBus402ToTerminal() {
     showToast("🚌", "ÔNIBUS 402 FORA DE HORÁRIO", nextMsg);
     return;
   }
-  switchLocation("terminal", -5.8, 0.2, 0, 0.2, 0.45, 16.5);
+  switchLocation("terminal", -7.5, -1.5, 0, 0.2, 0.24, 15.0);
   showDayBanner(`TERMINAL DE CAMPO LIMPO PAULISTA • LINHA 402 (${busInfo.activeTime})`);
 }
 
@@ -7341,7 +8528,7 @@ function takeTrainToEtec() {
 }
 
 function takeTrainToTerminal() {
-  switchLocation("terminal", 8.0, 0.2, -Math.PI / 2, 0.2, 0.45, 16.5);
+  switchLocation("terminal", 17.6, 0, -Math.PI / 2, 0.2, 0.24, 15.0);
   showToast("🚆", "LINHA 7-RUBI", "Desembarcou na Estação Campo Limpo Paulista!");
 }
 
@@ -7350,11 +8537,11 @@ function enterEtecInside(entry = "front") {
     switchLocation("etec_inside", 0, -29.2, 0, Math.PI, 0.46, 15.5);
     showToast("🏫", "ENTRADA ABERTA (CORREDOR)", "Entrou no corredor pelos fundos da ETECAMP!");
   } else if (entry === "parking") {
-    switchLocation("etec_inside", -1.6, 29.0, Math.PI / 2, 0, 0.46, 15.5);
+    switchLocation("etec_inside", -1.6, 40.0, Math.PI / 2, 0, 0.46, 15.5);
     showToast("🏫", "ACESSO DO ESTACIONAMENTO", "Entrou no corredor da ETECAMP pelo estacionamento!");
   } else {
-    switchLocation("etec_inside", 0, 29.2, Math.PI, 0, 0.46, 15.5);
-    showToast("🏫", "ETECAMP EXPANDIDA", "Salas 3AI, 2AI, 1AI, 3A, 2A, 1A • Labs Info 24, 15, 7 e Lab Enfermagem!");
+    switchLocation("etec_inside", 0, 40.2, Math.PI, 0, 0.46, 15.5);
+    showToast("🏫", "ETECAMP EXPANDIDA", "Salas 3AI..1A • Labs Info 24/15/7 • Lab Química & Lab Enfermagem!");
   }
 }
 
@@ -7393,6 +8580,9 @@ function findCurrentContext() {
     if (distXZ(player.pos, ETEC_POS) < 2.1) {
       return { type: "etec", key: "E", text: "Revisar Cadernos da ETEC Campo Limpo Paulista" };
     }
+    if (distXZ(player.pos, STOVE_POS) < 2.2) {
+      return { type: "stove", key: "E", text: "Usar Fogão da Cozinha (Receitas da Roça) 🍳" };
+    }
     if (distXZ(player.pos, COFFEE_POS) < 2.3) {
       return { type: "coffee", key: "E", text: "Tomar Café Coado na Cozinha (+Energia ⚡)" };
     }
@@ -7423,14 +8613,24 @@ function findCurrentContext() {
   }
 
   if (state.location === "terminal") {
-    if (state.hasTamedJaguar && distXZ(player.pos, TERM_JAGUAR_POS) < 2.9) {
-      return {
-        type: "ride_jaguar_yard",
-        key: "E",
-        text: "🐆 Montar na Onça Domada → Voltar p/ Pau Arcado (Ignora chuva/402!)",
-      };
+    if (state.hasTamedJaguar && !state.ridingJaguar) {
+      const tjPos = typeof termJaguarMesh !== "undefined" && termJaguarMesh ? termJaguarMesh.position : TERM_JAGUAR_POS;
+      if (distXZ(player.pos, tjPos) < 2.9) {
+        if (state.tamedJaguarDown) {
+          return {
+            type: "tamed_jaguar_down",
+            key: "💤",
+            text: `Onça caída no chão (${Math.ceil(state.tamedJaguarRecoverTimer)}s) • E: Acariciar (-5s)`,
+          };
+        }
+        return {
+          type: "tamed_jaguar_idle",
+          key: "R",
+          text: `🐆 Montar na Onça (R) • HP ${Math.round(state.tamedJaguarHp)}/${state.tamedJaguarMaxHp || 120} • E: Carinho`,
+        };
+      }
     }
-    if (distXZ(player.pos, TERM_SELL_POS) < 3.0) {
+    if (distXZ(player.pos, TERM_SELL_POS) < 3.4) {
       const items = getTotalBasketCount();
       return {
         type: "term_sell",
@@ -7442,10 +8642,13 @@ function findCurrentContext() {
             : "Abrir Bancas & Encomendas de CLP",
       };
     }
-    if (distXZ(player.pos, TERM_PASTEL_POS) < 2.7) {
-      return { type: "pastel", key: "E", text: "Comprar Pastel + Caldo de Cana (R$ 8 • +Energia)" };
+    if (distXZ(player.pos, TERM_PASTEL_POS) < 3.2) {
+      return { type: "pastel", key: "E", text: "Comprar Pastel + Caldo de Cana (R$ 24 • +Energia)" };
     }
-    if (distXZ(player.pos, TERM_BUS_BACK_POS) < 2.8) {
+    if (distXZ(player.pos, TERM_STATION_SHOP_POS) < 3.4) {
+      return { type: "station_shop", key: "E", text: "Abrir Loja da Estação CLP (Enxadas, Balde & Tesoura) 🚉" };
+    }
+    if (distXZ(player.pos, TERM_BUS_BACK_POS) < 3.5) {
       const bus = getBus402Status("terminal");
       return {
         type: "bus_to_yard",
@@ -7457,8 +8660,15 @@ function findCurrentContext() {
             : "Ônibus 402 encerrou hoje • Pressione K p/ tabela",
       };
     }
-    if (distXZ(player.pos, TERM_TRAIN_POS) < 3.0) {
+    if (distXZ(player.pos, TERM_TRAIN_POS) < 3.4) {
       return { type: "train_to_etec", key: "E", text: "Pegar Trem Linha 7-Rubi p/ ETEC (Botujuru)" };
+    }
+    if (state.ridingJaguar) {
+      return {
+        type: "mounted_jaguar",
+        key: "F / R",
+        text: "🐆 Em cima da Onça: F Fast Travel p/ Pau Arcado • R Descer",
+      };
     }
     return null;
   }
@@ -7476,14 +8686,17 @@ function findCurrentContext() {
     if (distXZ(player.pos, ETEC_BACK_DOOR_POS) < 2.8) {
       return { type: "enter_etec", entry: "back", key: "E", text: "Entrar no Corredor pela Entrada Aberta (Fundos)" };
     }
-    if (distXZ(player.pos, ETEC_INSTRUMENTS_POS) < 4.5) {
+    if (distXZ(player.pos, ETEC_AUTOMATION_POS) < 4.6) {
       return {
-        type: "play_instruments",
+        type: "use_automation",
         key: "E",
-        text: state.musicPlayedToday
-          ? "Tocar um som na Sala de Instrumentos 🎸"
-          : "Tocar na Sala de Instrumentos 🎸 (-15% Insanidade)",
+        text: state.automationDoneToday
+          ? "Testar Braço Robótico & CLP na Sala de Automação 🤖"
+          : "Programar CLP na Sala de Automação 🤖 (+35% Horta & -10% Insanidade)",
       };
+    }
+    if (etecBall && distXZ(player.pos, etecBall.mesh.position) < 2.55) {
+      return { type: "shoot_ball", key: "E", text: "Arremessar Bola na Cesta de Basquete! 🏀" };
     }
     return null;
   }
@@ -7506,21 +8719,40 @@ function findCurrentContext() {
           ? "Lab fechado após 19:00 — Vá descansar!"
           : state.npkDoneToday
             ? "Fórmula NPK já sintetizada hoje ✓"
-            : "Sintetizar Super-Adubo NPK no Lab de Enfermagem!",
+            : "Sintetizar Super-Adubo NPK no Lab de Química!",
+      };
+    }
+    if (distXZ(player.pos, NURSE_BED_POS) < 2.6) {
+      return {
+        type: "nurse_care",
+        key: "E",
+        text: "Fazer Curativo na Enfermaria (Recupera Vida ❤️)",
       };
     }
     for (const npc of etecNpcs) {
       if (distXZ(player.pos, npc.pos) < 2.45) {
+        if (isNpcKnockedOut(npc.id)) {
+          const hrsLeft = Math.max(1, Math.ceil((state.knockedNpcs[npc.id] - getCurrentAbsMinutes()) / 60));
+          return {
+            type: "npc_knocked",
+            npcId: npc.id,
+            npc,
+            key: "👅",
+            text: `${npc.name} está derrubado(a) pela lambida do Lambi Homem! (${hrsLeft}h p/ acordar)`,
+          };
+        }
+        const talkText =
+          npc.id === "kaio"
+            ? "Conversar / Comprar Adubo com Kaio Wendell"
+            : npc.id === "marcelo"
+              ? "Falar com Marcelo (Segurança & Vaselina) 🛡️"
+              : `Conversar com ${npc.name}`;
         return {
           type: "npc",
           npcId: npc.id,
-          key: "E",
-          text:
-            npc.id === "kaio"
-              ? "Conversar / Comprar Adubo com Kaio Wendell"
-              : npc.id === "marcelo"
-                ? "Falar com Marcelo (Segurança & Vaselina) 🛡️"
-                : `Conversar com ${npc.name}`,
+          npc,
+          key: state.isLambiHomem ? "E / F" : "E",
+          text: state.isLambiHomem ? `${talkText} • 👅 F: LAMBER!` : talkText,
         };
       }
     }
@@ -7539,12 +8771,19 @@ function findCurrentContext() {
     };
   }
 
-  // Onça domada seguindo ou patrulhando (agora também leva ao Terminal CLP!)
-  if (state.hasTamedJaguar && tamedJaguarEntity && tamedJaguarEntity.mesh.visible && distXZ(player.pos, tamedJaguarEntity.mesh.position) < 2.7) {
+  // Onça domada seguindo ou caída no pasto
+  if (state.hasTamedJaguar && !state.ridingJaguar && tamedJaguarEntity && tamedJaguarEntity.mesh.visible && distXZ(player.pos, tamedJaguarEntity.mesh.position) < 2.8) {
+    if (state.tamedJaguarDown) {
+      return {
+        type: "tamed_jaguar_down",
+        key: "💤",
+        text: `Onça caída no chão (${Math.ceil(state.tamedJaguarRecoverTimer)}s) • E: Acalmar (-5s)`,
+      };
+    }
     return {
-      type: "ride_jaguar_term",
-      key: "E",
-      text: "🐆 Montar na Onça Domada → Terminal CLP (Ignora chuva e 402!)",
+      type: "tamed_jaguar_idle",
+      key: "R",
+      text: `🐆 Montar na Onça (R) • HP ${Math.round(state.tamedJaguarHp)}/${state.tamedJaguarMaxHp || 120} • F montada p/ Estação!`,
     };
   }
 
@@ -7562,19 +8801,24 @@ function findCurrentContext() {
     for (const ent of livestockEntities) {
       if (ent.animal && ent.animal.alive && distXZ(player.pos, ent.mesh.position) < 2.8) {
         const info = ANIMAL_TYPES[ent.animal.type];
+        const breedCrop = CROPS[info.breedCrop];
+        const loveTag = ent.animal.inLove ? " ❤️" : "";
+        const breedHint = ent.animal.isBaby
+          ? " • 🐣 Filhote"
+          : ` • B: Reproduzir (${breedCrop.emoji} ${breedCrop.name})`;
         if (ent.animal.hasProduct) {
           return {
             type: "collect_animal",
             ent,
-            key: "E",
-            text: `${info.actionText} de ${ent.animal.name}`,
+            key: "E / B",
+            text: `${info.actionText} de ${ent.animal.name}${loveTag}${breedHint}`,
           };
         } else {
           return {
             type: "pet_animal",
             ent,
-            key: "E",
-            text: `Acariciar ${ent.animal.name} (${info.label}) ${info.emoji}`,
+            key: "E / B",
+            text: `Acariciar ${ent.animal.name} (${info.label})${loveTag}${breedHint}`,
           };
         }
       }
@@ -7608,12 +8852,12 @@ function findCurrentContext() {
   if (distXZ(player.pos, COOP_POS) < 2.8) {
     return {
       type: "coop",
-      key: "E",
+      key: "E / B",
       text: isAfterWorkHours()
         ? "🌙 Após 19:00 — Sem trabalho! Vá dormir"
         : state.coopEggs > 0
-          ? `Recolher Ovos Caipiras (${state.coopEggs} 🥚)`
-          : "Galinheiro (sem ovos agora)",
+          ? `Recolher Ovos (${state.coopEggs} 🥚) • B: Reproduzir Galinhas (🌽 Milho)`
+          : `Galinheiro (${state.chickenCount} galinhas) • B: Reproduzir (🌽 Milho)`,
     };
   }
   if (distXZ(player.pos, WELL_POS) < 3.4) {
@@ -7723,6 +8967,14 @@ function findCurrentContext() {
     }
   }
 
+  if (state.ridingJaguar) {
+    return {
+      type: "mounted_jaguar",
+      key: "F / R",
+      text: "🐆 Montado na Onça: F Fast Travel p/ Estação CLP • R Descer",
+    };
+  }
+
   return null;
 }
 
@@ -7789,19 +9041,24 @@ function applyKaioFertilizer(plot) {
   return true;
 }
 
-function interactWithPlot(plot) {
+function interactWithPlot(plot, opts = {}) {
+  const lockedAction = opts.lockedAction || null;
+  const silentToast = !!opts.silentToast;
+
   if (!plot.unlocked) {
-    openShopModal();
-    return;
+    if (!lockedAction) openShopModal();
+    return null;
   }
-  if (blockAfterWorkHours()) return;
+  if (blockAfterWorkHours()) return null;
 
   if (plot.stage === "raw") {
+    if (lockedAction && lockedAction !== "till") return null;
     const hoe = getActiveHoe();
     const tillOne = (p) => {
       if (!p.unlocked || p.stage !== "raw") return false;
       p.stage = "tilled";
-      if (hoe.id === "gelo") p.waterTimer = 0; // solo gelado/úmido aplicado no plantio
+      p.popTimer = 0.22;
+      if (hoe.id === "gelo") p.waterTimer = 0;
       spawnParticles(new THREE.Vector3(p.x, 0.35, p.z), hoe.id === "comum" ? 0x8b5a2b : hoe.bladeColor, 10);
       refreshPlotAppearance(p);
       return true;
@@ -7818,25 +9075,32 @@ function interactWithPlot(plot) {
         if (tillOne(n)) extra++;
       });
     }
-    if (extra > 0) showToast(hoe.emoji, hoe.name.toUpperCase(), `Arou +${extra} canteiro(s) extra com um golpe só!`);
+    spawnFloatingText(new THREE.Vector3(plot.x, 0.3, plot.z), extra > 0 ? `⛏️ Arou +${extra + 1}!` : "⛏️ Arado!", "#eab308");
+    if (extra > 0 && !silentToast) {
+      showToast(hoe.emoji, hoe.name.toUpperCase(), `Arou +${extra} canteiro(s) extra com um golpe só!`);
+    }
     state.swingTimer = 0.25;
     sfx.play("dig");
     saveGame();
-    return;
+    return "till";
   }
 
   if (plot.stage === "tilled") {
+    if (lockedAction && lockedAction !== "plant") return null;
     const crop = CROPS[state.selectedCrop];
     if (state.money < crop.seedCost) {
-      sfx.play("error");
-      showToast("💸", "SEM DINHEIRO", `Precisa de ${formatBRL(crop.seedCost)} para plantar ${crop.name}.`);
-      return;
+      if (!lockedAction) {
+        sfx.play("error");
+        showToast("💸", "SEM DINHEIRO", `Precisa de ${formatBRL(crop.seedCost)} para plantar ${crop.name}.`);
+      }
+      return null;
     }
     state.money -= crop.seedCost;
     plot.stage = "growing";
     plot.cropId = crop.id;
     plot.growth = 0;
     plot.fertilized = false;
+    plot.popTimer = 0.28;
     const iceHoe = state.activeHoe === "gelo";
     plot.waterTimer = state.upgrades.autoWaterLevel >= 1 || iceHoe ? 16 : state.water > 0 ? 16 : 0;
     if (state.upgrades.autoWaterLevel < 1 && !iceHoe && state.water > 0) {
@@ -7845,70 +9109,115 @@ function interactWithPlot(plot) {
     state.swingTimer = 0.22;
     sfx.play("plant");
     spawnParticles(new THREE.Vector3(plot.x, 0.45, plot.z), crop.color, 10);
+    spawnFloatingText(new THREE.Vector3(plot.x, 0.4, plot.z), `${crop.emoji} -R$ ${crop.seedCost}`, "#4ade80");
     refreshPlotAppearance(plot);
     updateHUD();
     saveGame();
-    return;
+    return "plant";
   }
 
   if (plot.stage === "growing") {
     if (plot.waterTimer <= 0) {
+      if (lockedAction && lockedAction !== "water") return null;
       if (state.water <= 0) {
-        sfx.play("error");
-        showToast("💧", "REGADOR VAZIO", "Vá até o Poço d'Água à esquerda para encher!");
-        return;
+        if (!lockedAction) {
+          sfx.play("error");
+          showToast("💧", "REGADOR VAZIO", "Vá até o Poço d'Água à esquerda para encher!");
+        }
+        return null;
       }
       state.water -= 1;
       waterPlot(plot, false);
+      let wateredCount = 1;
       if (state.upgrades.canLevel >= 3) {
-        const neighbor = plots.find(
-          (other) =>
-            other !== plot &&
-            other.unlocked &&
-            other.stage === "growing" &&
-            other.waterTimer <= 0 &&
-            Math.hypot(other.x - plot.x, other.z - plot.z) < 3.5
-        );
-        if (neighbor) waterPlot(neighbor, true);
+        plots
+          .filter(
+            (other) =>
+              other !== plot &&
+              other.unlocked &&
+              other.stage === "growing" &&
+              other.waterTimer <= 0 &&
+              Math.hypot(other.x - plot.x, other.z - plot.z) < 3.6
+          )
+          .slice(0, state.upgrades.canLevel >= 4 ? 2 : 1)
+          .forEach((nb) => {
+            if (waterPlot(nb, true)) wateredCount++;
+          });
       }
+      spawnFloatingText(
+        new THREE.Vector3(plot.x, 0.5, plot.z),
+        wateredCount > 1 ? `💦 Regou ${wateredCount}!` : "💦 Regado!",
+        "#38bdf8"
+      );
       state.swingTimer = 0.28;
       sfx.play("water");
       updateHUD();
       saveGame();
-    } else if (state.kaioAdubo > 0 || state.kaioSuperAdubo > 0) {
+      return "water";
+    } else if (!lockedAction && (state.kaioAdubo > 0 || state.kaioSuperAdubo > 0)) {
       applyKaioFertilizer(plot);
+      return "fert";
     }
-    return;
+    return null;
   }
 
   if (plot.stage === "ready") {
-    const crop = CROPS[plot.cropId];
-    const doubleChance = getDoubleHarvestChance() + (plot.fertilized ? 0.35 : 0);
-    let bonus = Math.random() < doubleChance ? 2 : 1;
-    // Alface Guloso: colheita farta (2 a 4 unidades)!
-    if (crop.id === "alface_guloso") bonus += 1 + Math.floor(Math.random() * 2);
-    state.inventory[crop.id] = (state.inventory[crop.id] || 0) + bonus;
-    plot.stage = "tilled";
-    plot.cropId = null;
-    plot.growth = 0;
-    plot.waterTimer = 0;
-    plot.fertilized = false;
+    if (lockedAction && lockedAction !== "harvest") return null;
+    const harvestSingle = (p) => {
+      const crop = CROPS[p.cropId];
+      const doubleChance = getDoubleHarvestChance() + (p.fertilized ? 0.35 : 0);
+      let bonus = Math.random() < doubleChance ? 2 : 1;
+      if (crop.id === "alface_guloso") bonus += 1 + Math.floor(Math.random() * 2);
+      state.inventory[crop.id] = (state.inventory[crop.id] || 0) + bonus;
+      p.stage = "tilled";
+      p.cropId = null;
+      p.growth = 0;
+      p.waterTimer = 0;
+      p.fertilized = false;
+      p.popTimer = 0.24;
+      spawnParticles(new THREE.Vector3(p.x, 0.65, p.z), crop.color, 14);
+      if (crop.id === "alface_dourado") {
+        spawnParticles(new THREE.Vector3(p.x, 1.0, p.z), 0xfacc15, 18);
+        state.reputation += 1;
+      }
+      spawnFloatingText(new THREE.Vector3(p.x, 0.65, p.z), `+${bonus} ${crop.emoji}`, "#facc15");
+      refreshPlotAppearance(p);
+      return { crop, bonus };
+    };
+
+    const mainRes = harvestSingle(plot);
+    let totalCount = mainRes.bonus;
+    let plotsHarvested = 1;
+    // Colheita em Cesta Rápida: já colhe canteiros maduros vizinhos ao alcance do braço!
+    const sweepLimit = state.activeHoe === "diamante" ? 4 : 2;
+    plots
+      .filter((o) => o !== plot && o.unlocked && o.stage === "ready" && Math.hypot(o.x - plot.x, o.z - plot.z) <= 3.35)
+      .sort((a, b) => Math.hypot(a.x - plot.x, a.z - plot.z) - Math.hypot(b.x - plot.x, b.z - plot.z))
+      .slice(0, sweepLimit)
+      .forEach((nb) => {
+        const r = harvestSingle(nb);
+        totalCount += r.bonus;
+        plotsHarvested++;
+      });
+
     state.swingTimer = 0.25;
-    sfx.play(crop.id === "alface_dourado" ? "upgrade" : "harvest");
-    spawnParticles(new THREE.Vector3(plot.x, 0.65, plot.z), crop.color, 15);
-    if (crop.id === "alface_dourado") {
-      spawnParticles(new THREE.Vector3(plot.x, 1.0, plot.z), 0xfacc15, 20);
-      state.reputation += 1;
+    sfx.play(mainRes.crop.id === "alface_dourado" ? "upgrade" : "harvest");
+    if (!silentToast) {
+      showToast(
+        mainRes.crop.emoji,
+        plotsHarvested > 1
+          ? `COLHEITA RÁPIDA (${plotsHarvested} CANTEIROS)!`
+          : mainRes.crop.id === "alface_dourado"
+            ? "✨ ALFACE DOURADO RARO!"
+            : "COLHEITA FRESCA",
+        `+${totalCount} item(ns) direto na cesta!`
+      );
     }
-    showToast(
-      crop.emoji,
-      crop.id === "alface_dourado" ? "✨ ALFACE DOURADO RARO!" : crop.id === "alface_guloso" ? "😋 COLHEITA GULOSA!" : "COLHEITA FRESCA",
-      bonus > 1 ? `+${bonus} ${crop.name} na cesta!` : `+1 ${crop.name} na cesta!`
-    );
-    refreshPlotAppearance(plot);
     updateHUD();
     saveGame();
+    return "harvest";
   }
+  return null;
 }
 
 function boostAllGrowingPlots(amount) {
@@ -7998,14 +9307,29 @@ function triggerContextAction() {
     saveGame();
   } else if (ctx.type === "tame_jaguar") {
     tameJaguar();
-  } else if (ctx.type === "ride_jaguar_term") {
-    rideJaguarToTerminal();
-  } else if (ctx.type === "ride_jaguar_yard") {
-    rideJaguarToYard();
-  } else if (ctx.type === "pet_tamed_jaguar") {
+  } else if (ctx.type === "tamed_jaguar_idle") {
+    const tj = getActiveTamedJaguar();
+    if (tj) {
+      sfx.play("bark");
+      spawnParticles(tj.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0x22c55e, 14);
+    }
+    if (state.tamedJaguarHp < (state.tamedJaguarMaxHp || 120)) {
+      state.tamedJaguarHp = Math.min(state.tamedJaguarMaxHp || 120, state.tamedJaguarHp + 15);
+      updateHUD();
+      showToast("❤️", "CARINHO NA ONÇA!", `Onça ronronou e recuperou +15 HP (${Math.round(state.tamedJaguarHp)}/${state.tamedJaguarMaxHp || 120})! Aperte R p/ montar.`);
+    } else {
+      showToast("🐆", "ONÇA DOMADA!", "Aperte R para montar na Onça e F em cima dela p/ ir à Estação!");
+    }
+  } else if (ctx.type === "tamed_jaguar_down") {
+    state.tamedJaguarRecoverTimer = Math.max(0, state.tamedJaguarRecoverTimer - 5);
     sfx.play("bark");
-    spawnParticles(tamedJaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 1.0, 0)), 0x22c55e, 14);
-    showToast("🐆", "ONÇA DOMADA!", "A onça ronrona carinhosamente como um gatinho gigante e vigia o pasto!");
+    if (tamedJaguarEntity) {
+      spawnParticles(tamedJaguarEntity.mesh.position.clone().add(new THREE.Vector3(0, 0.7, 0)), 0x4ade80, 10);
+    }
+    updateHUD();
+    showToast("🩹", "CUIDANDO DA ONÇA", `Ela se mexeu devagar (-5s p/ levantar: ${Math.ceil(state.tamedJaguarRecoverTimer)}s).`);
+  } else if (ctx.type === "mounted_jaguar") {
+    fastTravelJaguarToStation();
   } else if (ctx.type === "talk_marcelo_yard") {
     sfx.play("plant");
     showToast("🛡️", "MARCELO (SEGURANÇA)", `De plantão em Pau Arcado! Restam ${state.marceloDaysLeft} dia(s). Se a onça aparecer, eu desço o sarrafo!`);
@@ -8030,18 +9354,42 @@ function triggerContextAction() {
     enterEtecInside(ctx.entry || "front");
   } else if (ctx.type === "exit_etec") {
     exitEtecInside(ctx.exitPoint || "front");
-  } else if (ctx.type === "play_instruments") {
-    sfx.play("upgrade");
-    spawnParticles(new THREE.Vector3(26.2, 1.8, -21.0), 0xc084fc, 16);
-    if (!state.musicPlayedToday) {
-      state.musicPlayedToday = true;
-      state.insanity = Math.max(0, state.insanity - 15);
-      showToast("🎸", "SALA DE INSTRUMENTOS!", "Mandou um som na bateria e na guitarra! Insanidade -15%!");
+  } else if (ctx.type === "use_automation") {
+    sfx.play("automation");
+    spawnParticles(new THREE.Vector3(25.2, 1.9, -20.75), 0x38bdf8, 18);
+    if (!state.automationDoneToday) {
+      state.automationDoneToday = true;
+      const boosted = boostAllGrowingPlots(0.35);
+      state.insanity = Math.max(0, state.insanity - 10);
+      spawnFloatingText(new THREE.Vector3(25.2, 1.8, -20.75), "🤖 CLP +35% HORTA!", "#38bdf8");
+      showToast(
+        "🤖",
+        "SALA DE AUTOMAÇÃO ATIVADA!",
+        `CLP calibrado! ${boosted} canteiro(s) avançaram +35% e irrigados • Insanidade -10%!`
+      );
       updateHUD();
       saveGame();
     } else {
-      showToast("🥁", "SALA DE INSTRUMENTOS!", "Alyffer puxou mais um solo de guitarra e bateria nos fundos da ETEC!");
+      showToast("🤖", "LABORATÓRIO DE AUTOMAÇÃO", "Braço robótico e esteira operando em ciclo ótimo! Volte amanhã p/ novo boost.");
     }
+  } else if (ctx.type === "shoot_ball") {
+    if (etecBall) {
+      const bPos = etecBall.mesh.position;
+      const dx = ETEC_HOOP_RIM.x - bPos.x;
+      const dz = ETEC_HOOP_RIM.z - bPos.z;
+      const dist = Math.hypot(dx, dz);
+      const g = 18.5;
+      const flightT = THREE.MathUtils.clamp(0.68 + dist * 0.042, 0.72, 1.24);
+      player.facingYaw = Math.atan2(dx, dz);
+      etecBall.vx = dx / flightT;
+      etecBall.vz = dz / flightT;
+      etecBall.vy = (ETEC_HOOP_RIM.y - bPos.y + 0.5 * g * flightT * flightT) / flightT;
+      state.swingTimer = 0.24;
+      sfx.play("dig");
+      spawnParticles(bPos.clone(), 0xf97316, 10);
+    }
+  } else if (ctx.type === "stove") {
+    openCookModal();
   } else if (ctx.type === "chem_bench") {
     if (blockAfterWorkHours()) return;
     if (state.npkDoneToday) {
@@ -8054,22 +9402,38 @@ function triggerContextAction() {
     spawnParticles(new THREE.Vector3(12.4, 1.5, 2.2), 0x38bdf8, 18);
     showToast(
       "🧪",
-      "SÍNTESE NPK NO LAB DE ENFERMAGEM!",
+      "SÍNTESE NPK NO LAB DE QUÍMICA!",
       `Reação química perfeita! ${boosted} canteiro(s) em Pau Arcado avançaram +45%!`
     );
     saveGame();
+  } else if (ctx.type === "nurse_care") {
+    state.playerHp = state.maxHp;
+    state.insanity = Math.max(0, state.insanity - 5);
+    state.isCrazy = state.insanity >= 100;
+    sfx.play("upgrade");
+    spawnParticles(NURSE_BED_POS.clone().add(new THREE.Vector3(0, 1.1, 0)), 0x10b981, 16);
+    spawnFloatingText(NURSE_BED_POS, "🏥 Vida Cheia!", "#4ade80");
+    showToast("🏥", "LAB. DE ENFERMAGEM", "Curativo e triagem completos! Vida 100% restaurada e -5% Insanidade!");
+    updateHUD();
+    saveGame();
   } else if (ctx.type === "pastel") {
-    if (state.money < 8) {
+    if (state.money < 24) {
       sfx.play("error");
-      showToast("💸", "SEM TROCO", "Precisa de R$ 8,00 para o Pastel + Caldo de Cana!");
+      showToast("💸", "SEM TROCO", "Precisa de R$ 24,00 para o Pastel + Caldo de Cana!");
       return;
     }
-    state.money -= 8;
+    state.money -= 24;
     state.energyTimer = 90;
     sfx.play("upgrade");
     showToast("🥟", "PASTEL COM CALDO DE CANA!", "+35% Velocidade de caminhada por 90s!");
     updateHUD();
     saveGame();
+  } else if (ctx.type === "station_shop") {
+    openStationShopModal();
+  } else if (ctx.type === "npc_knocked") {
+    const hrsLeft = Math.max(1, Math.ceil((state.knockedNpcs[ctx.npcId] - getCurrentAbsMinutes()) / 60));
+    sfx.play("error");
+    showToast("👅", "NPC DERRUBADO!", `${ctx.npc.name} foi lambido(a) pelo Lambi Homem e fica no chão por ${hrsLeft}h!`);
   } else if (ctx.type === "term_sell") {
     openSellModal();
   } else if (ctx.type === "npc") {
@@ -8132,8 +9496,9 @@ function triggerContextAction() {
     updateHUD();
     saveGame();
   } else if (ctx.type === "plot" || ctx.type === "locked_plot") {
-    interactWithPlot(ctx.plot);
+    return interactWithPlot(ctx.plot);
   }
+  return null;
 }
 
 function advanceToNextDay() {
@@ -8155,20 +9520,51 @@ function advanceToNextDay() {
     jaguarEntity.mesh.rotation.z = 0;
     jaguarEntity.mesh.position.y = 0;
   }
+  state.tamedJaguarHp = state.tamedJaguarMaxHp || 120;
+  state.tamedJaguarDown = false;
+  state.tamedJaguarRecoverTimer = 0;
+  state.ridingJaguar = false;
+  if (tamedJaguarEntity) {
+    tamedJaguarEntity.mesh.rotation.z = 0;
+    tamedJaguarEntity.mesh.position.y = 0;
+  }
   state.maluquinho.active = false;
   state.maluquinho.announced = false;
   if (maluquinhoEntity) maluquinhoEntity.mesh.visible = false;
 
-  // Animais recuperam produção diária
+  // Animais crescem, recuperam lã e produção diária
+  let needAnimalRebuild = false;
   if (state.animals && state.animals.length > 0) {
     state.animals.forEach((a) => {
-      if (a.alive) a.hasProduct = true;
+      if (a.alive) {
+        if (a.isBaby) needAnimalRebuild = true;
+        a.hasProduct = true;
+        a.sheared = false;
+        a.isBaby = false;
+        a.inLove = false;
+      }
     });
-    if (typeof livestockEntities !== "undefined" && livestockEntities) {
+    if (needAnimalRebuild) {
+      rebuildLivestockMeshes();
+    } else if (typeof livestockEntities !== "undefined" && livestockEntities) {
       livestockEntities.forEach((ent) => {
         if (ent.readyHalo) ent.readyHalo.visible = true;
+        if (ent.woolGroup) ent.woolGroup.visible = true;
+        ent.mesh.scale.setScalar(1);
       });
     }
+  }
+
+  // Maldição do Lambi Homem expira após o dia seguinte à transformação; NPCs lambidos acordam após 24h
+  if (state.isLambiHomem && state.day > (state.lambiUntilDay || 0)) {
+    state.isLambiHomem = false;
+    showToast("👕", "FIM DO LAMBI HOMEM", "Alyffer vestiu a camisa e voltou ao normal! Cuidado com 22:00 a cada 7 dias.");
+  }
+  if (state.knockedNpcs) {
+    const curAbs = getCurrentAbsMinutes();
+    Object.keys(state.knockedNpcs).forEach((id) => {
+      if (state.knockedNpcs[id] <= curAbs) delete state.knockedNpcs[id];
+    });
   }
 
   // Contrato do Marcelo Segurança
@@ -8204,9 +9600,12 @@ function advanceToNextDay() {
   }
 
   state.npkDoneToday = false;
-  state.musicPlayedToday = false;
+  state.automationDoneToday = false;
+  state.goalScoredToday = false;
   state.compostDoneToday = false;
-  state.coopEggs = Math.min(3, 2 + Math.floor(Math.random() * 2));
+  state.chickenLove = 0;
+  syncChickensToCount(state.chickenCount, 0);
+  state.coopEggs = Math.min(6, Math.max(2, state.chickenCount - 1 + Math.floor(Math.random() * 2)));
   if (state.phone) {
     state.phone.postedFakeToday = false;
     state.phone.postedInstaToday = false;
@@ -8382,7 +9781,7 @@ const FELIX_QUESTS = [
     title: "Missão 1 do Félix: Lanche na ETEC",
     req: { alface_crespa: 3 },
     reqLabel: "3x Alface Crespa 🥬",
-    rewardMoney: 45,
+    rewardMoney: 160,
     rewardTitle: "PAC",
     quote: "E aí Macho! Tô varado de fome aqui na cantina da ETEC, traz 3 Alfaces Crespas pra eu virar fã número 1!",
   },
@@ -8390,7 +9789,7 @@ const FELIX_QUESTS = [
     title: "Missão 2 do Félix: Banquete do Félix",
     req: { alface_roxa: 3, tomate: 2 },
     reqLabel: "3x Alface Roxa 🟣 + 2x Tomate Cereja 🍅",
-    rewardMoney: 120,
+    rewardMoney: 420,
     rewardTitle: "Homem Guloso",
     quote: "Agora quero o combo gourmet de Pau Arcado! Traz 3 Alfaces Roxas e 2 Tomates Cereja!",
   },
@@ -8401,7 +9800,7 @@ const PAO_QUESTS = [
     title: "Missão 1 do Pão: Salada Crocante",
     req: { alface_americana: 3 },
     reqLabel: "3x Alface Americana 🥗",
-    rewardMoney: 60,
+    rewardMoney: 190,
     rewardTitle: "Airfryer",
     quote: "Fala Alyffer! Traz 3 Alfaces Americanas crocantes aqui pra galera da ETEC!",
   },
@@ -8409,7 +9808,7 @@ const PAO_QUESTS = [
     title: "Missão 2 do Pão: Desafio Raiz do Quintal",
     req: { alface_crespa: 4, cenoura: 3 },
     reqLabel: "4x Alface Crespa 🥬 + 3x Cenoura 🥕",
-    rewardMoney: 140,
+    rewardMoney: 520,
     rewardTitle: "Macho",
     quote: "Último desafio pra provar que você domina a roça de Pau Arcado: 4 Alfaces Crespas e 3 Cenouras!",
   },
@@ -8548,8 +9947,13 @@ function closeNpcModal() {
 function renderNpcModal() {
   npcMissionBox.classList.add("hidden");
   if (npcAppearance) {
-    npcAppearance.textContent = "";
-    npcAppearance.classList.add("hidden");
+    if (state.isLambiHomem && !isNpcKnockedOut(currentNpcId)) {
+      npcAppearance.textContent = "👅 Modo LAMBI HOMEM ativo! Feche esta janela e aperte F perto do NPC para lambê-lo (derruba por 1 dia)!";
+      npcAppearance.classList.remove("hidden");
+    } else {
+      npcAppearance.textContent = "";
+      npcAppearance.classList.add("hidden");
+    }
   }
   if (kaioShopBox) {
     kaioShopBox.classList.add("hidden");
@@ -8578,7 +9982,7 @@ function renderNpcModal() {
       renderNpcModal();
     };
   } else if (currentNpcId === "kaio") {
-    npcTag.textContent = "LAB. DE ENFERMAGEM • LOJA DE ADUBO DO KAIO";
+    npcTag.textContent = "LAB. DE QUÍMICA • LOJA DE ADUBO DO KAIO";
     npcName.textContent = "Kaio Wendell (Cientista & Vendedor de Adubo)";
     const kaioQuote = KAIO_LINES[Math.floor(Math.random() * KAIO_LINES.length)];
     npcDialogue.textContent = state.isCrazy
@@ -8594,7 +9998,7 @@ function renderNpcModal() {
           emoji: "🧪",
           name: "Adubo NPK do Kaio",
           sub: `+50% crescimento na hora e 2x velocidade no canteiro • Você tem: ${state.kaioAdubo}`,
-          price: 15,
+          price: 45,
           buy: () => {
             state.kaioAdubo += 1;
           },
@@ -8603,7 +10007,7 @@ function renderNpcModal() {
           emoji: "⚗️",
           name: "Super-Adubo Turbinado",
           sub: `Colheita 100% instantânea + chance extra dupla • Você tem: ${state.kaioSuperAdubo}`,
-          price: 35,
+          price: 110,
           buy: () => {
             state.kaioSuperAdubo += 1;
           },
@@ -8731,7 +10135,7 @@ function renderNpcModal() {
           emoji: "🧴",
           name: `Vaselina do Marcelo (1 Frasco • Você tem: ${state.vaselina})`,
           sub: "Guarda na mochila! Aperte Z ou clique no botão p/ tomar e ganhar +65% velocidade por 95s!",
-          price: 15,
+          price: 55,
           buy: () => {
             state.vaselina += 1;
             sfx.play("sell");
@@ -8742,7 +10146,7 @@ function renderNpcModal() {
           emoji: "⚡",
           name: "Tomar Vaselina Agora (Na Hora!)",
           sub: "Bebe na hora no corredor da ETECAMP e já sai voando (+65% velocidade por 95s)!",
-          price: 18,
+          price: 65,
           buy: () => {
             state.vaselinaTimer = 95;
             sfx.play("upgrade");
@@ -8754,7 +10158,7 @@ function renderNpcModal() {
           emoji: "🛡️",
           name: "Contratar Marcelo (3 Dias)",
           sub: "Patrulha o sítio com taco pesado (30 dano por golpe) e protege vacas, ovelhas e porcos!",
-          price: 50,
+          price: 240,
           buy: () => {
             state.marceloHired = true;
             state.marceloDaysLeft = (state.marceloDaysLeft || 0) + 3;
@@ -8768,7 +10172,7 @@ function renderNpcModal() {
           emoji: "⭐",
           name: "Contrato Semanal (7 Dias • Desconto!)",
           sub: "Proteção estendida por 7 dias seguidos contra qualquer ataque de onça!",
-          price: 90,
+          price: 480,
           buy: () => {
             state.marceloHired = true;
             state.marceloDaysLeft = (state.marceloDaysLeft || 0) + 7;
@@ -8810,16 +10214,16 @@ function renderNpcModal() {
     npcActionBtn.textContent =
       state.vaselina > 0
         ? `🧴 Tomar Vaselina da Mochila (${state.vaselina}) — +65% Vel.`
-        : "🧴 Comprar & Tomar Vaselina Agora (R$ 18)";
-    npcActionBtn.disabled = state.vaselina <= 0 && state.money < 18;
+        : "🧴 Comprar & Tomar Vaselina Agora (R$ 65)";
+    npcActionBtn.disabled = state.vaselina <= 0 && state.money < 65;
     npcActionBtn.onclick = () => {
       if (state.vaselina > 0) {
         state.vaselina -= 1;
         state.vaselinaTimer = 95;
         sfx.play("upgrade");
         showToast("🧴", "TOMOU VASELINA DO MARCELO!", "+65% Velocidade por 95s!");
-      } else if (state.money >= 18) {
-        state.money -= 18;
+      } else if (state.money >= 65) {
+        state.money -= 65;
         state.vaselinaTimer = 95;
         sfx.play("upgrade");
         showToast("🧴", "TOMOU VASELINA NA HORA!", "+65% Velocidade por 95s!");
@@ -9063,12 +10467,11 @@ function getPhoneSignalLabel() {
 
 function updatePhoneStatusBar() {
   if (!phoneTimeBar) return;
-  const hh = String(Math.floor(state.dayMinutes / 60)).padStart(2, "0");
-  const mm = String(Math.floor(state.dayMinutes % 60)).padStart(2, "0");
-  phoneTimeBar.textContent = `${hh}:${mm}`;
+  phoneTimeBar.textContent = formatHHMM(state.dayMinutes);
   if (phoneSignalBar) phoneSignalBar.textContent = getPhoneSignalLabel();
   if (phoneBatteryBar) {
-    const bat = Math.max(12, Math.min(99, Math.round(98 - ((state.dayMinutes - 390) / 800) * 58)));
+    const mins = state.dayMinutes < 390 ? state.dayMinutes + 1440 : state.dayMinutes;
+    const bat = Math.max(12, Math.min(99, Math.round(98 - ((mins - 390) / 1080) * 78)));
     phoneBatteryBar.textContent = `${state.isCrazy ? "🤡" : "🔋"} ${bat}%`;
   }
 }
@@ -9239,7 +10642,7 @@ function buildOnlyResenhaFeed() {
       emoji: "🧪✨",
       bg: "linear-gradient(135deg, #047857, #0284c7)",
       headline: "CIENTISTA KAIO WENDELL INVENTA ADUBO QUE FAZ ALFACE CRESCER MAIS RÁPIDO QUE A NOTA DO BOLETIM",
-      caption: "No Lab de Enfermagem de Botujuru, Kaio estaria vendendo Béquer Turbinado que transforma brotinho em Alface Dourado na hora!",
+      caption: "No Lab de Química de Botujuru, Kaio estaria vendendo Béquer Turbinado que transforma brotinho em Alface Dourado na hora!",
       time: "Há 4h",
       likes: 94,
       comments: [
@@ -10056,6 +11459,72 @@ function closeShopModal() {
   state.mode = "playing";
 }
 
+function openCookModal() {
+  if (!cookModal) return;
+  clearActiveInputs();
+  state.mode = "modal";
+  renderCookModal();
+  cookModal.classList.remove("hidden");
+}
+
+function closeCookModal() {
+  if (!cookModal) return;
+  cookModal.classList.add("hidden");
+  state.mode = "playing";
+}
+
+function renderCookModal() {
+  if (!cookRecipesList) return;
+  cookRecipesList.innerHTML = "";
+  KITCHEN_RECIPES.forEach((rec) => {
+    const canCook = canFulfillReq(rec.req);
+    const ownedQty = state.inventory[rec.id] || 0;
+    const sellPrice = getCropSellPrice(rec.id);
+    const row = document.createElement("div");
+    row.className = "row-card";
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${rec.emoji}</span>
+        <div>
+          <div class="row-title">${rec.name} (Na cesta: ${ownedQty})</div>
+          <div class="row-sub">Ingredientes: <strong>${rec.reqLabel}</strong><br/>Venda no Terminal: <strong>${formatBRL(sellPrice)}</strong> • Comer: ${rec.eatEffect.msg}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="mini-btn green cook-make-btn" ${canCook ? "" : "disabled"}>🍳 Cozinhar</button>
+        <button class="mini-btn cook-eat-btn" ${ownedQty > 0 ? "" : "disabled"}>😋 Comer (${ownedQty})</button>
+      </div>
+    `;
+    row.querySelector(".cook-make-btn").addEventListener("click", () => {
+      if (!canFulfillReq(rec.req)) return;
+      consumeReq(rec.req);
+      state.inventory[rec.id] = (state.inventory[rec.id] || 0) + 1;
+      sfx.play("cook");
+      spawnFloatingText(STOVE_POS, `+1 ${rec.emoji}`, "#facc15");
+      showToast(rec.emoji, "PRATO PREPARADO!", `${rec.name} pronto! Venda no Terminal ou coma agora.`);
+      updateHUD();
+      renderCookModal();
+      saveGame();
+    });
+    row.querySelector(".cook-eat-btn").addEventListener("click", () => {
+      if ((state.inventory[rec.id] || 0) <= 0) return;
+      state.inventory[rec.id] -= 1;
+      state.playerHp = Math.min(state.maxHp, rec.eatEffect.hp || state.maxHp);
+      state.energyTimer = Math.max(state.energyTimer, rec.eatEffect.energy || 60);
+      if (rec.eatEffect.insanityDelta) {
+        state.insanity = THREE.MathUtils.clamp(state.insanity + rec.eatEffect.insanityDelta, 0, 100);
+        state.isCrazy = state.insanity >= 100;
+      }
+      sfx.play("upgrade");
+      showToast(rec.emoji, "DELÍCIA DA ROÇA!", rec.eatEffect.msg);
+      updateHUD();
+      renderCookModal();
+      saveGame();
+    });
+    cookRecipesList.appendChild(row);
+  });
+}
+
 function renderShopModal() {
   shopMoneyVal.textContent = formatBRL(state.money);
   shopItemsList.innerHTML = "";
@@ -10067,39 +11536,39 @@ function renderShopModal() {
     shopItemsList.appendChild(h);
   };
 
-  // 1. TERRENOS & EXPANSÃO DA FAZENDA
+  // 1. TERRENOS & EXPANSÃO DA FAZENDA (Preços proporcionais ao progresso!)
   addHeader("🏞️ TERRENOS & EXPANSÃO DA FAZENDA");
   const landItems = [
     {
       emoji: "🌾",
-      title: "Pasto Oeste (+12 Canteiros & +4 Animais)",
+      title: "Pasto Oeste (+12 Canteiros & +5 Animais)",
       sub: state.landLevel >= 1
-        ? "Terreno Oeste desbloqueado! +12 canteiros e limite para 8 animais ativos."
-        : "Expande a cerca oeste, aumenta limite p/ 8 animais e libera +12 canteiros de plantio!",
-      cost: 120,
+        ? "Terreno Oeste desbloqueado! +12 canteiros e limite para 11 animais ativos."
+        : "Expande a cerca oeste, aumenta limite p/ 11 animais e libera +12 canteiros de plantio!",
+      cost: 1200,
       owned: state.landLevel >= 1,
       available: true,
       buy: () => {
         state.landLevel = 1;
         syncUnlockedPlots();
-        showDayBanner("🏞️ PASTO OESTE ADQUIRIDO! +12 CANTEIROS & MAIS ESPAÇO NO CURRAL!");
+        showDayBanner("🏞️ PASTO OESTE ADQUIRIDO! +12 CANTEIROS & 11 ANIMAIS NO CURRAL!");
       },
     },
     {
       emoji: "🚜",
-      title: "Fazenda Leste (+12 Canteiros & +4 Animais)",
+      title: "Fazenda Leste (+12 Canteiros & +5 Animais)",
       sub: state.landLevel >= 2
-        ? "Fazenda Leste desbloqueada! +12 canteiros e limite máximo de 12 animais ativos."
+        ? "Fazenda Leste desbloqueada! +12 canteiros e limite máximo de 16 animais ativos."
         : state.landLevel < 1
-          ? "Requer Pasto Oeste primeiro! Aumenta limite p/ 12 animais e +12 canteiros."
-          : "Expande a cerca leste! Limite p/ 12 animais e +12 canteiros na horta (60 totais)!",
-      cost: 220,
+          ? "Requer Pasto Oeste primeiro! Aumenta limite p/ 16 animais e +12 canteiros."
+          : "Expande a cerca leste! Limite p/ 16 animais e +12 canteiros na horta (60 totais)!",
+      cost: 2800,
       owned: state.landLevel >= 2,
       available: state.landLevel >= 1,
       buy: () => {
         state.landLevel = 2;
         syncUnlockedPlots();
-        showDayBanner("🚜 FAZENDA LESTE ADQUIRIDA! 60 CANTEIROS TOTAIS & CURRAL MÁXIMO!");
+        showDayBanner("🚜 FAZENDA LESTE ADQUIRIDA! 60 CANTEIROS TOTAIS & 16 ANIMAIS!");
       },
     },
   ];
@@ -10141,22 +11610,22 @@ function renderShopModal() {
       type: "cow",
       emoji: "🐄",
       title: "Vaca Leiteira Caipira",
-      sub: "Produz Leite Fresco diário (R$ 28 na venda) • Fica no Curral das Vacas",
-      cost: 85,
+      sub: `Leite Fresco (${formatBRL(CROPS.leite_fresco.basePrice)} c/ Balde 🪣) • Reproduz com 🌾 Trigo (B)`,
+      cost: ANIMAL_TYPES.cow.cost,
     },
     {
       type: "sheep",
       emoji: "🐑",
       title: "Ovelha da Mantiqueira",
-      sub: "Produz Lã Macia diária (R$ 22 na venda) • Fica no Cercado das Ovelhas",
-      cost: 70,
+      sub: `Lã Macia (${formatBRL(CROPS.la_ovelha.basePrice)} c/ Tesoura ✂️) • Reproduz com 🌾 Trigo (B)`,
+      cost: ANIMAL_TYPES.sheep.cost,
     },
     {
       type: "pig",
       emoji: "🐷",
       title: "Porco Caipira Raro",
-      sub: "Encontra Trufas Nobres diárias (R$ 38 na venda) • Fica no Chiqueiro dos Porcos",
-      cost: 95,
+      sub: `Trufas Nobres (${formatBRL(CROPS.trufa_porco.basePrice)}) • Reproduz com 🥕 Cenoura (B)`,
+      cost: ANIMAL_TYPES.pig.cost,
     },
   ];
 
@@ -10165,10 +11634,7 @@ function renderShopModal() {
     row.className = "row-card";
     const count = state.animals.filter((a) => a.alive && a.type === an.type).length;
     const canAfford = aliveAnimals < maxAn && state.money >= an.cost;
-    const btnText =
-      aliveAnimals >= maxAn
-        ? "Curral Lotado"
-        : `Comprar ${formatBRL(an.cost)}`;
+    const btnText = aliveAnimals >= maxAn ? "Curral Lotado" : `Comprar ${formatBRL(an.cost)}`;
     row.innerHTML = `
       <div class="row-info">
         <span class="row-emoji">${an.emoji}</span>
@@ -10184,7 +11650,7 @@ function renderShopModal() {
       if (buyAnimal(an.type)) {
         state.money -= an.cost;
         sfx.play("sell");
-        showToast(an.emoji, "NOVO ANIMAL ADQUIRIDO!", `${an.title} foi para o pasto! Cuidado com a Onça!`);
+        showToast(an.emoji, "NOVO ANIMAL ADQUIRIDO!", `${an.title} foi para o pasto! Compre um par p/ reproduzir.`);
         updateHUD();
         renderShopModal();
         saveGame();
@@ -10193,62 +11659,29 @@ function renderShopModal() {
     shopItemsList.appendChild(row);
   });
 
-  // 3. ENXADAS ESPECIAIS (COMBATE & HORTA)
-  addHeader("⛏️ ENXADAS ESPECIAIS (COMBATE & EFEITOS)");
-  HOE_KEYS.forEach((hoeKey) => {
-    const hoe = HOES[hoeKey];
-    const isOwned = state.ownedHoes.includes(hoe.id);
-    const isActive = state.activeHoe === hoe.id;
-    const row = document.createElement("div");
-    row.className = "row-card";
-    const canBuy = !isOwned && state.money >= hoe.cost;
-    const btnLabel = isActive
-      ? "Equipada ✓"
-      : isOwned
-        ? "Equipar"
-        : `Comprar ${formatBRL(hoe.cost)}`;
-    row.innerHTML = `
-      <div class="row-info">
-        <span class="row-emoji">${hoe.emoji}</span>
-        <div>
-          <div class="row-title">${hoe.name} ${isActive ? "⭐" : ""}</div>
-          <div class="row-sub">${hoe.effectDesc}</div>
-        </div>
+  // 3. AVISO DE FERRAMENTAS & ENXADAS NA ESTAÇÃO CLP
+  addHeader("🚉 FERRAMENTAS & ENXADAS ESPECIAIS");
+  const curHoe = getActiveHoe();
+  const stationHint = document.createElement("div");
+  stationHint.className = "row-card";
+  stationHint.innerHTML = `
+    <div class="row-info">
+      <span class="row-emoji">🚉</span>
+      <div>
+        <div class="row-title">Loja da Estação Ferroviária CLP (Atual: ${curHoe.emoji} ${curHoe.name})</div>
+        <div class="row-sub">Pegue o Ônibus 402 até o Terminal CLP e suba na plataforma da Estação p/ comprar Enxadas Especiais, Baldes de Leite 🪣 e Tesoura de Ovelha ✂️!</div>
       </div>
-      <button class="mini-btn ${isActive ? "" : "green"}" ${isActive || (!isOwned && !canBuy) ? "disabled" : ""}>
-        ${btnLabel}
-      </button>
-    `;
-    row.querySelector("button").addEventListener("click", () => {
-      if (isActive) return;
-      if (isOwned) {
-        state.activeHoe = hoe.id;
-        applyHoeVisual();
-        sfx.play("upgrade");
-        showToast(hoe.emoji, "ENXADA EQUIPADA!", `${hoe.name} está na sua mão!`);
-      } else if (state.money >= hoe.cost) {
-        state.money -= hoe.cost;
-        state.ownedHoes.push(hoe.id);
-        state.activeHoe = hoe.id;
-        applyHoeVisual();
-        sfx.play("upgrade");
-        showDayBanner(`⚔️ ${hoe.name.toUpperCase()} ADQUIRIDA! ${hoe.effectDesc}`);
-        showToast(hoe.emoji, "ENXADA ESPECIAL COMPRADA!", `${hoe.name} equipada!`);
-      }
-      updateHUD();
-      renderShopModal();
-      saveGame();
-    });
-    shopItemsList.appendChild(row);
-  });
+    </div>
+  `;
+  shopItemsList.appendChild(stationHint);
 
   // 4. MELHORIAS GERAIS & IRRIGAÇÃO
   addHeader("💧 MELHORIAS DO SÍTIO & IRRIGAÇÃO");
-  const plotCost = 35 + state.upgrades.plotTier * 30;
-  const canCost = 30 * state.upgrades.canLevel;
-  const autoWaterCost = state.upgrades.autoWaterLevel === 0 ? 90 : 180;
-  const fertCost = 40 * state.upgrades.fertLevel;
-  const standCost = 45 * state.upgrades.standLevel;
+  const plotCost = 110 + state.upgrades.plotTier * 130;
+  const canCost = 140 * state.upgrades.canLevel;
+  const autoWaterCost = state.upgrades.autoWaterLevel === 0 ? 480 : 1150;
+  const fertCost = 180 * state.upgrades.fertLevel;
+  const standCost = 220 * state.upgrades.standLevel;
 
   const basePlotsUnlocked = Math.min(36, 6 + state.upgrades.plotTier * 3);
   const items = [
@@ -10271,7 +11704,7 @@ function renderShopModal() {
           : `Irrigação Automática Pro (Nível ${state.upgrades.autoWaterLevel}/2)`,
       sub:
         state.upgrades.autoWaterLevel === 0
-          ? `Instala 4 aspersores 3D que regam toda a horta automaticamente!`
+          ? `Instala 6 aspersores 3D que regam toda a horta automaticamente!`
           : state.upgrades.autoWaterLevel === 1
             ? `Nível 2: Irrigação contínua + bônus de +15% na velocidade das plantas!`
             : `Irrigação automática máxima ativa (+15% velocidade)!`,
@@ -10348,8 +11781,284 @@ function renderShopModal() {
   });
 }
 
+// ============================================================================
+// INVENTÁRIO (TECLA I) & LOJA DA ESTAÇÃO CLP (ENXADAS, BALDE & TESOURA)
+// ============================================================================
+function openInventoryModal() {
+  if (!inventoryModal || state.isSleeping || state.mode === "dead") return;
+  clearActiveInputs();
+  state.mode = "modal";
+  renderInventoryModal();
+  inventoryModal.classList.remove("hidden");
+}
+
+function closeInventoryModal() {
+  if (!inventoryModal) return;
+  inventoryModal.classList.add("hidden");
+  state.mode = "playing";
+  updateHUD();
+}
+
+function renderInventoryModal() {
+  if (!inventoryList) return;
+  if (invMoneyVal) invMoneyVal.textContent = formatBRL(state.money);
+  const totalWorth = CROP_KEYS.reduce((s, k) => s + (state.inventory[k] || 0) * getCropSellPrice(k), 0);
+  if (invBasketWorthVal) invBasketWorthVal.textContent = formatBRL(totalWorth);
+  inventoryList.innerHTML = "";
+
+  const addInvHeader = (text) => {
+    const h = document.createElement("div");
+    h.className = "shop-section-title";
+    h.textContent = text;
+    inventoryList.appendChild(h);
+  };
+
+  addInvHeader("🧰 FERRAMENTAS, EQUIPAMENTOS & INSUMOS");
+  const curHoe = getActiveHoe();
+  const toolRows = [
+    {
+      emoji: "🪣",
+      title: `Balde Vazio (${state.inventory.balde || 0}x)`,
+      sub: "Usado automaticamente ao tirar leite das vacas (consome 1 balde -> +1 Leite Fresco!). Compre na Loja da Estação.",
+    },
+    {
+      emoji: "✂️",
+      title: `Tesoura de Tosa (${state.inventory.tesoura >= 1 ? "Equipada ✓" : "Não possui"})`,
+      sub:
+        state.inventory.tesoura >= 1
+          ? "Ferramenta permanente! Aperte E perto de ovelhas com lã para tosquiar."
+          : "Compre na Loja da Estação CLP para cortar lã das ovelhas!",
+    },
+    {
+      emoji: curHoe.emoji,
+      title: `Enxada Ativa: ${curHoe.name}`,
+      sub: `${curHoe.effectDesc} • Possui ${state.ownedHoes.length}/${HOE_KEYS.length} enxada(s)`,
+    },
+    {
+      emoji: "🚿",
+      title: `Regador Nível ${state.upgrades.canLevel} (${state.water}/${getMaxWater()} água)`,
+      sub: state.upgrades.autoWaterLevel >= 1 ? "Aspersores automáticos ativos na horta!" : "Encha no poço ao lado da casa.",
+    },
+    {
+      emoji: "🧪",
+      title: `Adubo Kaio (${state.kaioAdubo}) • Super-Adubo (${state.kaioSuperAdubo}) • Vaselina (${state.vaselina})`,
+      sub: "Adubo: aperte F perto de planta crescendo • Vaselina: aperte Z (+65% velocidade!).",
+    },
+  ];
+
+  toolRows.forEach((tr) => {
+    const row = document.createElement("div");
+    row.className = "row-card";
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${tr.emoji}</span>
+        <div>
+          <div class="row-title">${tr.title}</div>
+          <div class="row-sub">${tr.sub}</div>
+        </div>
+      </div>
+    `;
+    inventoryList.appendChild(row);
+  });
+
+  if (state.ownedHoes.length > 1) {
+    state.ownedHoes.forEach((hId) => {
+      const h = HOES[hId];
+      if (!h) return;
+      const isAct = state.activeHoe === h.id;
+      const row = document.createElement("div");
+      row.className = "row-card";
+      row.innerHTML = `
+        <div class="row-info">
+          <span class="row-emoji">${h.emoji}</span>
+          <div>
+            <div class="row-title">${h.name}</div>
+            <div class="row-sub">${h.effectDesc}</div>
+          </div>
+        </div>
+        <button class="mini-btn ${isAct ? "" : "green"}" ${isAct ? "disabled" : ""}>${isAct ? "Equipada ✓" : "Equipar"}</button>
+      `;
+      row.querySelector("button").addEventListener("click", () => {
+        state.activeHoe = h.id;
+        applyHoeVisual();
+        sfx.play("upgrade");
+        updateHUD();
+        renderInventoryModal();
+        saveGame();
+      });
+      inventoryList.appendChild(row);
+    });
+  }
+
+  addInvHeader("🧺 COLHEITAS, PRODUTOS ANIMAIS & RECEITAS");
+  const breedNotes = {
+    milho: " • 🌽 Reproduz Galinhas (B no galinheiro)",
+    trigo: " • 🌾 Reproduz Vacas/Ovelhas (B perto delas)",
+    cenoura: " • 🥕 Reproduz Porcos (B perto deles)",
+  };
+  const sortedCrops = [...CROP_KEYS].sort((a, b) => (state.inventory[b] || 0) - (state.inventory[a] || 0));
+  sortedCrops.forEach((id) => {
+    const crop = CROPS[id];
+    const qty = state.inventory[id] || 0;
+    const price = getCropSellPrice(id);
+    const row = document.createElement("div");
+    row.className = "row-card";
+    row.style.opacity = qty > 0 ? "1" : "0.62";
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${crop.emoji}</span>
+        <div>
+          <div class="row-title">${crop.name} (${qty}x)</div>
+          <div class="row-sub">Valor hoje no Terminal: <strong>${formatBRL(price)}</strong>${breedNotes[id] || ""}</div>
+        </div>
+      </div>
+    `;
+    inventoryList.appendChild(row);
+  });
+}
+
+function openStationShopModal() {
+  if (!stationShopModal || state.isSleeping || state.mode === "dead") return;
+  clearActiveInputs();
+  state.mode = "modal";
+  renderStationShopModal();
+  stationShopModal.classList.remove("hidden");
+}
+
+function closeStationShopModal() {
+  if (!stationShopModal) return;
+  stationShopModal.classList.add("hidden");
+  state.mode = "playing";
+  updateHUD();
+}
+
+function renderStationShopModal() {
+  if (!stationShopItemsList) return;
+  if (stationShopMoneyVal) stationShopMoneyVal.textContent = formatBRL(state.money);
+  stationShopItemsList.innerHTML = "";
+
+  const addStHeader = (text) => {
+    const h = document.createElement("div");
+    h.className = "shop-section-title";
+    h.textContent = text;
+    stationShopItemsList.appendChild(h);
+  };
+
+  addStHeader("🪣 FERRAMENTAS DE MANEJO ANIMAL (ESTAÇÃO CLP)");
+  const baldeInfo = STATION_TOOLS.balde;
+  const tesouraInfo = STATION_TOOLS.tesoura;
+  const ownedTesoura = (state.inventory.tesoura || 0) >= 1;
+
+  const toolEntries = [
+    {
+      emoji: baldeInfo.emoji,
+      title: `${baldeInfo.name} (Você tem: ${state.inventory.balde || 0}x)`,
+      sub: baldeInfo.desc,
+      cost: baldeInfo.cost,
+      disabled: state.money < baldeInfo.cost,
+      btnText: `Comprar ${formatBRL(baldeInfo.cost)}`,
+      onBuy: () => {
+        state.money -= baldeInfo.cost;
+        state.inventory.balde = (state.inventory.balde || 0) + 1;
+        sfx.play("sell");
+        showToast("🪣", "BALDE COMPRADO!", `Agora você tem ${state.inventory.balde} balde(s) vazio(s) no Inventário (I)!`);
+      },
+    },
+    {
+      emoji: tesouraInfo.emoji,
+      title: `${tesouraInfo.name} ${ownedTesoura ? "✓" : ""}`,
+      sub: tesouraInfo.desc,
+      cost: tesouraInfo.cost,
+      disabled: ownedTesoura || state.money < tesouraInfo.cost,
+      btnText: ownedTesoura ? "Comprada ✓" : `Comprar ${formatBRL(tesouraInfo.cost)}`,
+      onBuy: () => {
+        state.money -= tesouraInfo.cost;
+        state.inventory.tesoura = 1;
+        sfx.play("upgrade");
+        showDayBanner("✂️ TESOURA DE TOSA COMPRADA! AGORA VOCÊ PODE TOSQUIAR AS OVELHAS!");
+        showToast("✂️", "TESOURA DE TOSA!", "Vá até as ovelhas com lã e aperte E para cortar lã!");
+      },
+    },
+  ];
+
+  toolEntries.forEach((it) => {
+    const row = document.createElement("div");
+    row.className = "row-card";
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${it.emoji}</span>
+        <div>
+          <div class="row-title">${it.title}</div>
+          <div class="row-sub">${it.sub}</div>
+        </div>
+      </div>
+      <button class="mini-btn green" ${it.disabled ? "disabled" : ""}>${it.btnText}</button>
+    `;
+    row.querySelector("button").addEventListener("click", () => {
+      if (it.disabled) return;
+      it.onBuy();
+      updateHUD();
+      renderStationShopModal();
+      saveGame();
+    });
+    stationShopItemsList.appendChild(row);
+  });
+
+  addStHeader("⛏️ ENXADAS ESPECIAIS DE COMBATE & PLANTIO");
+  HOE_KEYS.forEach((hoeKey) => {
+    const hoe = HOES[hoeKey];
+    const isOwned = state.ownedHoes.includes(hoe.id);
+    const isActive = state.activeHoe === hoe.id;
+    const canBuy = !isOwned && state.money >= hoe.cost;
+    const row = document.createElement("div");
+    row.className = "row-card";
+    row.innerHTML = `
+      <div class="row-info">
+        <span class="row-emoji">${hoe.emoji}</span>
+        <div>
+          <div class="row-title">${hoe.name} ${isActive ? "⭐ Equipada" : ""}</div>
+          <div class="row-sub">${hoe.effectDesc}</div>
+        </div>
+      </div>
+      <button class="mini-btn ${isActive ? "" : "green"}" ${isActive || (!isOwned && !canBuy) ? "disabled" : ""}>
+        ${isActive ? "Equipada ✓" : isOwned ? "Equipar" : `Comprar ${formatBRL(hoe.cost)}`}
+      </button>
+    `;
+    row.querySelector("button").addEventListener("click", () => {
+      if (isActive) return;
+      if (isOwned) {
+        state.activeHoe = hoe.id;
+        applyHoeVisual();
+        sfx.play("upgrade");
+        showToast(hoe.emoji, "ENXADA EQUIPADA!", `${hoe.name} na sua mão!`);
+      } else if (state.money >= hoe.cost) {
+        state.money -= hoe.cost;
+        state.ownedHoes.push(hoe.id);
+        state.activeHoe = hoe.id;
+        applyHoeVisual();
+        sfx.play("upgrade");
+        showDayBanner(`⚔️ ${hoe.name.toUpperCase()} ADQUIRIDA NA ESTAÇÃO! ${hoe.effectDesc}`);
+        showToast(hoe.emoji, "ENXADA COMPRADA!", `${hoe.name} equipada!`);
+      }
+      updateHUD();
+      renderStationShopModal();
+      saveGame();
+    });
+    stationShopItemsList.appendChild(row);
+  });
+}
+
 // Input & Controls
 const keys = {};
+let touchActionHeld = false;
+const holdActionState = { timer: 0, lockedMode: null };
+
+function cycleSelectedSeed(dir) {
+  const curIdx = Math.max(0, SEED_KEYS.indexOf(state.selectedCrop));
+  const nextIdx = (curIdx + dir + SEED_KEYS.length) % SEED_KEYS.length;
+  state.selectedCrop = SEED_KEYS[nextIdx];
+  updateSeedHotbarUI();
+}
 
 window.addEventListener("keydown", (e) => {
   if (e.target && (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA")) {
@@ -10366,6 +12075,18 @@ window.addEventListener("keydown", (e) => {
   if (e.code === "Escape") {
     if (phoneModal && !phoneModal.classList.contains("hidden")) {
       closePhoneModal();
+      return;
+    }
+    if (inventoryModal && !inventoryModal.classList.contains("hidden")) {
+      closeInventoryModal();
+      return;
+    }
+    if (stationShopModal && !stationShopModal.classList.contains("hidden")) {
+      closeStationShopModal();
+      return;
+    }
+    if (cookModal && !cookModal.classList.contains("hidden")) {
+      closeCookModal();
       return;
     }
     if (!calendarModal.classList.contains("hidden")) {
@@ -10394,6 +12115,17 @@ window.addEventListener("keydown", (e) => {
     }
   }
 
+  if (e.code === "KeyI") {
+    if (inventoryModal && !inventoryModal.classList.contains("hidden")) {
+      closeInventoryModal();
+      return;
+    }
+    if (state.mode === "playing") {
+      openInventoryModal();
+      return;
+    }
+  }
+
   if (state.mode !== "playing") {
     keys[e.code] = true;
     return;
@@ -10403,20 +12135,56 @@ window.addEventListener("keydown", (e) => {
     if (e.code === "Space") {
       triggerJump();
     } else if (e.code === "KeyE") {
-      triggerContextAction();
+      const actRes = triggerContextAction();
+      holdActionState.lockedMode = typeof actRes === "string" ? actRes : null;
+      holdActionState.timer = 0.24;
+    } else if (e.code === "KeyB") {
+      const ctx = findCurrentContext();
+      if (ctx && (ctx.type === "collect_animal" || ctx.type === "pet_animal") && ctx.ent) {
+        breedLivestock(ctx.ent);
+      } else if (ctx && ctx.type === "coop") {
+        breedChicken();
+      } else {
+        showToast("💕", "REPRODUZIR ANIMAIS", "Chegue perto de Vaca/Ovelha (🌾 Trigo), Porco (🥕 Cenoura) ou Galinheiro (🌽 Milho) e aperte B!");
+      }
     } else if (e.code === "KeyZ") {
       drinkVaselina();
     } else if (e.code === "KeyT") {
       openPhoneModal("home");
     } else if (e.code === "KeyF") {
-      const ctx = findCurrentContext();
-      if (ctx && ctx.plot) {
-        applyKaioFertilizer(ctx.plot);
+      if (state.ridingJaguar) {
+        fastTravelJaguarToStation();
       } else {
-        showToast("🧪", "ADUBO DO KAIO", "Fique perto de um canteiro com planta crescendo e aperte F!");
+        const ctx = findCurrentContext();
+        if (state.isLambiHomem && state.location === "etec_inside" && ctx && ctx.type === "npc" && ctx.npc) {
+          lambiLickNpc(ctx.npc);
+        } else if (ctx && ctx.type === "npc_knocked") {
+          showToast("👅", "JÁ DERRUBADO!", `${ctx.npc.name} já foi lambido(a) e fica caído(a) por 1 dia.`);
+        } else if (ctx && ctx.plot) {
+          applyKaioFertilizer(ctx.plot);
+        } else {
+          showToast(
+            state.isLambiHomem && state.location === "etec_inside" ? "👅" : "🧪",
+            state.isLambiHomem && state.location === "etec_inside" ? "LAMBER ALUNOS/NPCS" : "ADUBO DO KAIO",
+            state.isLambiHomem && state.location === "etec_inside"
+              ? "Chegue perto de qualquer aluno ou NPC na ETECAMP e aperte F para lamber e derrubar!"
+              : "Fique perto de um canteiro com planta crescendo e aperte F (ou F montado na Onça p/ ir à Estação)!"
+          );
+        }
       }
     } else if (e.code === "KeyR") {
-      toggleEquippedTool();
+      if (state.ridingJaguar) {
+        dismountTamedJaguar();
+      } else if (canMountTamedJaguar()) {
+        mountTamedJaguar();
+      } else {
+        const nearTj = getActiveTamedJaguar();
+        if (state.tamedJaguarDown && nearTj && nearTj.mesh.visible && distXZ(player.pos, nearTj.mesh.position) < 2.9) {
+          showToast("💤", "ONÇA INATIVA!", `Ela apanhou muito e está deitada se recuperando (${Math.ceil(state.tamedJaguarRecoverTimer)}s).`);
+        } else {
+          toggleEquippedTool();
+        }
+      }
     } else if (e.code === "KeyX") {
       if (state.location === "yard" && dogOrelha && distXZ(player.pos, dogOrelha.mesh.position) < 2.8) {
         kickOrelha();
@@ -10435,8 +12203,13 @@ window.addEventListener("keydown", (e) => {
       togglePause();
     } else if (e.code === "KeyM") {
       toggleMute();
-    } else if (e.code >= "Digit1" && e.code <= "Digit8") {
-      const idx = Number(e.code.replace("Digit", "")) - 1;
+    } else if (e.code === "BracketLeft") {
+      cycleSelectedSeed(-1);
+    } else if (e.code === "BracketRight") {
+      cycleSelectedSeed(1);
+    } else if (/^Digit[0-9]$/.test(e.code)) {
+      const num = Number(e.code.replace("Digit", ""));
+      const idx = num === 0 ? 9 : num - 1;
       if (SEED_KEYS[idx]) {
         state.selectedCrop = SEED_KEYS[idx];
         updateSeedHotbarUI();
@@ -10448,6 +12221,10 @@ window.addEventListener("keydown", (e) => {
 
 window.addEventListener("keyup", (e) => {
   keys[e.code] = false;
+  if (e.code === "KeyE" && !touchActionHeld) {
+    holdActionState.lockedMode = null;
+    holdActionState.timer = 0;
+  }
 });
 
 document.querySelectorAll(".seed-slot").forEach((btn) => {
@@ -10588,6 +12365,10 @@ window.addEventListener("pointercancel", (e) => handleCanvasPointerEnd(e, true))
 renderer.domElement.addEventListener(
   "wheel",
   (e) => {
+    if (e.shiftKey && state.mode === "playing") {
+      cycleSelectedSeed(e.deltaY > 0 ? 1 : -1);
+      return;
+    }
     state.camDist = THREE.MathUtils.clamp(state.camDist + e.deltaY * 0.012, 6.5, 26);
   },
   { passive: true }
@@ -10664,8 +12445,23 @@ if (touchActionBtn) {
   touchActionBtn.addEventListener("pointerdown", (e) => {
     e.preventDefault();
     e.stopPropagation();
-    if (state.mode === "playing") triggerContextAction();
+    touchActionHeld = true;
+    if (state.mode === "playing") {
+      const actRes = triggerContextAction();
+      holdActionState.lockedMode = typeof actRes === "string" ? actRes : null;
+      holdActionState.timer = 0.24;
+    }
   });
+  const endTouchAction = () => {
+    touchActionHeld = false;
+    if (!keys["KeyE"]) {
+      holdActionState.lockedMode = null;
+      holdActionState.timer = 0;
+    }
+  };
+  touchActionBtn.addEventListener("pointerup", endTouchAction);
+  touchActionBtn.addEventListener("pointercancel", endTouchAction);
+  touchActionBtn.addEventListener("pointerleave", endTouchAction);
 }
 
 if (touchJumpBtn) {
@@ -10680,6 +12476,9 @@ function clearActiveInputs() {
   canvasPointers.clear();
   orbitPointerId = null;
   lastPinchDist = 0;
+  touchActionHeld = false;
+  holdActionState.lockedMode = null;
+  holdActionState.timer = 0;
   resetJoystick();
   Object.keys(keys).forEach((k) => (keys[k] = false));
 }
@@ -10700,6 +12499,7 @@ function enterFarm() {
   npcModal.classList.add("hidden");
   guideModal.classList.add("hidden");
   calendarModal.classList.add("hidden");
+  if (cookModal) cookModal.classList.add("hidden");
   if (phoneModal) phoneModal.classList.add("hidden");
   if (deathModal) deathModal.classList.add("hidden");
   hud.classList.remove("hidden");
@@ -10760,8 +12560,12 @@ ordersHudBtn.addEventListener("click", openSellModal);
 shopHudBtn.addEventListener("click", openShopModal);
 closeSellBtn.addEventListener("click", closeSellModal);
 closeShopBtn.addEventListener("click", closeShopModal);
+if (inventoryHudBtn) inventoryHudBtn.addEventListener("click", openInventoryModal);
+if (closeInventoryBtn) closeInventoryBtn.addEventListener("click", closeInventoryModal);
+if (closeStationShopBtn) closeStationShopBtn.addEventListener("click", closeStationShopModal);
 closeNpcBtn.addEventListener("click", closeNpcModal);
 closeGuideBtn.addEventListener("click", closeGuideModal);
+if (closeCookBtn) closeCookBtn.addEventListener("click", closeCookModal);
 if (phoneHudBtn) phoneHudBtn.addEventListener("click", () => openPhoneModal("home"));
 if (closePhoneBtn) closePhoneBtn.addEventListener("click", closePhoneModal);
 if (phoneNavClose) phoneNavClose.addEventListener("click", closePhoneModal);
@@ -10782,14 +12586,18 @@ const rainySkyColor = new THREE.Color(0x526375);
 
 function updateSkyAndTime(dt) {
   state.dayMinutes += dt * 4.5;
+  if (state.day >= 7 && state.day % 7 === 0 && state.dayMinutes >= 22 * 60 && state.lambiTriggeredDay !== state.day) {
+    activateLambiHomem();
+  }
+  if (state.dayMinutes >= 24 * 60) {
+    state.dayMinutes -= 24 * 60;
+    state.day += 1;
+    state.workEndNotifiedToday = false;
+  }
   if (state.dayMinutes >= WORK_END_MINUTES && !state.workEndNotifiedToday) {
     state.workEndNotifiedToday = true;
     showDayBanner("🌙 19:00 — EXPEDIENTE ENCERRADO! DEPOIS DAS 19H O MACHO NÃO PODE TRABALHAR!");
-    showToast("🌙", "HORA DE DESCANSAR", "Passou das 19:00! Vá para casa dormir para começar o próximo dia.");
-  }
-  if (state.dayMinutes >= 22 * 60 && !state.isSleeping) {
-    startSleepTransition(false);
-    return;
+    showToast("🌙", "HORA DE DESCANSAR", "Passou das 19:00! Vá dormir na cama quando quiser avançar o dia.");
   }
   syncBusModelsVisibility();
 
@@ -10808,14 +12616,18 @@ function updateSkyAndTime(dt) {
 
   const hour = state.dayMinutes / 60;
   const tDay = THREE.MathUtils.clamp((hour - 6) / 14, 0, 1);
-  const sunArc = Math.sin(tDay * Math.PI);
+  const sunArc = hour < 6 ? 0 : Math.sin(tDay * Math.PI);
 
   const morningColor = new THREE.Color(0x9bd6ee);
   const noonColor = new THREE.Color(0x7cc6f2);
   const duskColor = new THREE.Color(0xe68a5c);
   const nightColor = new THREE.Color(0x16213e);
 
-  if (hour < 12) {
+  if (hour < 5) {
+    skyColor.copy(nightColor);
+  } else if (hour < 6) {
+    skyColor.lerpColors(nightColor, morningColor, hour - 5);
+  } else if (hour < 12) {
     skyColor.lerpColors(morningColor, noonColor, THREE.MathUtils.clamp((hour - 6) / 6, 0, 1));
   } else if (hour < 17.5) {
     skyColor.lerpColors(noonColor, duskColor, THREE.MathUtils.clamp((hour - 15) / 2.5, 0, 1));
@@ -10834,7 +12646,8 @@ function updateSkyAndTime(dt) {
   sunLight.position.set(Math.cos(tDay * Math.PI) * 38, 12 + sunArc * 36, 20);
   hemiLight.intensity = 0.35 + sunArc * 0.55;
 
-  const nightFactor = THREE.MathUtils.clamp((hour - 17) / 2.5, 0, 1);
+  const nightFactor =
+    hour < 5 ? 1 : hour < 6 ? 1 - (hour - 5) : THREE.MathUtils.clamp((hour - 17) / 2.5, 0, 1);
   porchLight.intensity = 0.2 + nightFactor * 1.6;
   windowMat.emissiveIntensity = 0.2 + nightFactor * 0.9;
   lanternMat.emissiveIntensity = 0.35 + nightFactor * 1.0;
@@ -10865,20 +12678,25 @@ const CONTEXT_ICONS = {
   train_to_term: "🚆",
   enter_etec: "🏫",
   exit_etec: "🚪",
-  play_instruments: "🎸",
+  use_automation: "🤖",
+  shoot_ball: "🏀",
+  stove: "🍳",
   chem_bench: "🧪",
+  nurse_care: "🏥",
   pastel: "🥟",
+  station_shop: "🚉",
   term_sell: "💰",
   npc: "💬",
+  npc_knocked: "👅",
   door: "🏠",
   exit_room: "🚪",
   bed: "🛏️",
   manga: "📚",
   etec: "🎒",
   tame_jaguar: "❤️",
-  ride_jaguar_term: "🐆",
-  ride_jaguar_yard: "🐆",
-  pet_tamed_jaguar: "🐆",
+  tamed_jaguar_idle: "🐆",
+  tamed_jaguar_down: "💤",
+  mounted_jaguar: "🚉",
   talk_marcelo_yard: "🛡️",
   collect_animal: "🥛",
   pet_animal: "🐄",
@@ -10948,8 +12766,9 @@ function updateGame(dt) {
     const hoeSpeed = state.equippedTool === "hoe" ? (activeHoeData.speedBoost || 1.0) : 1.0;
     const baseSpeed = state.location === "room" ? 5.2 : 7.6;
     const vaselinaBoost = state.vaselinaTimer > 0 ? 1.65 : 1.0;
+    const rideBoost = state.ridingJaguar ? 1.58 : 1.0;
     const boostMult = (state.isCrazy ? 1.25 : 1.0) * (state.energyTimer > 0 ? 1.32 : 1.0) * vaselinaBoost * hoeSpeed;
-    const walkSpeed = baseSpeed * boostMult * analogScale;
+    const walkSpeed = baseSpeed * boostMult * rideBoost * analogScale;
 
     const farmBounds = getFarmBounds();
     let minX = farmBounds.minX;
@@ -10971,10 +12790,10 @@ function updateGame(dt) {
       maxZ = 8.4;
       activeObstacles = basementObstacles;
     } else if (state.location === "terminal") {
-      minX = -14.2;
-      maxX = 10.6;
-      minZ = -10.5;
-      maxZ = 11.5;
+      minX = -38.0;
+      maxX = 21.2;
+      minZ = -26.6;
+      maxZ = 24.0;
       activeObstacles = terminalObstacles;
     } else if (state.location === "etec") {
       minX = -33.2;
@@ -10986,7 +12805,7 @@ function updateGame(dt) {
       minX = -15.4;
       maxX = 15.4;
       minZ = -32.3;
-      maxZ = 32.3;
+      maxZ = 43.3;
       activeObstacles = etecInsideObstacles;
     }
 
@@ -11041,12 +12860,35 @@ function updateGame(dt) {
   player.pos.y = getFloorYAt(player.pos.x, player.pos.z) + player.jumpOffset;
 
   // Animate Macho Character & Title Skins
-  playerMesh.position.copy(player.pos);
+  const rideYOffset = state.ridingJaguar ? 0.62 : 0;
+  playerMesh.position.set(player.pos.x, player.pos.y + rideYOffset, player.pos.z);
   if (state.firstPerson) {
     player.facingYaw = state.camYaw + Math.PI;
   }
   playerMesh.rotation.y = player.facingYaw;
   playerMesh.rotation.z = state.isCrazy && !isAirfryerStatic ? Math.sin(state.animTime * 11) * 0.08 : 0;
+
+  if (state.ridingJaguar) {
+    const mountJag = getActiveTamedJaguar();
+    if (mountJag) {
+      mountJag.mesh.visible = true;
+      setJagTagVisible(mountJag, false);
+      mountJag.mesh.position.set(player.pos.x, player.pos.y, player.pos.z);
+      mountJag.mesh.rotation.y = player.facingYaw;
+      mountJag.mesh.rotation.z = 0;
+      const gallop = moving ? Math.sin(state.animTime * 15) * 0.68 : 0;
+      if (moving) mountJag.mesh.position.y += Math.abs(gallop) * 0.05;
+      if (mountJag.legs && mountJag.legs.length === 4) {
+        mountJag.legs[0].rotation.x = gallop;
+        mountJag.legs[3].rotation.x = gallop;
+        mountJag.legs[1].rotation.x = -gallop;
+        mountJag.legs[2].rotation.x = -gallop;
+      }
+      if (mountJag.tail) {
+        mountJag.tail.rotation.y = Math.sin(state.animTime * (moving ? 12 : 4)) * (moving ? 0.34 : 0.16);
+      }
+    }
+  }
 
   const {
     leftEye,
@@ -11057,15 +12899,44 @@ function updateGame(dt) {
     lPupil,
     rPupil,
     tongueGroup,
+    torsoMesh,
+    skinMat,
+    shirtMat,
+    chestDetail,
+    hatBrim,
+    hatCrown,
+    hatBand,
+    lambiHairTop,
+    bareChestGroup,
+    lambiEyeGroup,
+    lambiTongueGroup,
   } = playerMesh.userData;
   const rig = playerMesh.userData.activeRig || playerMesh.userData;
+  const lambi = !!state.isLambiHomem;
 
-  // Alterna rosto normal x rosto Coringando (olhos esbugalhados vermelhos + língua p/ fora!)
+  // Skin do Lambi Homem (sem camisa, sem chapéu, olhos vermelhos, língua gigante até o joelho!)
+  if (torsoMesh && skinMat && shirtMat) torsoMesh.material = lambi ? skinMat : shirtMat;
+  if (chestDetail) chestDetail.visible = !lambi;
+  if (bareChestGroup) bareChestGroup.visible = lambi;
+  if (hatBrim) hatBrim.visible = !lambi;
+  if (hatCrown) hatCrown.visible = !lambi;
+  if (hatBand) hatBand.visible = !lambi;
+  if (lambiHairTop) lambiHairTop.visible = lambi;
+  if (lambiEyeGroup) lambiEyeGroup.visible = lambi;
+  if (lambiTongueGroup) {
+    lambiTongueGroup.visible = lambi;
+    if (lambi) {
+      lambiTongueGroup.rotation.z = Math.sin(state.animTime * 9) * 0.14;
+      lambiTongueGroup.rotation.x = 0.08 + Math.sin(state.animTime * 14) * 0.1;
+    }
+  }
+
+  // Alterna rosto normal x Coringando x Lambi Homem
   if (leftEye && rightEye && crazyFaceGroup) {
-    leftEye.visible = !state.isCrazy;
-    rightEye.visible = !state.isCrazy;
-    crazyFaceGroup.visible = state.isCrazy;
-    if (state.isCrazy) {
+    leftEye.visible = !state.isCrazy && !lambi;
+    rightEye.visible = !state.isCrazy && !lambi;
+    crazyFaceGroup.visible = state.isCrazy && !lambi;
+    if (state.isCrazy && !lambi) {
       const bulge = 1.0 + Math.sin(state.animTime * 18) * 0.14;
       leftCrazyEye.scale.set(1.0, 1.0, bulge);
       rightCrazyEye.scale.set(1.0, 1.0, 2.0 - bulge);
@@ -11087,11 +12958,78 @@ function updateGame(dt) {
     state.swingTimer = Math.max(0, state.swingTimer - dt);
   }
   if (rig && !rig.isStatic && rig.leftArm && rig.rightArm && rig.leftLeg && rig.rightLeg) {
-    const { leftArm, rightArm, leftForearm, rightForearm, leftLeg, rightLeg } = rig;
+    const { leftArm, rightArm, leftForearm, rightForearm, leftLeg, rightLeg, leftShin, rightShin, modelRoot } = rig;
+    const gaitFreq = state.vaselinaTimer > 0 ? 15.8 : state.energyTimer > 0 ? 13.0 : state.isCrazy ? 14.2 : 10.6;
+    const phase = state.animTime * gaitFreq;
+    const stride = Math.sin(phase);
+    const liftL = Math.max(0, -Math.cos(phase));
+    const liftR = Math.max(0, Math.cos(phase));
+    const inAir = player.jumpOffset > 0.06;
+
+    // 1. PERNAS, JOELHOS & BALANÇO DO CORPO (nunca travam ao usar ferramenta andando!)
+    if (state.ridingJaguar) {
+      leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, -0.78, 14 * dt);
+      rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, -0.78, 14 * dt);
+      leftLeg.rotation.z = THREE.MathUtils.lerp(leftLeg.rotation.z, 0.24, 14 * dt);
+      rightLeg.rotation.z = THREE.MathUtils.lerp(rightLeg.rotation.z, -0.24, 14 * dt);
+      if (leftShin) leftShin.rotation.x = THREE.MathUtils.lerp(leftShin.rotation.x, 0.92, 14 * dt);
+      if (rightShin) rightShin.rotation.x = THREE.MathUtils.lerp(rightShin.rotation.x, 0.92, 14 * dt);
+      if (modelRoot) {
+        modelRoot.position.y = moving ? Math.abs(Math.sin(state.animTime * 15)) * 0.045 : 0;
+        modelRoot.rotation.x = THREE.MathUtils.lerp(modelRoot.rotation.x, moving ? 0.16 : 0.08, 10 * dt);
+      }
+    } else if (inAir) {
+      leftLeg.rotation.z = THREE.MathUtils.lerp(leftLeg.rotation.z, 0, 14 * dt);
+      rightLeg.rotation.z = THREE.MathUtils.lerp(rightLeg.rotation.z, 0, 14 * dt);
+      leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0.38, 14 * dt);
+      rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, -0.32, 14 * dt);
+      if (leftShin) leftShin.rotation.x = THREE.MathUtils.lerp(leftShin.rotation.x, 0.56, 14 * dt);
+      if (rightShin) rightShin.rotation.x = THREE.MathUtils.lerp(rightShin.rotation.x, 0.44, 14 * dt);
+      if (modelRoot) {
+        modelRoot.position.y = THREE.MathUtils.lerp(modelRoot.position.y, 0, 14 * dt);
+        modelRoot.rotation.x = THREE.MathUtils.lerp(modelRoot.rotation.x, 0.06, 10 * dt);
+      }
+    } else if (moving) {
+      leftLeg.rotation.z = THREE.MathUtils.lerp(leftLeg.rotation.z, 0, 14 * dt);
+      rightLeg.rotation.z = THREE.MathUtils.lerp(rightLeg.rotation.z, 0, 14 * dt);
+      const legAmp = state.vaselinaTimer > 0 ? 0.78 : state.isCrazy ? 0.82 : 0.66;
+      leftLeg.rotation.x = -stride * legAmp;
+      rightLeg.rotation.x = stride * legAmp;
+      if (leftShin) leftShin.rotation.x = liftL * 0.62 + 0.05;
+      if (rightShin) rightShin.rotation.x = liftR * 0.62 + 0.05;
+      if (modelRoot) {
+        modelRoot.position.y = Math.abs(stride) * (state.vaselinaTimer > 0 ? 0.085 : 0.062);
+        const targetLean = state.vaselinaTimer > 0 ? 0.14 : state.energyTimer > 0 ? 0.09 : 0.065;
+        modelRoot.rotation.x = THREE.MathUtils.lerp(modelRoot.rotation.x, targetLean, 10 * dt);
+      }
+    } else {
+      leftLeg.rotation.z = THREE.MathUtils.lerp(leftLeg.rotation.z, 0, 14 * dt);
+      rightLeg.rotation.z = THREE.MathUtils.lerp(rightLeg.rotation.z, 0, 14 * dt);
+      const idleLeg = state.isCrazy ? Math.sin(state.animTime * 9.5) * 0.14 : 0;
+      leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, idleLeg, 11 * dt);
+      rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, -idleLeg, 11 * dt);
+      if (leftShin) leftShin.rotation.x = THREE.MathUtils.lerp(leftShin.rotation.x, state.isCrazy ? 0.12 : 0, 11 * dt);
+      if (rightShin) rightShin.rotation.x = THREE.MathUtils.lerp(rightShin.rotation.x, state.isCrazy ? 0.12 : 0, 11 * dt);
+      if (modelRoot) {
+        modelRoot.position.y = Math.sin(state.animTime * 2.4) * 0.015;
+        modelRoot.rotation.x = THREE.MathUtils.lerp(modelRoot.rotation.x, 0, 10 * dt);
+      }
+    }
+
+    // 2. BRAÇOS, COTOVELOS & GOLPE DE FERRAMENTA (independentes das pernas!)
     if (state.swingTimer > 0) {
-      rightArm.rotation.x = -1.45 + Math.sin(state.swingTimer * 26) * 0.65;
-      if (leftForearm) leftForearm.rotation.x = 0;
-      if (rightForearm) rightForearm.rotation.x = -0.35;
+      rightArm.rotation.x = -1.48 + Math.sin(state.swingTimer * 26) * 0.68;
+      rightArm.rotation.z = -0.06;
+      if (rightForearm) rightForearm.rotation.x = -0.38;
+      if (moving) {
+        leftArm.rotation.x = stride * 0.54;
+        leftArm.rotation.z = 0.05;
+        if (leftForearm) leftForearm.rotation.x = -0.18 - Math.max(0, -stride) * 0.24;
+      } else {
+        leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0.12, 10 * dt);
+        leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0.06, 10 * dt);
+        if (leftForearm) leftForearm.rotation.x = THREE.MathUtils.lerp(leftForearm.rotation.x, -0.12, 10 * dt);
+      }
     } else if (state.isCrazy) {
       // Gesto "6-7" (67): ambos braços dobrados pra frente com palmas p/ cima subindo e descendo alternadamente!
       const pump67 = Math.sin(state.animTime * 9.5);
@@ -11099,49 +13037,49 @@ function updateGame(dt) {
       rightArm.rotation.x = -0.58 - pump67 * 0.36;
       leftArm.rotation.z = 0.14;
       rightArm.rotation.z = -0.14;
-      if (leftForearm) {
-        leftForearm.rotation.x = -1.35 + pump67 * 0.25;
-      }
-      if (rightForearm) {
-        rightForearm.rotation.x = -1.35 - pump67 * 0.25;
-      }
-      if (moving) {
-        const legSwing = Math.sin(state.animTime * 16) * 0.85;
-        leftLeg.rotation.x = -legSwing;
-        rightLeg.rotation.x = legSwing;
-      } else {
-        leftLeg.rotation.x = Math.sin(state.animTime * 9.5) * 0.16;
-        rightLeg.rotation.x = -Math.sin(state.animTime * 9.5) * 0.16;
-      }
-    } else if (player.jumpOffset > 0.08) {
-      leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -0.75, 14 * dt);
-      rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.75, 14 * dt);
-      leftArm.rotation.z = 0.22;
-      rightArm.rotation.z = -0.22;
-      if (leftForearm) leftForearm.rotation.x = -0.35;
-      if (rightForearm) rightForearm.rotation.x = -0.35;
-      leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0.32, 12 * dt);
-      rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, -0.28, 12 * dt);
+      if (leftForearm) leftForearm.rotation.x = -1.35 + pump67 * 0.25;
+      if (rightForearm) rightForearm.rotation.x = -1.35 - pump67 * 0.25;
+    } else if (inAir) {
+      leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, -0.78, 14 * dt);
+      rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.72, 14 * dt);
+      leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0.22, 12 * dt);
+      rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, -0.22, 12 * dt);
+      if (leftForearm) leftForearm.rotation.x = THREE.MathUtils.lerp(leftForearm.rotation.x, -0.35, 12 * dt);
+      if (rightForearm) rightForearm.rotation.x = THREE.MathUtils.lerp(rightForearm.rotation.x, -0.35, 12 * dt);
     } else if (moving) {
-      const swingSpeed = state.vaselinaTimer > 0 ? 17 : 12;
-      const swing = Math.sin(state.animTime * swingSpeed) * 0.65;
-      leftArm.rotation.x = swing;
-      rightArm.rotation.x = -swing * 0.7;
-      leftArm.rotation.z = 0;
-      rightArm.rotation.z = 0;
-      if (leftForearm) leftForearm.rotation.x = 0;
-      if (rightForearm) rightForearm.rotation.x = 0;
-      leftLeg.rotation.x = -swing;
-      rightLeg.rotation.x = swing;
+      const armAmp = state.vaselinaTimer > 0 ? 0.68 : 0.56;
+      leftArm.rotation.x = stride * armAmp;
+      rightArm.rotation.x = -stride * (armAmp * 0.85) - 0.12;
+      leftArm.rotation.z = 0.05;
+      rightArm.rotation.z = -0.05;
+      if (leftForearm) leftForearm.rotation.x = -0.16 - Math.max(0, -stride) * 0.28;
+      if (rightForearm) rightForearm.rotation.x = -0.24 - Math.max(0, stride) * 0.22;
     } else {
-      leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, 0, 10 * dt);
-      rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.2, 10 * dt);
-      leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0, 10 * dt);
-      rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, 0, 10 * dt);
-      if (leftForearm) leftForearm.rotation.x = THREE.MathUtils.lerp(leftForearm.rotation.x, 0, 10 * dt);
-      if (rightForearm) rightForearm.rotation.x = THREE.MathUtils.lerp(rightForearm.rotation.x, 0, 10 * dt);
-      leftLeg.rotation.x = THREE.MathUtils.lerp(leftLeg.rotation.x, 0, 10 * dt);
-      rightLeg.rotation.x = THREE.MathUtils.lerp(rightLeg.rotation.x, 0, 10 * dt);
+      const breath = Math.sin(state.animTime * 2.4) * 0.03;
+      leftArm.rotation.x = THREE.MathUtils.lerp(leftArm.rotation.x, breath, 10 * dt);
+      rightArm.rotation.x = THREE.MathUtils.lerp(rightArm.rotation.x, -0.18 - breath, 10 * dt);
+      leftArm.rotation.z = THREE.MathUtils.lerp(leftArm.rotation.z, 0.04, 10 * dt);
+      rightArm.rotation.z = THREE.MathUtils.lerp(rightArm.rotation.z, -0.04, 10 * dt);
+      if (leftForearm) leftForearm.rotation.x = THREE.MathUtils.lerp(leftForearm.rotation.x, -0.08, 10 * dt);
+      if (rightForearm) rightForearm.rotation.x = THREE.MathUtils.lerp(rightForearm.rotation.x, -0.16, 10 * dt);
+    }
+  }
+
+  // Segurar E (ou botão AGIR) na horta: ação contínua inteligente (arar / plantar / regar / colher em sequência!)
+  if ((keys["KeyE"] || touchActionHeld) && state.mode === "playing" && !state.isSleeping && state.location === "yard" && !state.jaguar.active) {
+    holdActionState.timer -= dt;
+    if (holdActionState.timer <= 0) {
+      holdActionState.timer = 0.13;
+      const holdCtx = findCurrentContext();
+      if (holdCtx && holdCtx.type === "plot" && holdCtx.plot) {
+        const res = interactWithPlot(holdCtx.plot, {
+          lockedAction: holdActionState.lockedMode,
+          silentToast: !!holdActionState.lockedMode,
+        });
+        if (res && !holdActionState.lockedMode) {
+          holdActionState.lockedMode = res;
+        }
+      }
     }
   }
 
@@ -11196,6 +13134,9 @@ function updateGame(dt) {
   let anyPlotChanged = false;
   plots.forEach((p) => {
     if (!p.unlocked) return;
+    if (p.popTimer > 0) {
+      p.popTimer = Math.max(0, p.popTimer - dt);
+    }
     if (p.stage === "growing") {
       if (state.isRainy || state.upgrades.autoWaterLevel >= 2) {
         p.waterTimer = Math.max(p.waterTimer, 12);
@@ -11208,25 +13149,47 @@ function updateGame(dt) {
         if (p.growth >= 1) {
           p.growth = 1;
           p.stage = "ready";
+          p.popTimer = 0.3;
           anyPlotChanged = true;
           spawnParticles(new THREE.Vector3(p.x, 0.7, p.z), 0xfacc15, 8);
         }
       }
       refreshPlotAppearance(p);
+      if (p.popTimer > 0) {
+        const popBoost = 1 + Math.sin((p.popTimer / 0.28) * Math.PI) * 0.22;
+        p.cropGroup.scale.setScalar(popBoost);
+      } else {
+        p.cropGroup.scale.setScalar(1);
+      }
+      p.cropGroup.rotation.z = Math.sin(state.animTime * 2.2 + p.index * 0.7) * 0.04;
+      if (p.dryDrop && p.dryDrop.visible) {
+        p.dryDrop.position.y = 1.08 + Math.sin(state.animTime * 4.4 + p.index) * 0.1;
+      }
     } else if (p.stage === "ready") {
+      if (p.popTimer > 0) {
+        const popBoost = 1 + Math.sin((p.popTimer / 0.3) * Math.PI) * 0.18;
+        p.cropGroup.scale.setScalar(popBoost);
+      } else {
+        p.cropGroup.scale.setScalar(1);
+      }
       p.readyHalo.rotation.y += 2.4 * dt;
       p.readyHalo.position.y = 1.4 + Math.sin(state.animTime * 3.5 + p.index) * 0.14;
       p.cropGroup.rotation.y = Math.sin(state.animTime * 1.6 + p.index) * 0.05;
+      p.cropGroup.rotation.z = Math.sin(state.animTime * 2.1 + p.index * 0.7) * 0.045;
+    } else {
+      p.cropGroup.scale.setScalar(1);
+      p.cropGroup.rotation.z = 0;
     }
   });
   if (anyPlotChanged) saveGame();
 
   // Animate Chickens & Dog Caramelo in the yard
   if (state.location === "yard") {
-    chickens.forEach((ch) => {
+    chickens.forEach((ch, idx) => {
       if (ch.wait > 0) {
         ch.wait -= dt;
-        ch.mesh.rotation.x = Math.sin(state.animTime * 9) > 0.6 ? 0.25 : 0;
+        ch.mesh.position.y = 0;
+        ch.mesh.rotation.x = Math.sin(state.animTime * 9 + idx) > 0.6 ? 0.25 : 0;
         if (ch.wait <= 0) {
           ch.target.set(
             THREE.MathUtils.clamp(ch.home.x + (Math.random() - 0.5) * 6.5, -29.4, -18.6),
@@ -11241,9 +13204,11 @@ function updateGame(dt) {
         const dist = Math.hypot(dx, dz);
         if (dist < 0.2) {
           ch.wait = 1.5 + Math.random() * 2.5;
+          ch.mesh.position.y = 0;
         } else {
           ch.mesh.position.x += (dx / dist) * 1.4 * dt;
           ch.mesh.position.z += (dz / dist) * 1.4 * dt;
+          ch.mesh.position.y = Math.abs(Math.sin(state.animTime * 14 + idx)) * 0.055;
           ch.mesh.rotation.y = Math.atan2(dx, dz);
         }
       }
@@ -11257,6 +13222,12 @@ function updateGame(dt) {
       }
       if (dogOrelha.wait > 0) {
         dogOrelha.wait -= dt;
+        dogOrelha.mesh.position.y = THREE.MathUtils.lerp(dogOrelha.mesh.position.y, 0, 12 * dt);
+        if (dogOrelha.legs) {
+          dogOrelha.legs.forEach((lg) => {
+            lg.rotation.x = THREE.MathUtils.lerp(lg.rotation.x, 0, 12 * dt);
+          });
+        }
         if (dogOrelha.wait <= 0) {
           dogOrelha.target.set(
             dogOrelha.home.x + (Math.random() - 0.5) * 5,
@@ -11274,6 +13245,14 @@ function updateGame(dt) {
           dogOrelha.mesh.position.x += (dx / dist) * 2.1 * dt;
           dogOrelha.mesh.position.z += (dz / dist) * 2.1 * dt;
           dogOrelha.mesh.rotation.y = Math.atan2(dx, dz);
+          const trot = Math.sin(state.animTime * 15) * 0.55;
+          dogOrelha.mesh.position.y = Math.abs(trot) * 0.05;
+          if (dogOrelha.legs && dogOrelha.legs.length === 4) {
+            dogOrelha.legs[0].rotation.x = trot;
+            dogOrelha.legs[3].rotation.x = trot;
+            dogOrelha.legs[1].rotation.x = -trot;
+            dogOrelha.legs[2].rotation.x = -trot;
+          }
         }
       }
     }
@@ -11306,9 +13285,19 @@ function updateGame(dt) {
       jaguarEntity.mesh.visible = true;
       const jpos = jaguarEntity.mesh.position;
 
-      // Escolhe alvo: animal mais próximo (prioridade!) ou o jogador
-      let targetPos = player.pos;
+      // Escolhe alvo: prioriza animais vivos; só foca no player se ele estiver perto dela!
+      const playerDist = distXZ(jpos, player.pos);
+      const tamedActive =
+        state.hasTamedJaguar &&
+        !state.tamedJaguarDown &&
+        !state.ridingJaguar &&
+        tamedJaguarEntity &&
+        tamedJaguarEntity.mesh.visible;
+      const tamedDist = tamedActive ? distXZ(jpos, tamedJaguarEntity.mesh.position) : Infinity;
+
+      let targetPos = null;
       let targetEnt = null;
+      let targetType = "roam";
       let bestAnimalDist = Infinity;
       livestockEntities.forEach((ent) => {
         if (!ent.animal.alive) return;
@@ -11318,11 +13307,34 @@ function updateGame(dt) {
           targetEnt = ent;
         }
       });
-      const playerDist = distXZ(jpos, player.pos);
-      if (targetEnt && bestAnimalDist < playerDist + 6) {
-        targetPos = targetEnt.mesh.position;
-      } else {
+
+      if (playerDist < 5.2 && (!targetEnt || bestAnimalDist > 2.4)) {
+        targetType = "player";
+        targetPos = player.pos;
         targetEnt = null;
+      } else if (tamedActive && tamedDist < 2.6 && (!targetEnt || bestAnimalDist > 2.4)) {
+        targetType = "tamed";
+        targetPos = tamedJaguarEntity.mesh.position;
+        targetEnt = null;
+      } else if (targetEnt) {
+        targetType = "animal";
+        targetPos = targetEnt.mesh.position;
+      } else if (tamedActive && tamedDist < 6.5) {
+        targetType = "tamed";
+        targetPos = tamedJaguarEntity.mesh.position;
+      } else if (playerDist < 7.5) {
+        targetType = "player";
+        targetPos = player.pos;
+      } else {
+        targetType = "roam";
+        if (!state.jaguar.roamTarget || distXZ(jpos, state.jaguar.roamTarget) < 1.6) {
+          const b = getFarmBounds();
+          state.jaguar.roamTarget = {
+            x: THREE.MathUtils.clamp((Math.random() - 0.5) * 34, b.minX + 2, b.maxX - 2),
+            z: THREE.MathUtils.clamp((Math.random() - 0.5) * 36, -24, 24),
+          };
+        }
+        targetPos = state.jaguar.roamTarget;
       }
 
       const dx = targetPos.x - jpos.x;
@@ -11373,29 +13385,41 @@ function updateGame(dt) {
         jaguarEntity.bodyMat.emissive.setHex(0x000000);
         jaguarEntity.bodyMat.emissiveIntensity = 0;
       }
-      // Ataque da Onça (em animais ou no Alyffer)
+      // Ataque da Onça (em animais, na onça domada ou no Alyffer)
       state.jaguar.attackCd = Math.max(0, state.jaguar.attackCd - dt);
-      if (dist <= 1.6 && state.jaguar.attackCd <= 0) {
-        state.jaguar.attackCd = 1.35;
-        sfx.play("roar");
-        if (targetEnt) {
-          const a = targetEnt.animal;
-          a.hp = Math.max(0, a.hp - 34);
-          spawnParticles(targetEnt.mesh.position.clone().add(new THREE.Vector3(0, 1.1, 0)), 0xef4444, 14);
-          if (a.hp <= 0) {
-            killAnimal(targetEnt);
+      if (targetType !== "roam" && state.jaguar.attackCd <= 0) {
+        const hitAnimal = targetType === "animal" && targetEnt && dist <= 1.75;
+        const hitTamed = !hitAnimal && tamedActive && tamedDist <= 2.35 && (targetType === "tamed" || tamedDist <= playerDist);
+        const hitPlayer = !hitAnimal && !hitTamed && targetType === "player" && playerDist <= 1.85;
+        if (hitAnimal || hitTamed || hitPlayer) {
+          state.jaguar.attackCd = 1.35;
+          sfx.play("roar");
+          if (hitAnimal) {
+            const a = targetEnt.animal;
+            a.hp = Math.max(0, a.hp - 48);
+            spawnParticles(targetEnt.mesh.position.clone().add(new THREE.Vector3(0, 1.1, 0)), 0xef4444, 14);
+            if (a.hp <= 0) {
+              killAnimal(targetEnt);
+            } else {
+              const info = ANIMAL_TYPES[a.type];
+              showToast("🐆", `ONÇA ATACANDO ${a.name.toUpperCase()}!`, `${info.emoji} ${a.name}: ${a.hp}/${info.maxHp} HP • Defenda com a Enxada!`);
+            }
+          } else if (hitTamed) {
+            damageTamedJaguar(28);
           } else {
-            const info = ANIMAL_TYPES[a.type];
-            showToast("🐆", `ONÇA ATACANDO ${a.name.toUpperCase()}!`, `${info.emoji} ${a.name}: ${a.hp}/${info.maxHp} HP • Defenda com a Enxada!`);
-          }
-        } else {
-          state.playerHp = Math.max(0, state.playerHp - 25);
-          spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xef4444, 16);
-          showToast("🐆", "ARRANHÃO DA ONÇA!", `Você perdeu 25 HP! Vida: ${state.playerHp}/${state.maxHp} • Use a Enxada (R)!`);
-          updateHUD();
-          if (state.playerHp <= 0) {
-            triggerPlayerDeath("jaguar");
-            return;
+            if (state.ridingJaguar) {
+              damageTamedJaguar(24);
+              state.playerHp = Math.max(0, state.playerHp - 12);
+            } else {
+              state.playerHp = Math.max(0, state.playerHp - 25);
+              spawnParticles(player.pos.clone().add(new THREE.Vector3(0, 1.2, 0)), 0xef4444, 16);
+              showToast("🐆", "ARRANHÃO DA ONÇA!", `Você perdeu 25 HP! Vida: ${state.playerHp}/${state.maxHp} • Use a Enxada (R)!`);
+            }
+            updateHUD();
+            if (state.playerHp <= 0) {
+              triggerPlayerDeath("jaguar");
+              return;
+            }
           }
         }
       }
@@ -11431,13 +13455,20 @@ function updateGame(dt) {
       if (md > (running ? 1.8 : 0.3)) {
         mm.mesh.position.x += (mdx / md) * mSpeed * dt;
         mm.mesh.position.z += (mdz / md) * mSpeed * dt;
+        mm.mesh.position.y = Math.abs(Math.sin(state.animTime * (running ? 15 : 9))) * 0.05;
         mm.mesh.rotation.y = Math.atan2(mdx, mdz);
-        const sw = Math.sin(state.animTime * (running ? 15 : 9)) * 0.6;
+        const sw = Math.sin(state.animTime * (running ? 15 : 9)) * 0.62;
         mm.lLeg.rotation.x = sw;
         mm.rLeg.rotation.x = -sw;
-        mm.lArm.rotation.x = -sw;
-      } else if (!running && mm.wait <= 0) {
-        mm.wait = 2 + Math.random() * 3;
+        mm.lArm.rotation.x = -sw * 0.85;
+      } else {
+        mm.mesh.position.y = THREE.MathUtils.lerp(mm.mesh.position.y, 0, 10 * dt);
+        mm.lLeg.rotation.x = THREE.MathUtils.lerp(mm.lLeg.rotation.x, 0, 10 * dt);
+        mm.rLeg.rotation.x = THREE.MathUtils.lerp(mm.rLeg.rotation.x, 0, 10 * dt);
+        mm.lArm.rotation.x = THREE.MathUtils.lerp(mm.lArm.rotation.x, 0, 10 * dt);
+        if (!running && mm.wait <= 0) {
+          mm.wait = 2 + Math.random() * 3;
+        }
       }
       mm.attackCd = Math.max(0, mm.attackCd - dt);
       if (mm.swingTimer > 0) {
@@ -11456,39 +13487,76 @@ function updateGame(dt) {
       }
     }
 
-    // Onça Domada: segue o Alyffer e defende a fazenda
+    // Onça Domada: segue o Alyffer e defende a fazenda (ou fica caída/inativa se HP zerar)
     if (tamedJaguarEntity && state.hasTamedJaguar) {
       const tj = tamedJaguarEntity;
       tj.mesh.visible = true;
-      let tgt = player.pos;
-      let hunting = false;
-      if (state.jaguar.active && jaguarEntity) {
-        tgt = jaguarEntity.mesh.position;
-        hunting = true;
-      }
-      const tdx = tgt.x - tj.mesh.position.x;
-      const tdz = tgt.z - tj.mesh.position.z;
-      const td = Math.hypot(tdx, tdz) || 0.01;
-      const followDist = hunting ? 1.7 : 3.2;
-      if (td > followDist) {
-        const sp = hunting ? 6.2 : td > 8 ? 6.5 : 3.6;
-        tj.mesh.position.x += (tdx / td) * sp * dt;
-        tj.mesh.position.z += (tdz / td) * sp * dt;
-        tj.mesh.rotation.y = Math.atan2(tdx, tdz);
-      }
-      tj.attackCd = Math.max(0, tj.attackCd - dt);
-      if (hunting && td <= 2.0 && tj.attackCd <= 0 && state.jaguar.active) {
-        tj.attackCd = 1.25;
-        sfx.play("roar");
-        damageJaguar(22, tj.mesh.position, 2.0);
-        if (state.jaguar.hp <= 0) defeatJaguar("tamed");
-        updateHUD();
+      if (state.tamedJaguarDown) {
+        tj.mesh.rotation.z = Math.PI / 2;
+        tj.mesh.position.y = 0.45;
+        for (const lg of tj.legs || []) lg.rotation.x = 0;
+        if (tj.tail) tj.tail.rotation.y = 0;
+        state.tamedJaguarRecoverTimer = Math.max(0, state.tamedJaguarRecoverTimer - dt);
+        if (state.tamedJaguarRecoverTimer <= 0) {
+          state.tamedJaguarDown = false;
+          state.tamedJaguarHp = Math.round((state.tamedJaguarMaxHp || 120) * 0.5);
+          tj.mesh.rotation.z = 0;
+          tj.mesh.position.y = 0;
+          updateHUD();
+          showToast("🐆", "ONÇA SE RECUPEROU!", `Ela levantou com ${state.tamedJaguarHp}/${state.tamedJaguarMaxHp || 120} HP!`);
+        }
+      } else if (!state.ridingJaguar) {
+        setJagTagVisible(tj, true);
+        tj.mesh.rotation.z = 0;
+        let tgt = player.pos;
+        let hunting = false;
+        if (state.jaguar.active && jaguarEntity) {
+          tgt = jaguarEntity.mesh.position;
+          hunting = true;
+        }
+        const tdx = tgt.x - tj.mesh.position.x;
+        const tdz = tgt.z - tj.mesh.position.z;
+        const td = Math.hypot(tdx, tdz) || 0.01;
+        const followDist = hunting ? 1.7 : 3.2;
+        if (td > followDist) {
+          const sp = hunting ? 6.2 : td > 8 ? 6.5 : 3.6;
+          tj.mesh.position.x += (tdx / td) * sp * dt;
+          tj.mesh.position.z += (tdz / td) * sp * dt;
+          tj.mesh.rotation.y = Math.atan2(tdx, tdz);
+          const gallop = Math.sin(state.animTime * (sp > 5 ? 15 : 10)) * 0.62;
+          tj.mesh.position.y = Math.abs(gallop) * 0.05;
+          if (tj.legs && tj.legs.length === 4) {
+            tj.legs[0].rotation.x = gallop;
+            tj.legs[3].rotation.x = gallop;
+            tj.legs[1].rotation.x = -gallop;
+            tj.legs[2].rotation.x = -gallop;
+          }
+          if (tj.tail) tj.tail.rotation.y = Math.sin(state.animTime * 11) * 0.32;
+        } else {
+          tj.mesh.position.y = THREE.MathUtils.lerp(tj.mesh.position.y, 0, 10 * dt);
+          if (tj.legs) {
+            tj.legs.forEach((lg) => {
+              lg.rotation.x = THREE.MathUtils.lerp(lg.rotation.x, 0, 10 * dt);
+            });
+          }
+          if (tj.tail) tj.tail.rotation.y = Math.sin(state.animTime * 3.5) * 0.18;
+        }
+        tj.attackCd = Math.max(0, tj.attackCd - dt);
+        if (hunting && td <= 2.0 && tj.attackCd <= 0 && state.jaguar.active) {
+          tj.attackCd = 1.25;
+          sfx.play("roar");
+          damageJaguar(22, tj.mesh.position, 2.0);
+          if (state.jaguar.hp <= 0) defeatJaguar("tamed");
+          updateHUD();
+        }
       }
     }
 
     // Animais pastando
     livestockEntities.forEach((ent) => {
       const a = ent.animal;
+      if (ent.woolGroup) ent.woolGroup.visible = !a.sheared;
+      ent.mesh.scale.setScalar(a.isBaby ? 0.65 : 1);
       ent.readyHalo.visible = !!a.hasProduct;
       if (a.hasProduct) {
         ent.readyHalo.rotation.y += 2.4 * dt;
@@ -11511,6 +13579,16 @@ function updateGame(dt) {
       }
       if (ent.wait > 0) {
         ent.wait -= dt;
+        ent.legs.forEach((leg) => {
+          leg.rotation.x = THREE.MathUtils.lerp(leg.rotation.x, 0, 10 * dt);
+        });
+        if (ent.head) {
+          ent.head.rotation.x = THREE.MathUtils.lerp(
+            ent.head.rotation.x,
+            0.16 + Math.sin(state.animTime * 2.6 + a.id) * 0.1,
+            6 * dt
+          );
+        }
         if (ent.wait <= 0) {
           ent.target.set(
             pen.minX + Math.random() * (pen.maxX - pen.minX),
@@ -11531,7 +13609,8 @@ function updateGame(dt) {
           a.x = ent.mesh.position.x;
           a.z = ent.mesh.position.z;
           ent.mesh.rotation.y = Math.atan2(adx, adz);
-          const lc = Math.sin(state.animTime * (fleeing ? 14 : 7)) * 0.4;
+          if (ent.head) ent.head.rotation.x = THREE.MathUtils.lerp(ent.head.rotation.x, 0, 8 * dt);
+          const lc = Math.sin(state.animTime * (fleeing ? 14 : 7)) * 0.45;
           ent.legs.forEach((leg, i) => (leg.rotation.x = i % 3 === 0 ? lc : -lc));
         }
       }
@@ -11545,6 +13624,102 @@ function updateGame(dt) {
     }
   }
 
+  // Física da Bola de Basquete 3D na Quadra Aberta da ETECAMP (drible + arremesso na cesta isolada!)
+  if (state.location === "etec" && etecBall && etecBall.mesh) {
+    const bPos = etecBall.mesh.position;
+    if (etecBall.scoredCd > 0) etecBall.scoredCd = Math.max(0, etecBall.scoredCd - dt);
+    const groundY = bPos.x < 15.5 ? 0.385 : 0.405;
+    const bdx = bPos.x - player.pos.x;
+    const bdz = bPos.z - player.pos.z;
+    const bDist = Math.hypot(bdx, bdz);
+    if (bDist < 0.88 && bPos.y < groundY + 0.55 && player.jumpOffset < 0.65) {
+      const nx = bDist > 0.02 ? bdx / bDist : Math.sin(player.facingYaw);
+      const nz = bDist > 0.02 ? bdz / bDist : Math.cos(player.facingYaw);
+      const pushSpeed = moving ? (state.vaselinaTimer > 0 ? 10.5 : 7.5) : 3.8;
+      if (Math.hypot(etecBall.vx, etecBall.vz) < 1.8) sfx.play("phone_tap");
+      etecBall.vx = nx * pushSpeed;
+      etecBall.vz = nz * pushSpeed;
+      etecBall.vy = Math.max(etecBall.vy, moving ? 2.5 : 1.4);
+      bPos.x = player.pos.x + nx * 0.90;
+      bPos.z = player.pos.z + nz * 0.90;
+    }
+
+    const speedH = Math.hypot(etecBall.vx, etecBall.vz);
+    const airborne = bPos.y > groundY + 0.005 || Math.abs(etecBall.vy) > 0.04;
+    if (speedH > 0.02 || airborne) {
+      if (airborne) {
+        etecBall.vy -= 18.5 * dt;
+        bPos.y += etecBall.vy * dt;
+      }
+      bPos.x += etecBall.vx * dt;
+      bPos.z += etecBall.vz * dt;
+      etecBall.mesh.rotation.x += etecBall.vz * dt * 3.1;
+      etecBall.mesh.rotation.z -= etecBall.vx * dt * 3.1;
+
+      if (bPos.y <= groundY) {
+        bPos.y = groundY;
+        if (etecBall.vy < -1.15) {
+          etecBall.vy = -etecBall.vy * 0.56;
+          sfx.play("phone_tap");
+        } else {
+          etecBall.vy = 0;
+        }
+        const damp = Math.exp(-2.1 * dt);
+        etecBall.vx *= damp;
+        etecBall.vz *= damp;
+        if (speedH < 0.05) {
+          etecBall.vx = 0;
+          etecBall.vz = 0;
+        }
+      }
+
+      // Colisão leve com a tabela branca da cesta isolada
+      if (bPos.x < 13.55 && bPos.x > 13.1 && Math.abs(bPos.z - ETEC_HOOP_RIM.z) < 0.96 && bPos.y > 2.9 && bPos.y < 4.25) {
+        bPos.x = 13.55;
+        etecBall.vx = Math.abs(etecBall.vx) * 0.55;
+      }
+
+      // Cesta! Bola descendo pelo aro da cesta isolada ao lado da janela
+      const rimDist = Math.hypot(bPos.x - ETEC_HOOP_RIM.x, bPos.z - ETEC_HOOP_RIM.z);
+      if (etecBall.vy < 0 && etecBall.scoredCd <= 0 && rimDist < 0.48 && Math.abs(bPos.y - ETEC_HOOP_RIM.y) < 0.52) {
+        etecBall.scoredCd = 1.6;
+        etecBall.vx = 0.85;
+        etecBall.vz *= 0.2;
+        sfx.play("goal");
+        spawnParticles(ETEC_HOOP_RIM.clone(), 0xf97316, 24);
+        spawnParticles(ETEC_HOOP_RIM.clone(), 0xfacc15, 16);
+        spawnFloatingText(ETEC_HOOP_RIM, "🏀 CESTA!!", "#f97316");
+        if (!state.goalScoredToday) {
+          state.goalScoredToday = true;
+          state.money += 10;
+          state.insanity = Math.max(0, state.insanity - 10);
+          if (state.insanity < 100) state.isCrazy = false;
+          showDayBanner("🏀 CESTA DE PLACA NA QUADRA DA ETECAMP! +R$ 10 & -10% INSANIDADE!");
+          showToast("🏀", "CHUÁ NA CESTA!", "Você acertou a cesta isolada! Ganhou R$ 10 e relaxou -10% da mente!");
+          updateHUD();
+          saveGame();
+        } else {
+          showToast("🏀", "CHUÁ!!", "Mais uma bola na cesta isolada da ETECAMP!");
+        }
+      }
+
+      if (bPos.x < 11.7) {
+        bPos.x = 11.7;
+        etecBall.vx = Math.abs(etecBall.vx) * 0.68;
+      } else if (bPos.x > 30.6) {
+        bPos.x = 30.6;
+        etecBall.vx = -Math.abs(etecBall.vx) * 0.68;
+      }
+      if (bPos.z < -3.05) {
+        bPos.z = -3.05;
+        etecBall.vz = Math.abs(etecBall.vz) * 0.68;
+      } else if (bPos.z > 15.45) {
+        bPos.z = 15.45;
+        etecBall.vz = -Math.abs(etecBall.vz) * 0.68;
+      }
+    }
+  }
+
   // Menino Maluquinho no Terminal à Noite (>= 18:30): persegue e atormenta o Alyffer!
   const MALUQUINHO_LINES = [
     "OI MOÇO!! TEM JOGUINHO NO SEU CELULAR?! HEHEHE!!",
@@ -11554,12 +13729,12 @@ function updateGame(dt) {
     "PÓ-PÓ-PÓ!! TÔ TE PERSEGUINDO ATÉ A LINHA 7-RUBI!!",
     "VOCÊ É O MACHO DE PAU ARCADO?! DEIXA EU MEXER NA SUA CESTA!!",
   ];
-  const isNightTerminal = state.location === "terminal" && state.dayMinutes >= 18.5 * 60;
+  const isNightTerminal = state.location === "terminal" && (state.dayMinutes >= 18.5 * 60 || state.dayMinutes < 5.5 * 60);
   if (isNightTerminal && maluquinhoEntity) {
     if (!state.maluquinho.active) {
       state.maluquinho.active = true;
-      const sx = player.pos.x > -4 ? -11.5 : 4.0;
-      const sz = player.pos.z > 2 ? -2.0 : 7.5;
+      const sx = player.pos.x > -4 ? -15.5 : 4.5;
+      const sz = player.pos.z > 2 ? -5.0 : 9.5;
       maluquinhoEntity.mesh.position.set(sx, getFloorYAt(sx, sz), sz);
       maluquinhoEntity.mesh.visible = true;
       state.maluquinho.tormentCd = 1.2;
@@ -11578,8 +13753,8 @@ function updateGame(dt) {
     const dist = Math.hypot(dx, dz) || 0.01;
     const chaseSpeed = 5.4;
     if (dist > 1.35) {
-      const nx = THREE.MathUtils.clamp(mx + (dx / dist) * chaseSpeed * dt, -13.6, 10.2);
-      const nz = THREE.MathUtils.clamp(mz + (dz / dist) * chaseSpeed * dt, -9.8, 10.8);
+      const nx = THREE.MathUtils.clamp(mx + (dx / dist) * chaseSpeed * dt, -34.0, 20.0);
+      const nz = THREE.MathUtils.clamp(mz + (dz / dist) * chaseSpeed * dt, -25.0, 21.0);
       maluquinhoEntity.mesh.position.set(nx, getFloorYAt(nx, nz), nz);
     }
     maluquinhoEntity.mesh.rotation.y = Math.atan2(dx, dz);
@@ -11674,13 +13849,19 @@ function updateAmbient(dt) {
     ceilingFanMesh.rotation.y += 3.2 * dt;
   }
 
-  if (state.location === "etec_inside" && classroomFans.length > 0) {
+  if (state.location === "etec_inside") {
     for (let i = 0; i < classroomFans.length; i++) {
       classroomFans[i].rotation.x += 12 * dt;
     }
+    for (let i = 0; i < etecNpcs.length; i++) {
+      const npc = etecNpcs[i];
+      const down = isNpcKnockedOut(npc.id);
+      npc.mesh.rotation.z = THREE.MathUtils.lerp(npc.mesh.rotation.z, down ? Math.PI / 2 : 0, Math.min(1, 10 * dt));
+      npc.mesh.position.y = THREE.MathUtils.lerp(npc.mesh.position.y, down ? 0.42 : 0, Math.min(1, 10 * dt));
+    }
   }
 
-  // Portão automático do estacionamento da ETECAMP + teto da Sala de Instrumentos
+  // Portão automático do estacionamento da ETECAMP + Sala de Automação (teto, robô e esteira!)
   if (state.location === "etec") {
     if (etecAutoGateMesh && etecAutoGateCollider) {
       const distGate = Math.hypot(player.pos.x - -24.0, player.pos.z - 20.0);
@@ -11696,10 +13877,23 @@ function updateAmbient(dt) {
         etecAutoGateLightMat.emissive.setHex(isOpen ? 0x22c55e : 0xef4444);
       }
     }
-    if (etecInstRoofGroup) {
-      const insideInst =
+    if (etecAutoRoofGroup) {
+      const insideAuto =
         player.pos.x >= 16.2 && player.pos.x <= 32.8 && player.pos.z >= -27.2 && player.pos.z <= -14.2;
-      etecInstRoofGroup.visible = !insideInst;
+      etecAutoRoofGroup.visible = !insideAuto;
+    }
+    if (etecRobotPivot && etecRobotArm) {
+      etecRobotPivot.rotation.y = Math.sin(state.animTime * 1.25) * 1.15;
+      etecRobotArm.rotation.x = 0.16 + Math.sin(state.animTime * 2.5) * 0.24;
+    }
+    if (etecConveyorBoxes.length > 0) {
+      for (let i = 0; i < etecConveyorBoxes.length; i++) {
+        const crate = etecConveyorBoxes[i];
+        crate.position.z += 1.35 * dt;
+        if (crate.position.z > -17.9) {
+          crate.position.z = -23.6;
+        }
+      }
     }
   }
 
@@ -11801,6 +13995,21 @@ function updateCamera(dt, immediate = false) {
     );
   }
   camera.lookAt(target);
+  if (state.location === "terminal" && terminalRoofSlabs.length) {
+    for (const slab of terminalRoofSlabs) {
+      slab.visible = true;
+      const mat = slab.userData.baseMat;
+      if (!mat) continue;
+      const shouldFade = !state.firstPerson && camera.position.y > (slab.userData.cutY || 7.0);
+      if (slab.userData.faded !== shouldFade) {
+        slab.userData.faded = shouldFade;
+        mat.transparent = shouldFade;
+        mat.opacity = shouldFade ? 0.52 : 1.0;
+        mat.depthWrite = !shouldFade;
+        mat.needsUpdate = true;
+      }
+    }
+  }
 }
 
 // Initialize farm state

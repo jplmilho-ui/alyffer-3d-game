@@ -811,13 +811,15 @@ html, body {
 .seed-hotbar {
   pointer-events: auto;
   display: flex;
-  gap: 6px;
+  gap: 4px;
   background: var(--panel);
   border: 1px solid var(--border);
   backdrop-filter: blur(10px);
-  padding: 6px;
+  padding: 5px;
   border-radius: 16px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .seed-slot {
@@ -825,9 +827,10 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
+  flex-shrink: 0;
   gap: 1px;
-  min-width: 78px;
-  padding: 7px 9px;
+  min-width: 62px;
+  padding: 5px 6px;
   border-radius: 11px;
   border: 1.5px solid transparent;
   background: rgba(255, 255, 255, 0.04);
@@ -2405,4 +2408,77 @@ kbd {
   .phone-speaker-notch {
     display: none;
   }
+}
+
+/* Floating 3D Feedback Popups & Hot Market Seed Badge */
+.floating-feedback-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 18;
+  overflow: hidden;
+}
+
+.float-pop {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(10, 20, 14, 0.86);
+  border: 1.5px solid rgba(74, 222, 128, 0.75);
+  color: #f8fafc;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 0.86rem;
+  font-weight: 700;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+  animation: floatPopRise 0.95s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes floatPopRise {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -20%) scale(0.75);
+  }
+  18% {
+    opacity: 1;
+    transform: translate(-50%, -65%) scale(1.06);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -185%) scale(0.96);
+  }
+}
+
+.seed-slot {
+  position: relative;
+}
+
+.seed-slot.hot-today {
+  border-color: #f97316;
+  box-shadow: 0 0 12px rgba(249, 115, 22, 0.35);
+}
+
+.seed-hot-tag {
+  position: absolute;
+  top: -7px;
+  right: -5px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ea580c, #facc15);
+  color: #09090b;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+}
+
+.hud-pill.lambi-pill {
+  border-color: rgba(244, 63, 94, 0.75);
+  background: rgba(136, 19, 55, 0.85);
+  box-shadow: 0 0 18px rgba(244, 63, 94, 0.4);
+}
+
+.hud-pill.lambi-pill strong {
+  color: #fda4af;
 }
