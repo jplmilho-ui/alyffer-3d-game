@@ -1,0 +1,1567 @@
+/* ============================================================================
+   TEMA 2: TÁBUA & PLACA ESMALTADA — IDENTIDADE VISUAL RÚSTICA COMPLETA (PAU ARCADO)
+   Moldura de curral (#6b4427) + 4 pregos oxidados + Linho quente (#e4d6bb)
+   + Placas esmaltadas verde-escuro (#1d4430) + Terracota (#b54524) + Botões 3D
+   Zero blur • Zero neon • Fontes Rokkitt & Arvo
+   ============================================================================ */
+
+:root {
+  --bg: #1e2819;
+  --panel: #e4d6bb;
+  --panel-light: #f2e8d3;
+  --border: #8a6c44;
+  --text: #2f2014;
+  --muted: #5c422a;
+  --green: #3f7a49;
+  --green-deep: #1d4430;
+  --gold: #d8c28a;
+  --amber: #b8732d;
+  --blue: #2d5d7a;
+  --danger: #b54524;
+
+  --wood-dark: #351e0f;
+  --wood-mid: #6b4427;
+  --wood-light: #774d2d;
+  --wood-deep: #5b381e;
+  --wood-slot: #7c5636;
+  --wood-slot-filled: #8f6541;
+  --wood-slot-border: #492e18;
+  --linen-top: #eadfc8;
+  --linen-bot: #dccaa8;
+  --linen-card: #f2e8d3;
+  --linen-recess: #d5c19c;
+  --enamel-top: #245139;
+  --enamel-bot: #173826;
+  --enamel-cream: #f0e6cc;
+  --enamel-outline: #132c1e;
+  --terracotta: #b54524;
+  --terracotta-dark: #69210c;
+}
+
+html, body {
+  font-family: "Arvo", Georgia, serif;
+  color: var(--text);
+}
+
+h1, h2, h3,
+.farmer-name,
+.row-title,
+.shop-section-title,
+.inv-section-label,
+.goals-mini-head,
+.controls-help-head,
+.badge-mini,
+.hud-label {
+  font-family: "Rokkitt", Georgia, serif;
+}
+
+button, input, select, textarea {
+  font-family: "Arvo", Georgia, serif;
+}
+
+/* ============================================================================
+   1. OVERLAYS & PAINÉIS COM MOLDURA DE MADEIRA + 4 PREGOS + LINHO QUENTE
+   ============================================================================ */
+.overlay {
+  background: rgba(16, 20, 13, 0.48);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.panel,
+.sleep-card {
+  position: relative;
+  background-color: var(--wood-mid);
+  background-image:
+    repeating-linear-gradient(180deg, rgba(38, 20, 8, 0.25) 0px, rgba(38, 20, 8, 0.25) 2px, transparent 2px, transparent 44px),
+    repeating-linear-gradient(90deg, rgba(255, 224, 180, 0.04) 0px, transparent 3px, rgba(0, 0, 0, 0.06) 11px),
+    linear-gradient(135deg, var(--wood-light) 0%, var(--wood-deep) 50%, var(--wood-mid) 100%);
+  border: 4px solid var(--wood-dark);
+  border-radius: 6px;
+  padding: 18px;
+  color: var(--text);
+  box-shadow:
+    inset 0 2px 0 rgba(255, 215, 165, 0.28),
+    inset 0 -4px 0 rgba(25, 12, 4, 0.55),
+    0 16px 28px rgba(0, 0, 0, 0.58);
+  overflow: visible !important;
+  max-height: none;
+}
+
+.panel.wide {
+  width: min(740px, 100%);
+  text-align: left;
+}
+
+.panel.pause-panel {
+  width: min(520px, 100%);
+  max-width: 520px;
+}
+
+/* 4 Pregos / Rebites oxidados de curral nos cantos */
+.tabua-nail {
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #a79e92 0%, #5c5349 52%, #2a241e 100%);
+  border: 1.5px solid #211a14;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.65), inset 0 1px 1px rgba(255, 255, 255, 0.35);
+  z-index: 12;
+  pointer-events: none;
+}
+
+.tabua-nail.tl { top: 7px; left: 7px; }
+.tabua-nail.tr { top: 7px; right: 7px; }
+.tabua-nail.bl { bottom: 7px; left: 7px; }
+.tabua-nail.br { bottom: 7px; right: 7px; }
+
+/* Corpo interno em Linho Quente encaixado na moldura de madeira */
+.panel-linen {
+  position: relative;
+  background-color: var(--panel);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23f)' opacity='0.06'/%3E%3C/svg%3E"),
+    linear-gradient(180deg, var(--linen-top) 0%, var(--linen-bot) 100%);
+  border: 3px solid #412714;
+  border-radius: 3px;
+  box-shadow: inset 0 4px 10px rgba(45, 26, 12, 0.35);
+  padding: 18px 20px 20px;
+  color: var(--text);
+}
+
+.panel.wide > .panel-linen,
+.panel.pause-panel > .panel-linen {
+  max-height: 84dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.panel-linen::-webkit-scrollbar {
+  width: 8px;
+}
+.panel-linen::-webkit-scrollbar-track {
+  background: rgba(65, 39, 20, 0.14);
+}
+.panel-linen::-webkit-scrollbar-thumb {
+  background: #8a6c44;
+  border-radius: 3px;
+  border: 1px solid #492e18;
+}
+
+/* Cabeçalho estilo Placa Esmaltada Verde-Escuro Vintage */
+.modal-header {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  color: #f4ebd5;
+  padding: 14px 16px;
+  border-radius: 6px;
+  border: 3px solid var(--enamel-cream);
+  outline: 3px solid var(--enamel-outline);
+  box-shadow: 0 5px 0 rgba(36, 22, 11, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.18);
+  margin: 0 0 16px;
+  align-items: center;
+}
+
+.modal-header .badge-mini {
+  color: #d8c28a;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.modal-header h2 {
+  font-family: "Rokkitt", Georgia, serif;
+  font-weight: 800;
+  font-size: clamp(1.55rem, 3.2vw, 2rem);
+  line-height: 1.08;
+  color: #fcf7e8;
+  text-shadow: 0 2px 0 #0e2217;
+  margin: 0;
+}
+
+.modal-header h2 kbd {
+  background: rgba(252, 247, 232, 0.18);
+  color: #fcf7e8;
+  border: 1px solid rgba(240, 230, 204, 0.55);
+  box-shadow: none;
+}
+
+/* Botão Fechar (X) & Botão Ajuda (?) no cabeçalho esmaltado */
+.close-x {
+  width: 38px;
+  height: 38px;
+  border-radius: 5px;
+  background: #9f3524;
+  color: #fcf5e6;
+  border: 2px solid var(--enamel-cream);
+  box-shadow: 0 3px 0 #5b1b11;
+  font-family: "Arvo", serif;
+  font-size: 1.05rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.close-x:hover {
+  background: #b54524;
+}
+
+.close-x:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #5b1b11;
+}
+
+.close-x.inv-help-btn {
+  background: linear-gradient(180deg, #c98630 0%, #9b5c1a 100%);
+  color: #fcf7e8;
+  border: 2px solid var(--enamel-cream);
+  box-shadow: 0 3px 0 #58310d;
+  font-family: "Rokkitt", serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.close-x.inv-help-btn:hover {
+  background: linear-gradient(180deg, #d8963c 0%, #ab6820 100%);
+}
+
+/* Cabeçalhos diretos (Tela Inicial, Pausa, Sono, Morte) */
+.panel h1,
+.pause-panel h2,
+.sleep-card h2,
+.death-panel h2 {
+  font-family: "Rokkitt", Georgia, serif;
+  font-weight: 800;
+}
+
+.pause-panel .panel-linen > h2,
+.sleep-card .panel-linen > h2 {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  color: #fcf7e8;
+  padding: 11px 16px;
+  border-radius: 6px;
+  border: 3px solid var(--enamel-cream);
+  outline: 3px solid var(--enamel-outline);
+  box-shadow: 0 4px 0 rgba(36, 22, 11, 0.42);
+  text-shadow: 0 2px 0 #0e2217;
+  margin-bottom: 14px;
+  font-size: 1.65rem;
+}
+
+.death-overlay {
+  background: rgba(38, 12, 8, 0.65);
+}
+
+.death-panel {
+  border-color: #4a150b;
+}
+
+.death-panel .panel-linen > h2 {
+  background: linear-gradient(180deg, #b54524 0%, #832713 100%);
+  color: #fff6e6;
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 3px solid var(--enamel-cream);
+  outline: 3px solid #4a150b;
+  box-shadow: 0 4px 0 rgba(56, 16, 8, 0.5);
+  text-shadow: 0 2px 0 #4a150b;
+  font-size: 1.7rem;
+  margin-bottom: 12px;
+}
+
+/* Tela Inicial (Start Screen) */
+.farmer-id-card {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border: 3px solid var(--enamel-cream);
+  outline: 3px solid var(--enamel-outline);
+  border-radius: 6px;
+  box-shadow: 0 5px 0 rgba(36, 22, 11, 0.45);
+  color: #fcf7e8;
+}
+
+.farmer-id-card .badge-mini {
+  color: #d8c28a;
+  font-size: 0.82rem;
+}
+
+.farmer-id-card .farmer-name {
+  color: #fcf7e8;
+  font-size: 1.35rem;
+}
+
+.farmer-id-card .farmer-bio {
+  color: #d5e2d7;
+  font-size: 0.82rem;
+}
+
+.avatar-ring {
+  background: linear-gradient(135deg, #f0e6cc, #b8732d);
+  border: 2px solid #351e0f;
+}
+
+.nick-pill {
+  background: #b54524;
+  color: #fff6e6;
+  border: 2px solid #69210c;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 #69210c;
+  font-family: "Rokkitt", serif;
+  font-size: 0.88rem;
+  font-weight: 700;
+}
+
+#startScreen h1 {
+  color: #2b1a0c;
+  font-size: clamp(2.1rem, 5vw, 2.9rem);
+  letter-spacing: 0.02em;
+  text-shadow: 0 2px 0 rgba(255, 250, 240, 0.8);
+  margin-bottom: 4px;
+}
+
+.gradient-text {
+  background: none;
+  -webkit-background-clip: initial;
+  background-clip: initial;
+  color: #1d4430;
+}
+
+.subtitle {
+  color: #6b3e1e;
+  font-family: "Rokkitt", serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.desc,
+.record-line {
+  color: #46311d;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.desc strong,
+.record-line strong {
+  color: #2b1a0c;
+}
+
+.controls-grid > div {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  border-radius: 5px;
+  box-shadow: 0 2px 0 #8a6c44;
+  color: #4b331d;
+}
+
+kbd {
+  background: #1d4430;
+  color: #fcf7e8;
+  border: 1px solid #0f261a;
+  border-radius: 4px;
+  box-shadow: 0 2px 0 #0f261a;
+  font-family: "Arvo", serif;
+  font-size: 0.72rem;
+  padding: 2px 6px;
+}
+
+/* ============================================================================
+   2. BARRAS DE SALDO, TÍTULOS DE SEÇÃO, CARTÕES & BOTÕES 3D TÁTEIS
+   ============================================================================ */
+.shop-balance {
+  background: var(--linen-recess);
+  border: 2px solid #8a6c44;
+  border-radius: 5px;
+  padding: 9px 13px;
+  box-shadow: inset 0 2px 4px rgba(56, 36, 17, 0.22);
+  color: #4b331d;
+  font-family: "Rokkitt", serif;
+  font-size: 1.08rem;
+  font-weight: 700;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.shop-balance strong {
+  font-family: "Arvo", serif;
+  font-size: 1.05rem;
+  color: #20492e;
+  background: #f5eedb;
+  padding: 2px 9px;
+  border: 2px solid #7d623e;
+  border-radius: 4px;
+}
+
+.shop-section-title,
+.panel-linen h3,
+.inv-section-label,
+.inv-section-label.hotbar-label,
+.controls-help-head,
+.bus-col-head {
+  font-family: "Rokkitt", Georgia, serif;
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #4f2f16;
+  border-bottom: 3px solid #a9895d;
+  padding-bottom: 5px;
+  margin: 14px 0 10px;
+}
+
+.shop-section-title:first-child,
+.modal-section > h3:first-child {
+  margin-top: 2px;
+}
+
+.modal-section {
+  background: #e9dec6;
+  border: 2px solid #96774d;
+  border-radius: 5px;
+  padding: 13px 14px;
+  box-shadow: inset 0 2px 5px rgba(56, 36, 17, 0.14);
+  margin-bottom: 12px;
+}
+
+.row-card {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  border-radius: 5px;
+  padding: 11px 13px;
+  box-shadow: 0 3px 0 #8a6c44, inset 0 1px 0 #fffaf0;
+  color: var(--text);
+}
+
+.row-emoji {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.45rem;
+  background: #c7ad83;
+  border: 2px solid #6d4f2d;
+  border-radius: 5px;
+  box-shadow: inset 0 3px 6px rgba(45, 25, 9, 0.45);
+}
+
+.row-title {
+  font-family: "Rokkitt", Georgia, serif;
+  font-size: 1.18rem;
+  font-weight: 800;
+  color: #2b1a0c;
+  line-height: 1.15;
+}
+
+.row-sub {
+  font-family: "Arvo", serif;
+  font-size: 0.78rem;
+  color: #5c422a;
+  line-height: 1.4;
+}
+
+.row-sub strong {
+  color: #2b1a0c;
+}
+
+.hot-pill {
+  background: var(--terracotta);
+  color: #fff6e6;
+  border: 2px solid var(--terracotta-dark);
+  border-radius: 3px;
+  box-shadow: 0 2px 0 var(--terracotta-dark);
+  font-family: "Rokkitt", serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 1px 7px;
+}
+
+/* Botões 3D Táteis (afundam fisicamente ao clicar!) */
+.btn-primary,
+.mini-btn.green {
+  font-family: "Arvo", serif;
+  font-weight: 700;
+  background: linear-gradient(180deg, #3f7a49 0%, #2d5d35 100%);
+  color: #f8f2e2;
+  border: 2px solid #1b3d21;
+  border-radius: 5px;
+  box-shadow: 0 4px 0 #1b3d21, inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+}
+
+.btn-primary:hover:not(:disabled),
+.mini-btn.green:hover:not(:disabled) {
+  transform: none;
+  filter: brightness(1.06);
+}
+
+.btn-primary:active:not(:disabled),
+.mini-btn.green:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #1b3d21;
+}
+
+.mini-btn {
+  font-family: "Arvo", serif;
+  font-weight: 700;
+  background: linear-gradient(180deg, #b8732d 0%, #92561d 100%);
+  color: #fcf7e8;
+  border: 2px solid #58310d;
+  border-radius: 5px;
+  box-shadow: 0 4px 0 #58310d, inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  padding: 8px 13px;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+}
+
+.mini-btn:hover:not(:disabled) {
+  filter: brightness(1.07);
+}
+
+.mini-btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #58310d;
+}
+
+.btn-secondary {
+  font-family: "Arvo", serif;
+  font-weight: 700;
+  background: linear-gradient(180deg, #c6a87a 0%, #b39262 100%);
+  color: #2a1b0e;
+  border: 2px solid #634625;
+  border-radius: 5px;
+  box-shadow: 0 4px 0 #634625, inset 0 1px 0 rgba(255, 250, 240, 0.45);
+  transition: transform 0.08s ease, box-shadow 0.08s ease;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: none;
+  filter: brightness(1.05);
+}
+
+.btn-secondary:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #634625;
+}
+
+.btn-secondary.danger-outline {
+  background: linear-gradient(180deg, #b54524 0%, #8f2d14 100%);
+  color: #fff6e6;
+  border: 2px solid #58180a;
+  box-shadow: 0 4px 0 #58180a, inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+.btn-secondary.danger-outline:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #58180a;
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.mini-btn:disabled {
+  background: #bfb29a !important;
+  color: #6b5e4c !important;
+  border-color: #8b7d65 !important;
+  box-shadow: 0 2px 0 #8b7d65 !important;
+  opacity: 1;
+  transform: none !important;
+}
+
+/* ============================================================================
+   3. SLOTS ESCAVADOS NA MADEIRA (BAÚ DO SÍTIO, INVENTÁRIO & HOTBAR)
+   ============================================================================ */
+.mc-slot {
+  background: var(--wood-slot-filled);
+  border: 2px solid #3f2612;
+  border-radius: 5px;
+  box-shadow:
+    inset 0 4px 8px rgba(28, 14, 5, 0.72),
+    inset 0 -1px 0 rgba(255, 224, 180, 0.28);
+  color: #fcf7e8;
+}
+
+.mc-slot.empty {
+  background: var(--wood-slot);
+  border-color: var(--wood-slot-border);
+}
+
+.mc-slot:hover {
+  border-color: #f0d797;
+  background: #9c7049;
+  transform: translateY(-1px);
+}
+
+.mc-slot.active,
+.mc-slot.selected {
+  border-color: #f4d06f !important;
+  background: #9f7248;
+  box-shadow:
+    0 0 0 2px #f4d06f,
+    inset 0 4px 8px rgba(28, 14, 5, 0.65);
+}
+
+.mc-slot.hot-today {
+  border-color: #e8943a;
+}
+
+.mc-slot.drag-over {
+  border-color: #f4d06f !important;
+  background: #b07f50 !important;
+  outline: 2px dashed #fcf7e8;
+  outline-offset: -3px;
+}
+
+.mc-slot-num {
+  color: #ead6ab;
+  font-family: "Rokkitt", serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-shadow: 0 1px 1px #201207;
+}
+
+.mc-slot.active .mc-slot-num {
+  color: #fff3b8;
+}
+
+.mc-slot-qty {
+  background: var(--green-deep);
+  color: #f5ecda;
+  border: 1px solid #d8c28a;
+  border-radius: 3px;
+  font-family: "Arvo", serif;
+  font-size: 0.68rem;
+  padding: 1px 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+
+.mc-slot-qty.water-qty {
+  background: #1e4b66;
+  color: #e0f2fe;
+  border-color: #9ec4d6;
+}
+
+.mc-slot-empty-dot {
+  background: rgba(255, 224, 180, 0.22);
+}
+
+.seed-hot-tag {
+  background: var(--terracotta);
+  color: #fff6e6;
+  border: 1px solid var(--terracotta-dark);
+  border-radius: 3px;
+}
+
+.inv-inspector {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  border-radius: 5px;
+  box-shadow: 0 3px 0 #8a6c44;
+}
+
+.inv-insp-icon {
+  background: #c7ad83;
+  border: 2px solid #6d4f2d;
+  border-radius: 5px;
+  box-shadow: inset 0 3px 6px rgba(45, 25, 9, 0.45);
+}
+
+.inv-insp-title {
+  font-family: "Rokkitt", serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #2b1a0c;
+}
+
+.inv-cat-pill {
+  background: var(--green-deep);
+  color: #f5ecda;
+  border: 1px solid #d8c28a;
+  border-radius: 3px;
+  font-family: "Arvo", serif;
+}
+
+.inv-insp-sub {
+  color: #5c422a;
+}
+
+.inv-insp-sub strong {
+  color: #2b1a0c;
+}
+
+.inv-help-popover {
+  background: #f5eedb;
+  border: 2px solid #8a6c44;
+  border-radius: 5px;
+  box-shadow: 0 3px 0 #8a6c44;
+  color: #3a2614;
+}
+
+.inv-help-popover strong {
+  color: #1d4430;
+}
+
+.inv-help-popover kbd {
+  background: #1d4430;
+  color: #fcf7e8;
+  border-color: #0f261a;
+}
+
+.inv-cursor {
+  background: var(--wood-slot-filled);
+  border: 2px solid #f4d06f;
+  border-radius: 5px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.55);
+}
+
+/* Dica do Baú do Sítio */
+#chestModalBody .inv-toolbar {
+  background: #d7c4a0;
+  border: 2px solid #96774d;
+  border-radius: 4px;
+  padding: 8px 12px;
+}
+
+#chestModalBody .inv-toolbar .desc {
+  color: #46311d;
+}
+
+/* ============================================================================
+   4. CALENDÁRIO, ÔNIBUS 402, NPC, TÍTULOS & CONFIGURAÇÕES
+   ============================================================================ */
+.npc-quote {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  border-left: 5px solid var(--green-deep);
+  border-radius: 5px;
+  padding: 12px 14px;
+  color: #2b1a0c;
+  font-style: italic;
+  box-shadow: 0 2px 0 #8a6c44;
+}
+
+.npc-mission-box,
+.kaio-shop-box {
+  background: #dfd0b2;
+  border: 2px solid #8a6c44;
+  border-radius: 5px;
+  padding: 10px 12px;
+  color: #2f2014;
+}
+
+.npc-mission-reward {
+  color: #20492e;
+  font-weight: 700;
+  margin-top: 5px;
+}
+
+.kaio-shop-header {
+  font-family: "Rokkitt", serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1d4430;
+  margin-bottom: 8px;
+}
+
+.tabua-input {
+  flex: 1;
+  padding: 8px 11px;
+  border-radius: 5px;
+  border: 2px solid #7d623e;
+  background: #f8f2e4;
+  color: #2b1a0c;
+  font-family: "Arvo", serif;
+  font-size: 0.88rem;
+  outline: none;
+  box-shadow: inset 0 2px 4px rgba(56, 36, 17, 0.16);
+}
+
+.tabua-input:focus {
+  border-color: var(--green-deep);
+}
+
+/* Títulos no Guia */
+.title-chip {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  border-radius: 5px;
+  color: #2b1a0c;
+  box-shadow: 0 3px 0 #8a6c44;
+  font-family: "Arvo", serif;
+}
+
+.title-chip.active {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  color: #fcf7e8;
+  border-color: #0e2217;
+  box-shadow: 0 3px 0 #0e2217;
+}
+
+.title-chip.locked {
+  background: #cfc2a9;
+  color: #776853;
+  border-color: #9e8f77;
+  box-shadow: none;
+}
+
+/* Calendário & 402 */
+.calendar-weekdays {
+  color: #4f2f16;
+  font-family: "Rokkitt", serif;
+  font-size: 0.92rem;
+  font-weight: 800;
+}
+
+.cal-cell {
+  background: var(--linen-card);
+  border: 2px solid #a68c65;
+  border-radius: 4px;
+  color: #2b1a0c;
+}
+
+.cal-cell.weekend {
+  background: #d8c5a2;
+  border-color: #8a6c44;
+}
+
+.cal-cell.past {
+  opacity: 0.55;
+}
+
+.cal-cell.today {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border-color: #0e2217;
+  color: #fcf7e8;
+  box-shadow: 0 3px 0 #0e2217;
+}
+
+.cal-cell.today .cal-tag {
+  color: #f4d06f;
+}
+
+.cal-tag {
+  color: #6b4427;
+  font-weight: 700;
+}
+
+.bus-status-banner {
+  background: #d5c19c;
+  border: 2px solid #8a6c44;
+  border-radius: 5px;
+  color: #2b1a0c;
+  font-weight: 700;
+}
+
+.bus-status-banner.available {
+  background: #245139;
+  border-color: #132c1e;
+  color: #fcf7e8;
+}
+
+.bus-status-banner.blocked {
+  background: #9f3524;
+  border-color: #5b1b11;
+  color: #fff6e6;
+}
+
+.bus-time-chip {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  border-radius: 4px;
+  color: #2b1a0c;
+  font-family: "Arvo", serif;
+}
+
+.bus-time-chip.active {
+  background: #2d5d35;
+  border-color: #1b3d21;
+  color: #fcf7e8;
+}
+
+.bus-time-chip.next {
+  background: #b8732d;
+  border-color: #58310d;
+  color: #fcf7e8;
+}
+
+/* Configurações na Pausa */
+.settings-box,
+.controls-help-box {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  border-radius: 5px;
+  box-shadow: 0 3px 0 #8a6c44;
+  color: var(--text);
+}
+
+.setting-row {
+  color: #2b1a0c;
+}
+
+.setting-row input[type="range"],
+.setting-row input[type="checkbox"] {
+  accent-color: #245139;
+}
+
+.setting-row select {
+  background: #f8f2e4;
+  color: #2b1a0c;
+  border: 2px solid #7d623e;
+  border-radius: 5px;
+  font-family: "Arvo", serif;
+  font-weight: 700;
+}
+
+.controls-help-grid {
+  color: #3f2b18;
+}
+
+.controls-help-grid kbd {
+  background: #1d4430;
+  color: #fcf7e8;
+  border-color: #0e2217;
+}
+
+/* Sono */
+.sleep-overlay {
+  background: rgba(15, 22, 16, 0.72);
+  backdrop-filter: none !important;
+}
+
+.sleep-bar-bg {
+  background: #5b381e;
+  border: 2px solid #351e0f;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.55);
+}
+
+.sleep-bar-fill {
+  background: linear-gradient(90deg, #2d5d35, #d8a23a);
+}
+
+/* ============================================================================
+   5. HUD EM JOGO (PLACAS ESMALTADAS VERDES, BOTÕES DE MADEIRA, HOTBAR & MINIMAPA)
+   ============================================================================ */
+.hud-pill {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border: 2px solid var(--enamel-cream);
+  outline: 2px solid var(--enamel-outline);
+  border-radius: 6px;
+  box-shadow: 0 4px 0 rgba(25, 14, 6, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  color: #fcf7e8;
+  padding: 5px 11px;
+}
+
+.hud-pill.clickable:hover {
+  filter: brightness(1.09);
+  border-color: #fff6dc;
+}
+
+.hud-label {
+  color: #d8c28a;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.hud-pill strong {
+  font-family: "Arvo", serif;
+  font-size: 0.86rem;
+  color: #fcf7e8;
+  text-shadow: 0 1px 0 #0e2217;
+}
+
+.hud-pill.money-pill {
+  background: linear-gradient(180deg, #6b4427 0%, #4e2f19 100%);
+  border-color: #f0e6cc;
+  outline-color: #2b170a;
+}
+
+.hud-pill.money-pill strong {
+  color: #ffe394;
+}
+
+.hud-pill.farmer-tag {
+  background: linear-gradient(180deg, #245139 0%, #173826 100%);
+}
+
+.hud-avatar {
+  border: 2px solid #f0e6cc;
+}
+
+.hud-pill.insanity-pill {
+  background: linear-gradient(180deg, #245139 0%, #173826 100%);
+}
+
+.hud-pill.insanity-pill.crazy {
+  background: linear-gradient(180deg, #9f3524 0%, #6d1f13 100%);
+  border-color: #f4d06f;
+  outline-color: #421109;
+}
+
+.hud-pill.hp-pill {
+  background: linear-gradient(180deg, #8b331f 0%, #632112 100%);
+  border-color: #f0e6cc;
+  outline-color: #3a1108;
+}
+
+.hud-pill.buff-pill {
+  background: linear-gradient(180deg, #a86622 0%, #7c4814 100%);
+  border-color: #f0e6cc;
+  outline-color: #422408;
+}
+
+.hud-pill.buff-pill strong {
+  color: #fff7dc;
+}
+
+.hud-pill.lambi-pill {
+  background: linear-gradient(180deg, #9f3524 0%, #691b10 100%);
+  border-color: #f4d06f;
+  outline-color: #3f0e07;
+}
+
+.water-bar-bg {
+  background: #3a2312;
+  border: 1.5px solid #201207;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.65);
+}
+
+.insanity-bar-fill {
+  background: linear-gradient(90deg, #d89b32, #b54524);
+}
+
+.hp-bar-fill {
+  background: linear-gradient(90deg, #3f7a49, #74b347);
+}
+
+/* Botões do topo (Tábua / Madeira chanfrada 3D) */
+.hud-btn {
+  background: linear-gradient(180deg, #774d2d 0%, #5b381e 100%);
+  border: 2px solid #351e0f;
+  outline: 1.5px solid rgba(240, 230, 204, 0.55);
+  outline-offset: -3px;
+  border-radius: 6px;
+  color: #fcf7e8;
+  font-family: "Arvo", serif;
+  font-weight: 700;
+  box-shadow: 0 4px 0 #2b170a, inset 0 1px 0 rgba(255, 225, 180, 0.28);
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: transform 0.08s ease, box-shadow 0.08s ease, filter 0.12s ease;
+}
+
+.hud-btn:hover {
+  transform: none;
+  filter: brightness(1.1);
+  border-color: #2b170a;
+}
+
+.hud-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 1px 0 #2b170a;
+}
+
+/* Hotbar Inferior em Bandeja de Madeira */
+.hotbar-held-name {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border: 2px solid var(--enamel-cream);
+  outline: 2px solid var(--enamel-outline);
+  border-radius: 5px;
+  color: #fcf7e8;
+  font-family: "Rokkitt", serif;
+  font-size: 0.96rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  box-shadow: 0 3px 0 rgba(25, 14, 6, 0.55);
+  backdrop-filter: none !important;
+}
+
+.mc-hotbar {
+  background-color: var(--wood-mid);
+  background-image:
+    repeating-linear-gradient(90deg, rgba(255, 224, 180, 0.04) 0px, transparent 4px, rgba(0, 0, 0, 0.07) 14px),
+    linear-gradient(180deg, #774d2d 0%, #5b381e 100%);
+  border: 3px solid var(--wood-dark);
+  border-radius: 7px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 215, 165, 0.26),
+    inset 0 -3px 0 rgba(25, 12, 4, 0.55),
+    0 8px 18px rgba(0, 0, 0, 0.55);
+  backdrop-filter: none !important;
+  padding: 6px;
+  gap: 6px;
+}
+
+/* Minimapa & Metas do Dia */
+.minimap-box {
+  background-color: var(--wood-mid);
+  background-image: linear-gradient(135deg, #774d2d 0%, #5b381e 100%);
+  border: 3px solid var(--wood-dark);
+  border-radius: 7px;
+  padding: 6px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 215, 165, 0.3),
+    0 6px 14px rgba(0, 0, 0, 0.5);
+  backdrop-filter: none !important;
+}
+
+.minimap-box canvas {
+  border-radius: 3px;
+  border: 2px solid #3f2612;
+}
+
+.goals-mini-card {
+  background: linear-gradient(180deg, var(--linen-top) 0%, var(--linen-bot) 100%);
+  border: 3px solid #5b381e;
+  outline: 2px solid #351e0f;
+  border-radius: 5px;
+  padding: 0;
+  overflow: hidden;
+  box-shadow: 0 5px 0 rgba(32, 18, 8, 0.5);
+  backdrop-filter: none !important;
+}
+
+.goals-mini-head {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  color: #fcf7e8;
+  padding: 5px 9px;
+  margin: 0;
+  font-size: 0.78rem;
+  border-bottom: 2px solid #f0e6cc;
+}
+
+.goals-mini-list {
+  padding: 6px 9px 8px;
+}
+
+.goal-mini-row {
+  color: #2f2014;
+  font-family: "Arvo", serif;
+  font-size: 0.7rem;
+}
+
+.goal-mini-row strong {
+  color: #1d4430;
+}
+
+.goal-mini-row.done {
+  color: #4f6b47;
+}
+
+/* Context Prompt, Toast, Day Banner, Bubbles, Jaguar Bar, Command Bar, FP Hint */
+.context-prompt {
+  background: linear-gradient(180deg, var(--linen-card) 0%, #e4d5b7 100%);
+  border: 3px solid #5b381e;
+  outline: 2px solid #351e0f;
+  border-radius: 6px;
+  color: #2b1a0c;
+  font-family: "Arvo", serif;
+  font-weight: 700;
+  box-shadow: 0 5px 0 rgba(35, 20, 9, 0.55);
+  backdrop-filter: none !important;
+}
+
+.ctx-key {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  color: #fcf7e8;
+  border: 2px solid #f0e6cc;
+  border-radius: 4px;
+  font-family: "Rokkitt", serif;
+  font-size: 0.95rem;
+}
+
+.context-prompt.danger {
+  background: linear-gradient(180deg, #b54524 0%, #8f2d14 100%);
+  border-color: #f0e6cc;
+  outline-color: #4f160a;
+  color: #fff6e6;
+}
+
+.ctx-key.danger {
+  background: #58180a;
+  color: #fff6e6;
+  border-color: #f0e6cc;
+}
+
+.toast-box {
+  background: var(--linen-card);
+  border: 3px solid #5b381e;
+  outline: 2px solid #351e0f;
+  border-radius: 6px;
+  box-shadow: 0 6px 0 rgba(35, 20, 9, 0.52);
+  color: #2b1a0c;
+  backdrop-filter: none !important;
+}
+
+.toast-box .hud-label {
+  color: #20492e;
+}
+
+.toast-box strong {
+  color: #2b1a0c;
+  font-family: "Arvo", serif;
+}
+
+.level-banner {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border: 3px solid var(--enamel-cream);
+  outline: 3px solid var(--enamel-outline);
+  border-radius: 6px;
+  color: #fcf7e8;
+  font-family: "Rokkitt", serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  text-shadow: 0 2px 0 #0e2217;
+  box-shadow: 0 6px 0 rgba(25, 14, 6, 0.58);
+}
+
+.jaguar-hud-bar {
+  background: linear-gradient(180deg, #9f3524 0%, #6d1f13 100%);
+  border: 3px solid var(--enamel-cream);
+  outline: 3px solid #421109;
+  border-radius: 6px;
+  box-shadow: 0 6px 0 rgba(40, 12, 6, 0.55);
+  backdrop-filter: none !important;
+}
+
+.jaguar-bar-bg {
+  background: #3a1108;
+  border: 1.5px solid #240904;
+}
+
+.jaguar-bar-fill {
+  background: linear-gradient(90deg, #e0a42c, #f4d06f);
+}
+
+.coringa-bubble,
+.maluquinho-bubble {
+  background: var(--linen-card);
+  border: 3px solid #5b381e;
+  outline: 2px solid #351e0f;
+  border-radius: 6px;
+  color: #2b1a0c;
+  box-shadow: 0 5px 0 rgba(35, 20, 9, 0.5);
+  backdrop-filter: none !important;
+}
+
+.coringa-bubble::after {
+  border-top-color: #5b381e;
+}
+
+.coringa-header,
+.maluquinho-header {
+  color: #9f3524;
+  font-family: "Rokkitt", serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.coringa-text {
+  color: #2b1a0c;
+  font-family: "Arvo", serif;
+}
+
+.cmd-bar {
+  background: linear-gradient(135deg, #774d2d 0%, #5b381e 100%);
+  border: 3px solid #351e0f;
+  border-radius: 6px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.55);
+  backdrop-filter: none !important;
+}
+
+.cmd-bar-inner input {
+  background: #f5eedb;
+  border: 2px solid #492e18;
+  border-radius: 4px;
+  color: #2b1a0c;
+  font-family: "Arvo", monospace;
+}
+
+.cmd-bar-inner input:focus {
+  border-color: #1d4430;
+}
+
+.fp-lock-hint {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border: 2px solid var(--enamel-cream);
+  outline: 2px solid var(--enamel-outline);
+  border-radius: 6px;
+  color: #fcf7e8;
+  font-family: "Arvo", serif;
+  box-shadow: 0 4px 0 rgba(25, 14, 6, 0.55);
+  backdrop-filter: none !important;
+}
+
+.fp-lock-hint:hover {
+  filter: brightness(1.1);
+}
+
+/* Controles Touch (Celular) no estilo Tábua & Esmalte */
+.joystick-base {
+  background: rgba(91, 56, 30, 0.78);
+  border: 3px solid #351e0f;
+  box-shadow: inset 0 4px 10px rgba(25, 12, 4, 0.65);
+  backdrop-filter: none !important;
+}
+
+.joystick-knob {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border: 2px solid #f0e6cc;
+  box-shadow: 0 3px 0 #0e2217;
+}
+
+.t-btn {
+  background: linear-gradient(180deg, #774d2d 0%, #5b381e 100%);
+  border: 2px solid #351e0f;
+  color: #fcf7e8;
+  box-shadow: 0 4px 0 #2b170a;
+  backdrop-filter: none !important;
+}
+
+.t-btn.action.primary {
+  background: linear-gradient(180deg, #3f7a49 0%, #2d5d35 100%);
+  border: 2px solid #f0e6cc;
+  outline: 2px solid #1b3d21;
+  color: #fcf7e8;
+}
+
+.t-btn.action.jump {
+  background: linear-gradient(180deg, #b8732d 0%, #92561d 100%);
+  border: 2px solid #f0e6cc;
+  outline: 2px solid #58310d;
+  color: #fcf7e8;
+}
+
+/* ============================================================================
+   6. CELULAR DO MACHO (CAPINHA DE MADEIRA RÚSTICA & TELA EM LINHO/ESMALTE)
+   ============================================================================ */
+.phone-chassis {
+  background: linear-gradient(135deg, #774d2d 0%, #5b381e 50%, #6b4427 100%);
+  border: 4px solid #351e0f;
+  border-radius: 18px;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 215, 165, 0.28),
+    0 18px 36px rgba(0, 0, 0, 0.65);
+}
+
+.phone-statusbar {
+  background: #132c1e;
+  color: #d8c28a;
+  border-bottom: 1px solid #245139;
+}
+
+.phone-topbar {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  color: #fcf7e8;
+  border-bottom: 2px solid #f0e6cc;
+}
+
+.phone-app-title {
+  font-family: "Rokkitt", serif;
+  color: #fcf7e8;
+}
+
+.phone-top-btn {
+  background: #9f3524;
+  color: #fcf7e8;
+  border: 1.5px solid #f0e6cc;
+  border-radius: 5px;
+}
+
+.phone-screen-body {
+  background: linear-gradient(180deg, var(--linen-top) 0%, var(--linen-bot) 100%);
+  color: #2f2014;
+}
+
+.phone-clock-widget,
+.or-post-card,
+.or-profile-banner,
+.insta-card,
+.zap-chat-item,
+.zap-msg.in,
+.phone-composer {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  color: #2b1a0c;
+  box-shadow: 0 2px 0 #8a6c44;
+}
+
+.phone-big-time {
+  font-family: "Rokkitt", serif;
+  color: #1d4430;
+}
+
+.phone-date-sub,
+.or-post-meta,
+.zap-chat-preview {
+  color: #5c422a;
+}
+
+.zap-msg.out {
+  background: #245139;
+  color: #fcf7e8;
+  border: 2px solid #132c1e;
+}
+
+.phone-navbar {
+  background: linear-gradient(180deg, #5b381e 0%, #442814 100%);
+  border-top: 2px solid #351e0f;
+}
+
+.phone-nav-btn {
+  background: #774d2d;
+  color: #fcf7e8;
+  border: 1.5px solid #351e0f;
+  border-radius: 5px;
+  font-family: "Arvo", serif;
+}
+
+.phone-nav-btn.home {
+  background: #245139;
+  border-color: #f0e6cc;
+}
+
+/* ============================================================================
+   7. AJUSTES RESPONSIVOS PARA TELA PEQUENA
+   ============================================================================ */
+@media (max-width: 540px) {
+  .panel,
+  .sleep-card {
+    padding: 12px;
+  }
+  .panel-linen {
+    padding: 13px 13px 15px;
+  }
+  .modal-header {
+    padding: 11px 12px;
+  }
+  .modal-header h2 {
+    font-size: 1.35rem;
+  }
+}
+
+/* Correção completa de contraste no Celular do Macho sobre fundo linho quente (v27) */
+.phone-app-tile,
+.phone-app-tile span,
+.insta-story,
+.zap-chat-name,
+.or-stat strong,
+.or-name-row,
+.or-post-head {
+  color: #2b1a0c;
+}
+
+.phone-app-tile,
+.insta-story {
+  font-family: "Arvo", serif;
+  font-weight: 700;
+}
+
+.phone-breaking {
+  background: linear-gradient(180deg, #9f3524 0%, #6d1f13 100%);
+  border: 2px solid #f0e6cc;
+  outline: 2px solid #421109;
+  color: #fff6e6;
+}
+
+.phone-breaking-tag {
+  color: #f4d06f;
+}
+
+.phone-breaking-headline {
+  color: #fff6e6;
+}
+
+.or-profile-banner,
+.or-post,
+.or-composer-box {
+  background: var(--linen-card);
+  border: 2px solid #96774d;
+  color: #2b1a0c;
+  box-shadow: 0 3px 0 #8a6c44;
+}
+
+.or-stat span {
+  color: #5c422a;
+}
+
+.or-handle {
+  color: #9f3524;
+  font-weight: 700;
+}
+
+.or-bio,
+.or-post-caption,
+.or-comment {
+  color: #3a2614;
+}
+
+.or-pf26-badge {
+  background: #b54524;
+  border-color: #69210c;
+  color: #fff6e6;
+}
+
+.or-tab-btn {
+  background: #dfd0b2;
+  border: 2px solid #8a6c44;
+  color: #2b1a0c;
+  font-family: "Arvo", serif;
+}
+
+.or-tab-btn.active {
+  background: linear-gradient(180deg, var(--enamel-top) 0%, var(--enamel-bot) 100%);
+  border-color: #132c1e;
+  color: #fcf7e8;
+}
+
+.or-act-btn {
+  background: #e9dec6;
+  border: 2px solid #8a6c44;
+  color: #2b1a0c;
+}
+
+.or-act-btn.liked {
+  background: #b54524;
+  border-color: #69210c;
+  color: #fff6e6;
+}
+
+.or-comments {
+  background: #e8dbc0;
+  border: 1.5px solid #a68c65;
+}
+
+.or-comment strong {
+  color: #1d4430;
+}
+
+.or-input {
+  background: #faf5e8;
+  border: 2px solid #7d623e;
+  color: #2b1a0c;
+  font-family: "Arvo", serif;
+}
+
+.or-input::placeholder {
+  color: #7d674a;
+}
+
+.or-template-btn {
+  background: #f5eedb;
+  border: 2px solid #96774d;
+  color: #2b1a0c;
+}
+
+.or-template-btn:hover {
+  background: #eadfc8;
+  border-color: #245139;
+}

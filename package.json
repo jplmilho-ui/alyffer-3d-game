@@ -1,0 +1,10 @@
+{
+  "name": "alyffer-3d-game",
+  "version": "2.0.0",
+  "private": true,
+  "description": "Simulador do Macho 3D — Horta no Quintal do Alyffer (Pau Arcado, Terminal CLP & ETECAMP)",
+  "scripts": {
+    "dev": "npx --yes serve .",
+    "dev:python": "python3 -m http.server 8080"
+  }
+}

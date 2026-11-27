@@ -1,0 +1,468 @@
+/* Touch controls (inline in bottom stack so it never overlaps hotbar or safe-area) */
+.touch-controls {
+  display: none;
+  width: 100%;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 0 4px 2px;
+  pointer-events: none;
+}
+
+.joystick-base {
+  position: relative;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.22);
+  background: radial-gradient(circle, rgba(22, 34, 24, 0.72), rgba(10, 18, 12, 0.85));
+  backdrop-filter: blur(8px);
+  box-shadow: inset 0 0 18px rgba(0, 0, 0, 0.45), 0 8px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: auto;
+  touch-action: none;
+  display: grid;
+  place-items: center;
+}
+
+.joy-dir {
+  position: absolute;
+  font-size: 0.62rem;
+  color: rgba(255, 255, 255, 0.32);
+  pointer-events: none;
+}
+
+.joy-dir.up { top: 6px; left: 50%; transform: translateX(-50%); }
+.joy-dir.down { bottom: 6px; left: 50%; transform: translateX(-50%); }
+.joy-dir.left { left: 7px; top: 50%; transform: translateY(-50%); }
+.joy-dir.right { right: 7px; top: 50%; transform: translateY(-50%); }
+
+.joystick-knob {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--green), #22c55e);
+  border: 2px solid #ecfdf5;
+  box-shadow: 0 4px 14px rgba(74, 222, 128, 0.45);
+  pointer-events: none;
+  transform: translate(0px, 0px);
+  transition: transform 0.06s linear;
+}
+
+.t-btn {
+  border-radius: 16px;
+  border: 1.5px solid var(--border);
+  background: rgba(18, 28, 19, 0.88);
+  color: #fff;
+  font-weight: 800;
+  font-family: "Space Grotesk", sans-serif;
+  backdrop-filter: blur(8px);
+  touch-action: manipulation;
+  cursor: pointer;
+}
+
+.action-pads {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: auto;
+}
+
+.t-btn.action.primary {
+  width: 82px;
+  height: 82px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, rgba(22, 163, 74, 0.85), rgba(34, 197, 94, 0.85));
+  border: 2px solid rgba(255, 255, 255, 0.28);
+  color: #051608;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.4);
+  transition: transform 0.1s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.t-btn.action.primary.ready {
+  border-color: var(--gold);
+  background: linear-gradient(135deg, #22c55e, var(--gold));
+  box-shadow: 0 0 22px rgba(250, 204, 21, 0.55);
+  transform: scale(1.05);
+}
+
+.t-btn.action.primary:active {
+  transform: scale(0.95);
+}
+
+.t-btn.action.jump {
+  width: 66px;
+  height: 66px;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+  font-size: 0.68rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(135deg, rgba(14, 165, 233, 0.88), rgba(56, 189, 248, 0.88));
+  border: 2px solid rgba(255, 255, 255, 0.32);
+  color: #041926;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.38);
+  transition: transform 0.1s ease;
+}
+
+.t-btn.action.jump:active {
+  transform: scale(0.9);
+}
+
+.touch-action-emoji {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+@media (hover: none) and (pointer: coarse), (max-width: 920px) {
+  .touch-controls {
+    display: flex;
+  }
+  .hud-hint {
+    display: none;
+  }
+  .hud-bottom {
+    justify-content: center;
+  }
+  .seed-hotbar {
+    width: 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    justify-content: space-between;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 5px;
+    padding: 5px;
+    border-radius: 14px;
+  }
+  .seed-hotbar::-webkit-scrollbar {
+    display: none;
+  }
+  .seed-slot {
+    flex: 1 0 54px;
+    min-width: 54px;
+    padding: 5px 4px;
+  }
+  .slot-num {
+    display: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .hud {
+    padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+  .hud-top {
+    gap: 4px;
+    justify-content: flex-start;
+  }
+  .hud-group {
+    display: contents;
+  }
+  .hud-pill {
+    padding: 3px 6px;
+    border-radius: 9px;
+    min-width: 0;
+  }
+  .hud-pill.water-pill,
+  .hud-pill.insanity-pill {
+    min-width: 86px;
+  }
+  .hud-label {
+    font-size: 0.5rem;
+    letter-spacing: 0.04em;
+  }
+  .hud-pill strong {
+    font-size: 0.72rem;
+  }
+  .hud-avatar {
+    width: 22px;
+    height: 22px;
+  }
+  .farmer-hud-row {
+    gap: 5px;
+  }
+  .water-bar-bg {
+    min-width: 30px;
+    height: 6px;
+  }
+  .hud-btn {
+    height: 31px;
+    min-width: 31px;
+    padding: 0 7px;
+    border-radius: 9px;
+    font-size: 0.86rem;
+  }
+  .btn-label {
+    display: none;
+  }
+  .hud-bottom-wrap {
+    gap: 6px;
+  }
+  .context-prompt {
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    gap: 7px;
+    max-width: 96vw;
+    text-align: center;
+  }
+  .ctx-key {
+    font-size: 0.68rem;
+    padding: 2px 7px;
+  }
+  .slot-emoji {
+    font-size: 1.1rem;
+  }
+  .slot-name {
+    font-size: 0.62rem;
+    white-space: nowrap;
+  }
+  .slot-cost {
+    font-size: 0.62rem;
+  }
+  .toast-box {
+    top: 86px;
+    right: auto;
+    left: 50%;
+    transform: translateX(-50%);
+    width: min(92vw, 350px);
+    padding: 7px 11px;
+  }
+  .level-banner {
+    width: min(92vw, 460px);
+    padding: 10px 15px;
+    border-radius: 16px;
+    font-size: 0.92rem;
+  }
+  .coringa-bubble {
+    max-width: min(78vw, 250px);
+    min-width: 170px;
+    padding: 6px 10px;
+  }
+  .coringa-text {
+    font-size: 0.78rem;
+  }
+  .panel {
+    padding: 15px 14px;
+    border-radius: 18px;
+  }
+  .panel.wide {
+    max-height: 92dvh;
+  }
+  .farmer-id-card {
+    padding: 10px 11px;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .avatar-ring {
+    width: 48px;
+    height: 48px;
+  }
+  .controls-grid {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+  .desc {
+    font-size: 0.84rem;
+    margin-bottom: 12px;
+  }
+  .row-card {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .row-card .mini-btn {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 440px) {
+  .joystick-base {
+    width: 94px;
+    height: 94px;
+  }
+  .joystick-knob {
+    width: 38px;
+    height: 38px;
+  }
+  .t-btn.action.primary {
+    width: 72px;
+    height: 72px;
+    font-size: 0.72rem;
+  }
+  .row-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .row-card .mini-btn {
+    width: 100%;
+    margin-left: 0;
+    padding: 9px 12px;
+  }
+}
+
+/* Modo Paisagem (Celular deitado) */
+@media (max-height: 520px) and (max-width: 960px) {
+  .hud {
+    padding: 6px max(10px, env(safe-area-inset-right)) max(6px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left));
+  }
+  .hud-top {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    gap: 5px;
+  }
+  .hud-top::-webkit-scrollbar {
+    display: none;
+  }
+  .hud-group {
+    flex-wrap: nowrap;
+  }
+  .hud-pill {
+    padding: 3px 6px;
+    min-width: auto;
+    white-space: nowrap;
+  }
+  .hud-label {
+    font-size: 0.5rem;
+  }
+  .hud-pill strong {
+    font-size: 0.72rem;
+  }
+  .hud-btn {
+    height: 30px;
+    min-width: 30px;
+    padding: 0 7px;
+    font-size: 0.82rem;
+  }
+  .btn-label {
+    display: none;
+  }
+  .joystick-base {
+    width: 84px;
+    height: 84px;
+  }
+  .joystick-knob {
+    width: 34px;
+    height: 34px;
+  }
+  .t-btn.action.primary {
+    width: 66px;
+    height: 66px;
+    font-size: 0.7rem;
+  }
+  .seed-hotbar {
+    padding: 4px;
+    gap: 4px;
+  }
+  .seed-slot {
+    flex: 0 0 auto;
+    min-width: 58px;
+    padding: 3px 6px;
+  }
+  .toast-box {
+    top: 48px;
+  }
+  .overlay {
+    padding: 6px 10px;
+  }
+  .panel {
+    width: min(680px, 100%);
+    padding: 10px 14px;
+    border-radius: 16px;
+  }
+  .farmer-id-card {
+    padding: 5px 9px;
+    margin-bottom: 6px;
+    gap: 8px;
+  }
+  .avatar-ring {
+    width: 34px;
+    height: 34px;
+  }
+  .farmer-name {
+    font-size: 0.96rem;
+  }
+  .farmer-bio {
+    font-size: 0.72rem;
+  }
+  h1 {
+    font-size: 1.32rem;
+    margin-bottom: 2px;
+  }
+  .subtitle {
+    display: none;
+  }
+  .desc {
+    font-size: 0.74rem;
+    line-height: 1.34;
+    margin-bottom: 6px;
+  }
+  .controls-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .controls-grid > div {
+    padding: 4px 7px;
+    font-size: 0.68rem;
+  }
+  .record-line {
+    display: none;
+  }
+  .btn-primary,
+  .btn-secondary {
+    padding: 9px 14px;
+    font-size: 0.88rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .mc-hotbar {
+    grid-template-columns: repeat(9, 44px);
+    gap: 4px;
+    padding: 5px;
+    border-radius: 13px;
+  }
+  .mc-slot {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+  }
+  .mc-slot-icon {
+    font-size: 1.25rem;
+  }
+  .inv-grid {
+    grid-template-columns: repeat(9, minmax(34px, 1fr));
+    gap: 4px;
+  }
+  .inv-grid-slot {
+    height: 44px;
+  }
+  .inv-inspector {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 720px) {
+  .minimap-wrap {
+    top: auto;
+    bottom: 148px;
+    right: 8px;
+  }
+  .minimap-box {
+    width: 104px;
+    height: 104px;
+  }
+  .goals-mini-card {
+    display: none;
+  }
+}

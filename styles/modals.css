@@ -1,0 +1,363 @@
+/* Overlays & Modals */
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: radial-gradient(circle at center, rgba(16, 28, 17, 0.32), rgba(7, 12, 8, 0.65));
+}
+
+.panel {
+  width: min(560px, 100%);
+  margin: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 20px 22px;
+  text-align: center;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6);
+}
+
+.panel.wide {
+  width: min(640px, 100%);
+  text-align: left;
+  max-height: 90dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.panel.small {
+  width: min(390px, 100%);
+}
+
+.farmer-id-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  padding: 12px 15px;
+  border-radius: 16px;
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+
+.avatar-ring {
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, var(--green), var(--gold));
+  flex-shrink: 0;
+}
+
+.avatar-ring img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.badge-mini {
+  display: inline-block;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--green);
+  margin-bottom: 3px;
+}
+
+.farmer-name {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.12rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.nick-pill {
+  font-size: 0.75rem;
+  padding: 2px 9px;
+  border-radius: 999px;
+  background: rgba(250, 204, 21, 0.16);
+  color: var(--gold);
+  border: 1px solid rgba(250, 204, 21, 0.4);
+}
+
+.farmer-bio {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 2px;
+}
+
+h1, h2, h3 {
+  font-family: "Space Grotesk", sans-serif;
+  margin: 0 0 8px;
+}
+
+h1 {
+  font-size: clamp(1.9rem, 5vw, 2.7rem);
+}
+
+h3 {
+  font-size: 0.96rem;
+  color: #dcfce7;
+  margin-bottom: 10px;
+}
+
+.gradient-text {
+  background: linear-gradient(120deg, var(--green), var(--gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.subtitle {
+  font-weight: 600;
+  color: #dcfce7;
+  margin: 0 0 10px;
+}
+
+.desc {
+  color: var(--muted);
+  font-size: 0.92rem;
+  line-height: 1.55;
+  margin: 0 0 16px;
+}
+
+.desc.compact {
+  margin-bottom: 12px;
+  font-size: 0.86rem;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+  text-align: left;
+}
+
+.controls-grid > div {
+  background: var(--panel-light);
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  padding: 8px 10px;
+  font-size: 0.78rem;
+  color: var(--muted);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.keys-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+kbd {
+  display: inline-block;
+  width: fit-content;
+  padding: 2px 7px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--text);
+  font-family: "Space Grotesk", monospace;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.record-line {
+  margin-bottom: 14px;
+  font-size: 0.86rem;
+  color: var(--muted);
+}
+
+.start-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.btn-primary,
+.btn-secondary {
+  width: 100%;
+  padding: 13px 20px;
+  border-radius: 14px;
+  border: none;
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--green-deep), #22c55e);
+  color: #07190a;
+  box-shadow: 0 10px 26px rgba(34, 197, 94, 0.3);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.btn-secondary.danger-outline {
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+}
+
+.btn-primary:hover,
+.btn-secondary:hover {
+  transform: translateY(-2px);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Modal internals */
+.modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.close-x {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.modal-section {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 14px;
+  margin-bottom: 12px;
+}
+
+.sell-list,
+.orders-list,
+.shop-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.row-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.row-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.row-emoji {
+  font-size: 1.4rem;
+}
+
+.row-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+}
+
+.row-sub {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.mini-btn {
+  padding: 8px 13px;
+  border-radius: 10px;
+  border: none;
+  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  background: var(--gold);
+  color: #191d10;
+  white-space: nowrap;
+}
+
+.mini-btn.green {
+  background: var(--green);
+  color: #08200d;
+}
+
+.mini-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.shop-balance {
+  margin-bottom: 12px;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+.shop-balance strong {
+  color: var(--gold);
+  font-family: "Space Grotesk", sans-serif;
+}
+
+/* Day Banner */
+.level-banner {
+  position: fixed;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 25;
+  padding: 13px 26px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--green-deep), #15803d);
+  border: 1.5px solid var(--gold);
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45);
+  pointer-events: none;
+  text-align: center;
+}
+
